@@ -9,65 +9,65 @@
     --font-heading: var(--font-sans);
     --font-sans: 'Montserrat Variable', sans-serif;
 
-    --color-taupe-50: #f3f1f1;
-    --color-taupe-100: #e8e3e3;
-    --color-taupe-200: #d0c8c8;
-    --color-taupe-300: #b9acac;
-    --color-taupe-400: #a19191;
-    --color-taupe-500: #8a7575;
-    --color-taupe-600: #6e5e5e;
-    --color-taupe-700: #534646;
-    --color-taupe-800: #372f2f;
-    --color-taupe-900: #1c1717;
-    --color-taupe-950: #131010;
+    --color-taupe-50: #f5f3f3;
+    --color-taupe-100: #ebe8e8;
+    --color-taupe-200: #d6d0d0;
+    --color-taupe-300: #c2b9b9;
+    --color-taupe-400: #a39292;
+    --color-taupe-500: #7e6c6c;
+    --color-taupe-600: #655656;
+    --color-taupe-700: #4c4141;
+    --color-taupe-800: #322b2b;
+    --color-taupe-900: #191616;
+    --color-taupe-950: #0d0b0b;
 
-    --color-grapefruit-pink-50: #fee7e7;
-    --color-grapefruit-pink-100: #fccfcf;
-    --color-grapefruit-pink-200: #fa9e9e;
-    --color-grapefruit-pink-300: #f76e6e;
-    --color-grapefruit-pink-400: #f53d3d;
-    --color-grapefruit-pink-500: #f20d0d;
-    --color-grapefruit-pink-600: #c20a0a;
-    --color-grapefruit-pink-700: #910808;
-    --color-grapefruit-pink-800: #610505;
-    --color-grapefruit-pink-900: #300303;
-    --color-grapefruit-pink-950: #220202;
+    --color-grapefruit-pink-50: #fef2f2;
+    --color-grapefruit-pink-100: #fee5e5;
+    --color-grapefruit-pink-200: #fdcbcb;
+    --color-grapefruit-pink-300: #fba8a8;
+    --color-grapefruit-pink-400: #f87575;
+    --color-grapefruit-pink-500: #f87575;
+    --color-grapefruit-pink-600: #e04d4d;
+    --color-grapefruit-pink-700: #c23838;
+    --color-grapefruit-pink-800: #8f2a2a;
+    --color-grapefruit-pink-900: #5c1b1b;
+    --color-grapefruit-pink-950: #2e0e0e;
 
-    --color-powder-blush-50: #ffe7e5;
-    --color-powder-blush-100: #ffcfcc;
-    --color-powder-blush-200: #ffa099;
-    --color-powder-blush-300: #ff7066;
-    --color-powder-blush-400: #ff4133;
-    --color-powder-blush-500: #ff1100;
-    --color-powder-blush-600: #cc0e00;
-    --color-powder-blush-700: #990a00;
-    --color-powder-blush-800: #660700;
-    --color-powder-blush-900: #330300;
-    --color-powder-blush-950: #240200;
+    --color-powder-blush-50: #fff4f3;
+    --color-powder-blush-100: #ffe9e7;
+    --color-powder-blush-200: #ffd2cf;
+    --color-powder-blush-300: #ffbcb7;
+    --color-powder-blush-400: #ffa9a3;
+    --color-powder-blush-500: #ffa9a3;
+    --color-powder-blush-600: #ff7b6e;
+    --color-powder-blush-700: #e65546;
+    --color-powder-blush-800: #b33c2f;
+    --color-powder-blush-900: #802b21;
+    --color-powder-blush-950: #401511;
 
-    --color-icy-blue-50: #e5f6ff;
-    --color-icy-blue-100: #ccedff;
-    --color-icy-blue-200: #99dbff;
-    --color-icy-blue-300: #66c9ff;
-    --color-icy-blue-400: #33b8ff;
-    --color-icy-blue-500: #00a6ff;
-    --color-icy-blue-600: #0085cc;
-    --color-icy-blue-700: #006399;
-    --color-icy-blue-800: #004266;
-    --color-icy-blue-900: #002133;
-    --color-icy-blue-950: #001724;
+    --color-icy-blue-50: #f0f9ff;
+    --color-icy-blue-100: #e0f3ff;
+    --color-icy-blue-200: #b9e6ff;
+    --color-icy-blue-300: #b9e6ff;
+    --color-icy-blue-400: #b9e6ff;
+    --color-icy-blue-500: #b9e6ff;
+    --color-icy-blue-600: #7ac4f0;
+    --color-icy-blue-700: #4da3d9;
+    --color-icy-blue-800: #3680b3;
+    --color-icy-blue-900: #265c80;
+    --color-icy-blue-950: #132e40;
 
-    --color-cornflower-blue-50: #e5eeff;
-    --color-cornflower-blue-100: #ccdeff;
-    --color-cornflower-blue-200: #99bdff;
-    --color-cornflower-blue-300: #669cff;
-    --color-cornflower-blue-400: #337aff;
-    --color-cornflower-blue-500: #0059ff;
-    --color-cornflower-blue-600: #0047cc;
-    --color-cornflower-blue-700: #003699;
-    --color-cornflower-blue-800: #002466;
-    --color-cornflower-blue-900: #001233;
-    --color-cornflower-blue-950: #000c24;
+    --color-cornflower-blue-50: #eff6ff;
+    --color-cornflower-blue-100: #dbeafe;
+    --color-cornflower-blue-200: #bfdbfe;
+    --color-cornflower-blue-300: #93c5fd;
+    --color-cornflower-blue-400: #5c95ff;
+    --color-cornflower-blue-500: #5c95ff;
+    --color-cornflower-blue-600: #3b7eeb;
+    --color-cornflower-blue-700: #2563eb;
+    --color-cornflower-blue-800: #1e40af;
+    --color-cornflower-blue-900: #1e3a8a;
+    --color-cornflower-blue-950: #0f1d45;
 
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -208,4 +208,30 @@
 
 .animation-delay-4000 {
   animation-delay: 4s;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+@keyframes drag-hint {
+  0%, 100% {
+    transform: translateX(0) translateY(-50%);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateX(10px) translateY(-50%);
+    opacity: 1;
+  }
+}
+
+.animate-drag-hint {
+  animation: drag-hint 2s ease-in-out infinite;
 }
