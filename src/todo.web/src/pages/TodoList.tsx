@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Plus, Search, Calendar, CalendarDays, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, Info, LogOut } from "lucide-react"
+import { Search, Calendar, CalendarDays, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, Info, LogOut, ChevronDown, Wallet } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
   SelectContent,
@@ -8,12 +9,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useTodos, matchesPeriod } from "@/lib/todo-context"
+import { useCountUp } from "@/lib/hooks"
+import { useBudget } from "@/lib/use-budget"
+import type { Category, PeriodFilter } from "@/lib/types"
+
+const categoryMeta: Record<Category, { color: string; shadowColor: string; icon: typeof ListTodo; badge: string }> = {
+  Todo: { color: "bg-cornflower-blue-500", shadowColor: "shadow-cornflower-blue-500/20", icon: ListTodo, badge: "bg-cornflower-blue-500" },
+  Shopping: { color: "bg-grapefruit-pink-500", shadowColor: "shadow-grapefruit-pink-500/20", icon: ShoppingCart, badge: "bg-grapefruit-pink-500" },
+  Personal: { color: "bg-icy-blue-500", shadowColor: "shadow-icy-blue-500/20", icon: User, badge: "bg-icy-blue-500" },
+  Work: { color: "bg-powder-blush-500", shadowColor: "shadow-powder-blush-500/20", icon: Briefcase, badge: "bg-powder-blush-500" },
+  Others: { color: "bg-taupe-500", shadowColor: "shadow-taupe-500/20", icon: MoreHorizontal, badge: "bg-taupe-500" },
+}
+
+const categories: { name: Category; color: string; shadowColor: string; icon: typeof ListTodo }[] = [
+  { name: "Todo", color: "bg-cornflower-blue-500", shadowColor: "shadow-cornflower-blue-500/20", icon: ListTodo },
+  { name: "Shopping", color: "bg-grapefruit-pink-500", shadowColor: "shadow-grapefruit-pink-500/20", icon: ShoppingCart },
+  { name: "Personal", color: "bg-icy-blue-500", shadowColor: "shadow-icy-blue-500/20", icon: User },
+  { name: "Work", color: "bg-powder-blush-500", shadowColor: "shadow-powder-blush-500/20", icon: Briefcase },
+  { name: "Others", color: "bg-taupe-500", shadowColor: "shadow-taupe-500/20", icon: MoreHorizontal },
+]
 
 export function TodoList() {
   const navigate = useNavigate()
-  const [activeFilter, setActiveFilter] = useState("Day")
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const currentDateRef = useRef<HTMLDivElement>(null)
+  const { todos, toggleTodo } = useTodos()
+  const [activeFilter, setActiveFilter] = useState<PeriodFilter>("Day")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showAllActive, setShowAllActive] = useState(false)
+  const [showAllCompleted, setShowAllCompleted] = useState(false)
+
+  const { balance } = useBudget()
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 600)
+    return () => clearTimeout(t)
+  }, [])
 
   const today = new Date()
   const dateStr = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
@@ -55,107 +87,31 @@ export function TodoList() {
 
   const filters = [
     { id: "Day", label: "Day", icon: Calendar },
+    { id: "Week", label: "Week", icon: CalendarDays },
     { id: "Month", label: "Month", icon: CalendarDays },
     { id: "Year", label: "Year", icon: CalendarDays },
   ]
 
   const activeFilterData = filters.find(f => f.id === activeFilter) || filters[0]
 
-  useEffect(() => {
-    if (currentDateRef.current && scrollContainerRef.current) {
-      const container = scrollContainerRef.current
-      const currentElement = currentDateRef.current
-      const containerWidth = container.offsetWidth
-      const elementLeft = currentElement.offsetLeft
-      const elementWidth = currentElement.offsetWidth
-      const scrollPosition = elementLeft - (containerWidth / 2) + (elementWidth / 2)
-      container.scrollTo({ left: scrollPosition, behavior: 'smooth' })
-    }
-  }, [activeFilter])
+  const periodTodos = useMemo(
+    () => todos.filter((t) => matchesPeriod(t.createdAt, activeFilter)),
+    [todos, activeFilter]
+  )
 
-  const categories = [
-    { name: "Todo", count: 5, color: "bg-cornflower-blue-500", shadowColor: "shadow-cornflower-blue-500/20", icon: ListTodo },
-    { name: "Shopping", count: 3, color: "bg-grapefruit-pink-500", shadowColor: "shadow-grapefruit-pink-500/20", icon: ShoppingCart },
-    { name: "Personal", count: 7, color: "bg-icy-blue-500", shadowColor: "shadow-icy-blue-500/20", icon: User },
-    { name: "Work", count: 4, color: "bg-powder-blush-500", shadowColor: "shadow-powder-blush-500/20", icon: Briefcase },
-    { name: "Others", count: 2, color: "bg-taupe-500", shadowColor: "shadow-taupe-500/20", icon: MoreHorizontal },
-  ]
+  const searchedTodos = useMemo(
+    () => {
+      if (!searchQuery.trim()) return periodTodos
+      return periodTodos.filter((t) => t.text.toLowerCase().includes(searchQuery.toLowerCase()))
+    },
+    [periodTodos, searchQuery]
+  )
 
-  const renderDateColumns = () => {
-    if (activeFilter === "Day") {
-      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-      const dates = []
-      // 7 days before, current day, 7 days after
-      for (let i = -7; i < 8; i++) {
-        const date = new Date(today)
-        date.setDate(today.getDate() + i)
-        const dayName = days[date.getDay()]
-        const isToday = i === 0
-        dates.push(
-          <div 
-            key={i}
-            ref={isToday ? currentDateRef : null}
-            className={`backdrop-blur-lg p-2 text-center flex flex-col items-center justify-center transition-all duration-300 cursor-pointer ${
-              isToday 
-                ? 'bg-white shadow-[0_0_30px_8px_rgba(92,149,255,0.8)] scale-125 ring-4 ring-white min-w-[48px] h-[52px]' 
-                : 'bg-white/80 border-[0.25px] border-white/40 hover:bg-white hover:shadow-lg hover:scale-105 min-w-[40px] h-[44px]'
-            }`}
-          >
-            <div className={`text-[9px] font-semibold uppercase tracking-wide ${isToday ? 'text-cornflower-blue-500' : 'text-taupe-500'}`}>{dayName}</div>
-            <div className={`text-sm font-extrabold ${isToday ? 'text-cornflower-blue-600' : 'text-taupe-800'}`}>{date.getDate()}</div>
-          </div>
-        )
-      }
-      return dates
-    }
-    if (activeFilter === "Month") {
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-      const currentMonth = today.getMonth()
-      const monthsToShow = []
-      // 7 months before, current month, 7 months after
-      for (let i = -7; i < 8; i++) {
-        const monthIndex = (currentMonth + i + 12) % 12
-        const isCurrentMonth = i === 0
-        monthsToShow.push(
-          <div 
-            key={i}
-            ref={isCurrentMonth ? currentDateRef : null}
-            className={`backdrop-blur-lg p-2 text-center flex flex-col items-center justify-center transition-all duration-300 cursor-pointer ${
-              isCurrentMonth 
-                ? 'bg-white shadow-[0_0_30px_8px_rgba(92,149,255,0.8)] scale-125 ring-4 ring-white min-w-[48px] h-[52px]' 
-                : 'bg-white/80 border-[0.25px] border-white/40 hover:bg-white hover:shadow-lg hover:scale-105 min-w-[40px] h-[44px]'
-            }`}
-          >
-            <div className={`text-sm font-extrabold ${isCurrentMonth ? 'text-cornflower-blue-600' : 'text-taupe-800'}`}>{months[monthIndex]}</div>
-          </div>
-        )
-      }
-      return monthsToShow
-    }
-    if (activeFilter === "Year") {
-      const currentYear = today.getFullYear()
-      const years = []
-      // 7 years before, current year, 7 years after
-      for (let i = -7; i < 8; i++) {
-        const isCurrentYear = i === 0
-        years.push(
-          <div 
-            key={i}
-            ref={isCurrentYear ? currentDateRef : null}
-            className={`backdrop-blur-lg p-2 text-center flex flex-col items-center justify-center transition-all duration-300 cursor-pointer ${
-              isCurrentYear 
-                ? 'bg-white shadow-[0_0_30px_8px_rgba(92,149,255,0.8)] scale-125 ring-4 ring-white min-w-[48px] h-[52px]' 
-                : 'bg-white/80 border-[0.25px] border-white/40 hover:bg-white hover:shadow-lg hover:scale-105 min-w-[40px] h-[44px]'
-            }`}
-          >
-            <div className={`text-sm font-extrabold ${isCurrentYear ? 'text-cornflower-blue-600' : 'text-taupe-800'}`}>{currentYear + i}</div>
-          </div>
-        )
-      }
-      return years
-    }
-    return null
-  }
+  const completedTodos = searchedTodos.filter((t) => t.completed)
+  const activeTodos = searchedTodos.filter((t) => !t.completed)
+
+  const displayedActive = showAllActive ? activeTodos : activeTodos.slice(0, 3)
+  const displayedCompleted = showAllCompleted ? completedTodos : completedTodos.slice(0, 3)
 
   return (
     <div className="min-h-svh bg-taupe-50 relative overflow-hidden flex flex-col">
@@ -167,34 +123,33 @@ export function TodoList() {
 
       <div className="relative bg-cover bg-center" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YWJzdHJhY3R8ZW58MHx8MHx8fDA%3D)'}}>
         <div className="absolute inset-0 bg-black/50"></div>
-        <div className="relative z-10 h-[30vh] flex flex-col">
-          <div className="absolute top-4 left-4">
+        <div className="relative z-10 py-6 flex flex-col gap-4">
+          <div className="flex items-start justify-between px-4">
             <div className="text-white">
               <div className="text-sm opacity-80">Today</div>
               <div className="text-xl font-bold">{dateStr}</div>
             </div>
+            <div className="flex gap-2">
+              <button className="p-2 bg-sky-400 text-white hover:bg-sky-500 transition-colors rounded-full shadow-md">
+                <Info className="w-5 h-5" />
+              </button>
+              <button onClick={() => navigate('/')} className="p-2 bg-rose-500 text-white hover:bg-rose-600 transition-colors rounded-full shadow-md">
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-          <div className="absolute top-4 right-4 flex gap-2">
-            <button className="p-2 bg-icy-blue-500 backdrop-blur-sm text-white hover:bg-icy-blue-600 transition-colors rounded-full shadow-md">
-              <Info className="w-5 h-5" />
-            </button>
-            <button className="p-2 bg-cornflower-blue-500 text-white hover:bg-cornflower-blue-600 transition-colors rounded-full shadow-md">
-              <Plus className="w-5 h-5" />
-            </button>
-            <button onClick={() => navigate('/')} className="p-2 bg-grapefruit-pink-500 backdrop-blur-sm text-white hover:bg-grapefruit-pink-600 transition-colors rounded-full shadow-md">
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 max-w-2xl">
-            <p className="text-white text-base md:text-lg font-medium italic mb-2 leading-relaxed text-left">
+
+          <div className="px-4 max-w-2xl">
+            <p className="text-white text-base md:text-lg font-medium italic mb-2 leading-relaxed">
               "{randomQuote.quote}"
             </p>
-            <p className="text-white/80 text-sm font-semibold text-left">
+            <p className="text-white/80 text-sm font-semibold">
               — {randomQuote.author}
             </p>
           </div>
-          <div className="absolute bottom-4 left-4 right-4 z-10">
-            <Select value={activeFilter} onValueChange={(value) => setActiveFilter(value)}>
+
+          <div className="px-4">
+            <Select value={activeFilter} onValueChange={(value) => setActiveFilter(value as PeriodFilter)}>
               <SelectTrigger className="w-full bg-powder-blush-500 backdrop-blur-md border-white/40 text-white [&>span]:text-white shadow-md">
                 <SelectValue>
                   <div className="flex items-center gap-2 text-white">
@@ -219,42 +174,171 @@ export function TodoList() {
             </Select>
           </div>
         </div>
-        <div className="relative z-10 px-4 pb-3 pt-2">
-          <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide">
-            <div className="flex items-center gap-3 w-max">
-              {renderDateColumns()}
-            </div>
-          </div>
-        </div>
       </div>
 
-      <div className="relative flex-1 px-4 py-6 overflow-y-auto">
-        <div className="mb-6">
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-taupe-700" />
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white/80 backdrop-blur-sm border border-taupe-200/70 rounded-xl text-taupe-900 placeholder:text-taupe-400 focus:outline-none focus:border-cornflower-blue-500 focus:ring-2 focus:ring-cornflower-blue-500/20 transition-all"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {categories.map((category) => (
-                <div
-                key={category.name}
-                className={`${category.color} backdrop-blur-sm border border-white/20 p-2 rounded-xl hover:shadow-lg ${category.shadowColor} transition-all duration-200 active:scale-[0.98] cursor-pointer`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-white">{category.name}</span>
-                  <category.icon className="w-3.5 h-3.5 text-white/80" />
-                </div>
-                <span className="text-2xl font-bold text-white">{category.count}</span>
-                <span className="text-xs text-white/80 ml-1">tasks</span>
-              </div>
+      <div className="relative flex-1 px-4 py-4 overflow-y-auto space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600" />
+          <input
+            type="text"
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-white/80 backdrop-blur-sm border border-taupe-200/70 rounded-xl text-taupe-900 placeholder:text-taupe-400 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-2 focus:ring-cornflower-blue-500/20 transition-all"
+          />
+        </div>
+
+        {loading ? (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-xl" />
+              ))}
+            </div>
+            <Skeleton className="h-8 w-24 mt-4" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-xl" />
             ))}
           </div>
+        ) : (
+        <>
+        <div className="grid grid-cols-2 gap-2">
+          {categories.map((category) => {
+            const count = periodTodos.filter((t) => t.category === category.name).length
+            return <CategoryCard key={category.name} category={category} count={count} activeFilter={activeFilter} />
+          })}
+          <BudgetCard balance={balance} activeFilter={activeFilter} />
         </div>
+
+        {activeTodos.length > 0 && (
+          <div>
+            <h2 className="text-xs font-semibold text-taupe-500 uppercase tracking-wider mb-2">
+              Active — {activeTodos.length}
+            </h2>
+            <div className="space-y-1.5">
+              {displayedActive.map((todo) => {
+                const meta = categoryMeta[todo.category]
+                const BadgeIcon = meta.icon
+                return (
+                  <div
+                    key={todo.id}
+                    className="group flex items-center gap-3 bg-white/90 backdrop-blur-sm border border-taupe-200/50 rounded-xl px-3 py-2.5 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
+                  >
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={todo.completed}
+                        onCheckedChange={() => toggleTodo(todo.id)}
+                        className="data-[state=checked]:bg-neutral-900 data-[state=checked]:border-neutral-900"
+                      />
+                    </div>
+                    <span className="flex-1 text-sm text-taupe-900">{todo.text}</span>
+                    <div className={`${meta.badge} rounded-full p-1`}>
+                      <BadgeIcon className="w-3 h-3 text-white" />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            {activeTodos.length > 3 && (
+              <button
+                onClick={() => setShowAllActive(!showAllActive)}
+                className="w-full mt-1.5 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-taupe-500 hover:text-taupe-700 bg-white/60 backdrop-blur-sm border border-taupe-200/40 rounded-xl hover:bg-white/90 transition-all"
+              >
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAllActive ? "rotate-180" : ""}`} />
+                {showAllActive ? "Show less" : `Show all (${activeTodos.length} tasks)`}
+              </button>
+            )}
+          </div>
+        )}
+
+        {completedTodos.length > 0 && (
+          <div>
+            <h2 className="text-xs font-semibold text-taupe-500 uppercase tracking-wider mb-2">
+              Completed — {completedTodos.length}
+            </h2>
+            <div className="space-y-1.5">
+              {displayedCompleted.map((todo) => {
+                const meta = categoryMeta[todo.category]
+                const BadgeIcon = meta.icon
+                return (
+                  <div
+                    key={todo.id}
+                    className="group flex items-center gap-3 bg-white/70 backdrop-blur-sm border border-taupe-200/30 rounded-xl px-3 py-2.5 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
+                  >
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={todo.completed}
+                        onCheckedChange={() => toggleTodo(todo.id)}
+                        className="data-[state=checked]:bg-neutral-900 data-[state=checked]:border-neutral-900"
+                      />
+                    </div>
+                    <span className="flex-1 text-sm text-taupe-400 line-through">{todo.text}</span>
+                    <div className={`${meta.badge} rounded-full p-1`}>
+                      <BadgeIcon className="w-3 h-3 text-white" />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            {completedTodos.length > 3 && (
+              <button
+                onClick={() => setShowAllCompleted(!showAllCompleted)}
+                className="w-full mt-1.5 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-taupe-500 hover:text-taupe-700 bg-white/60 backdrop-blur-sm border border-taupe-200/40 rounded-xl hover:bg-white/90 transition-all"
+              >
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAllCompleted ? "rotate-180" : ""}`} />
+                {showAllCompleted ? "Show less" : `Show all (${completedTodos.length} tasks)`}
+              </button>
+            )}
+          </div>
+        )}
+
+        {!loading && searchedTodos.length === 0 && searchQuery.trim() && (
+          <div className="text-center py-8">
+            <p className="text-taupe-500 text-sm">No tasks match your search</p>
+          </div>
+        )}
+        </>
+        )}
       </div>
+    </div>
+  )
+}
+
+function CategoryCard({ category, count, activeFilter }: { category: typeof categories[0]; count: number; activeFilter: string }) {
+  const navigate = useNavigate()
+  const animatedCount = useCountUp(count)
+  const Icon = category.icon
+  return (
+    <div
+      onClick={() => navigate(`/todos/${category.name.toLowerCase()}`, { state: { period: activeFilter } })}
+      className={`${category.color} backdrop-blur-sm border border-white/20 p-2 rounded-xl hover:shadow-lg ${category.shadowColor} transition-all duration-200 active:scale-[0.98] cursor-pointer`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold text-white">{category.name}</span>
+        <Icon className="w-3.5 h-3.5 text-white/80" />
+      </div>
+      <span className="text-2xl font-bold text-white">{animatedCount}</span>
+      <span className="text-xs text-white/80 ml-1">tasks</span>
+    </div>
+  )
+}
+
+function BudgetCard({ balance, activeFilter }: { balance: number; activeFilter: string }) {
+  const navigate = useNavigate()
+  const animatedCount = useCountUp(Math.round(Math.abs(balance)))
+  return (
+    <div
+      onClick={() => navigate("/todos/budget", { state: { period: activeFilter } })}
+      className="bg-emerald-500 backdrop-blur-sm border border-white/20 p-2 rounded-xl hover:shadow-lg shadow-emerald-500/20 transition-all duration-200 active:scale-[0.98] cursor-pointer"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold text-white">Budget</span>
+        <Wallet className="w-3.5 h-3.5 text-white/80" />
+      </div>
+      <span className="text-2xl font-bold text-white">{animatedCount}</span>
+      <span className="text-xs text-white/80 ml-1">R</span>
     </div>
   )
 }
