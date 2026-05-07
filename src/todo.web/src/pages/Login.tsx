@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 
 const bgUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YWJzdHJhY3R8ZW58MHx8MHx8fDA%3D"
 
 export function Login() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -13,7 +14,7 @@ export function Login() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
-    window.location.href = "/todos"
+    navigate("/todos")
   }
 
   return (
