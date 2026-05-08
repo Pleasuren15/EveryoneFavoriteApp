@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { ArrowLeft, ShoppingCart, Trash2, Plus, Search, Minus, Hash, Receipt, CalendarIcon } from "lucide-react"
+import { ArrowLeft, ShoppingCart, Trash2, Plus, Search, Minus, Hash, Receipt, CalendarIcon, Sparkles } from "lucide-react"
 import { format } from "date-fns"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Calendar } from "@/components/ui/calendar"
@@ -143,94 +143,132 @@ export function ShoppingItems() {
         </form>
 
         {loading ? (
-          <div className="bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-2xl overflow-hidden">
-            <div className="px-4 py-3 space-y-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full bg-neutral-800" />
-              ))}
-            </div>
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-24 bg-neutral-800" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 w-full rounded-xl bg-neutral-800" />
+            ))}
+            <Skeleton className="h-6 w-32 mt-6 bg-neutral-800" />
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-xl bg-neutral-800" />
+            ))}
           </div>
         ) : (
-          <div className="bg-neutral-800/90 rounded-xl border border-neutral-700/50 shadow-sm overflow-hidden">
-            <div className="px-4 py-3 border-b border-neutral-700/50 flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4 text-emerald-500" />
-              <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Shopping List</span>
-            </div>
-
+          <>
             {activeTodos.length > 0 && (
-              <div className="divide-y divide-neutral-700/30">
-                {activeTodos.map((todo) => {
-                  const { label, qty } = parseQuantity(todo.text)
-                  return (
-                    <div key={todo.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-neutral-700/50 transition-colors border-l-2 border-l-transparent hover:border-l-emerald-500">
-                      <Checkbox checked={todo.completed} onCheckedChange={() => toggleTodo(todo.id)}
-                        className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 border-neutral-600" />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm text-neutral-200">{label}</span>
-                        <DueDateBadge dueDate={todo.dueDate} />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {todo.price != null && (
-                          <span className="text-xs font-mono text-emerald-400">R{(todo.price * qty).toFixed(2)}</span>
-                        )}
-                        <div className="flex items-center gap-1 bg-neutral-700 rounded-lg px-2 py-1">
-                          <Hash className="w-3 h-3 text-neutral-500" />
-                          <span className="text-xs font-mono text-emerald-400 font-semibold">{qty}</span>
-                        </div>
-                        <button onClick={() => deleteTodo(todo.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-500 hover:text-red-400 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
-            {completedTodos.length > 0 && (
-              <>
-                <div className="px-4 py-2 border-t border-neutral-700/30">
-                  <span className="text-xs font-semibold text-neutral-600 uppercase tracking-wider">Checked Off &mdash; {completedTodos.length}</span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-1">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700">
+                    <Sparkles className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
+                    To Buy
+                  </span>
+                  <span className="text-xs font-medium text-neutral-500 ml-auto">{activeTodos.length}</span>
                 </div>
-                <div className="divide-y divide-neutral-700/20">
-                  {completedTodos.map((todo) => {
+                <div className="space-y-2">
+                  {activeTodos.map((todo) => {
                     const { label, qty } = parseQuantity(todo.text)
                     return (
-                      <div key={todo.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-neutral-700/50 transition-colors border-l-2 border-l-transparent hover:border-l-emerald-500">
-                        <Checkbox checked={todo.completed} onCheckedChange={() => toggleTodo(todo.id)}
-                          className="data-[state=checked]:bg-neutral-600 data-[state=checked]:border-neutral-600 border-neutral-700" />
+                      <div
+                        key={todo.id}
+                        className="group relative flex items-center gap-3 bg-neutral-800 rounded-xl pl-4 pr-3 py-3 shadow-sm border border-neutral-700/60 hover:shadow-md hover:border-emerald-500/60 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-emerald-700" />
+                        <Checkbox
+                          checked={todo.completed}
+                          onCheckedChange={() => toggleTodo(todo.id)}
+                          className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 border-neutral-600"
+                        />
                         <div className="flex-1 min-w-0">
-                          <span className="text-sm text-neutral-500 line-through">{label}</span>
-                          <DueDateBadge dueDate={todo.dueDate} />
+                          <span className="text-sm font-medium text-neutral-100">{label}</span>
+                          <div className="mt-0.5"><DueDateBadge dueDate={todo.dueDate} /></div>
                         </div>
                         <div className="flex items-center gap-2">
-                          {todo.price != null && <span className="text-xs font-mono text-neutral-500">R{(todo.price * qty).toFixed(2)}</span>}
-                          <span className="text-xs font-mono text-neutral-600">{qty}</span>
-                          <button onClick={() => deleteTodo(todo.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-600 hover:text-red-400 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                          {todo.price != null && (
+                            <span className="text-xs font-mono text-emerald-400">R{(todo.price * qty).toFixed(2)}</span>
+                          )}
+                          <div className="flex items-center gap-1 bg-neutral-700/60 rounded-lg px-2 py-1">
+                            <Hash className="w-3 h-3 text-neutral-500" />
+                            <span className="text-xs font-mono text-emerald-400 font-semibold">{qty}</span>
+                          </div>
+                          <button
+                            onClick={() => deleteTodo(todo.id)}
+                            className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
                     )
                   })}
                 </div>
-              </>
+              </div>
             )}
 
-            <div className="px-4 py-3 border-t border-neutral-700/30 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-mono text-neutral-500">{activeTodos.length} items &middot; {totalQty} units</span>
+            {completedTodos.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-1">
+                  <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                    Checked Off
+                  </span>
+                  <span className="text-xs font-medium text-neutral-600 ml-auto">{completedTodos.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {completedTodos.map((todo) => {
+                    const { label, qty } = parseQuantity(todo.text)
+                    return (
+                      <div
+                        key={todo.id}
+                        className="group relative flex items-center gap-3 bg-neutral-800/60 rounded-xl pl-4 pr-3 py-2.5 border border-neutral-700/40 hover:bg-neutral-800 transition-all duration-200 overflow-hidden"
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-600" />
+                        <Checkbox
+                          checked={todo.completed}
+                          onCheckedChange={() => toggleTodo(todo.id)}
+                          className="data-[state=checked]:bg-neutral-500 data-[state=checked]:border-neutral-500 border-neutral-700"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm text-neutral-500 line-through">{label}</span>
+                          <div className="mt-0.5"><DueDateBadge dueDate={todo.dueDate} /></div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {todo.price != null && <span className="text-xs font-mono text-neutral-600">R{(todo.price * qty).toFixed(2)}</span>}
+                          <span className="text-xs font-mono text-neutral-600">{qty}</span>
+                          <button
+                            onClick={() => deleteTodo(todo.id)}
+                            className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-mono text-neutral-500">TOTAL</span>
-                <span className="text-base font-mono text-emerald-400 font-bold">R{totalPrice.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {!loading && filteredTodos.length === 0 && (
-          <div className="text-center py-12">
-            <ShoppingCart className="w-12 h-12 text-neutral-700 mx-auto mb-3" />
-            <p className="text-neutral-500 text-sm">No items on your list</p>
-            <p className="text-neutral-600 text-xs mt-1">Add something you need to buy</p>
-          </div>
+            {(activeTodos.length > 0 || completedTodos.length > 0) && (
+              <div className="bg-neutral-800/80 rounded-xl border border-neutral-700/60 px-4 py-3 flex items-center justify-between">
+                <span className="text-xs font-mono text-neutral-400">{activeTodos.length} items &middot; {totalQty} units</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-mono text-neutral-500">TOTAL</span>
+                  <span className="text-base font-mono text-emerald-400 font-bold">R{totalPrice.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+
+            {filteredTodos.length === 0 && (
+              <div className="text-center py-16">
+                <div className="inline-flex p-4 bg-emerald-500/10 rounded-2xl mb-3">
+                  <ShoppingCart className="w-10 h-10 text-emerald-400" />
+                </div>
+                <p className="text-neutral-200 text-sm font-medium">No items on your list</p>
+                <p className="text-neutral-500 text-xs mt-1">Add something you need to buy</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

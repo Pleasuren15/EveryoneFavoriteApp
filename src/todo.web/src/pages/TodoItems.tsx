@@ -182,40 +182,44 @@ export function TodoItems() {
 
         {loading ? (
           <div className="space-y-3">
-            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-6 w-24" />
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-2xl" />
+              <Skeleton key={i} className="h-14 w-full rounded-xl" />
             ))}
-            <Skeleton className="h-8 w-32 mt-6" />
+            <Skeleton className="h-6 w-32 mt-6" />
             {Array.from({ length: 2 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full rounded-2xl" />
+              <Skeleton key={i} className="h-12 w-full rounded-xl" />
             ))}
           </div>
         ) : (
           <>
             {activeTodos.length > 0 && (
-              <div className="bg-white rounded-xl border border-neutral-200/50 shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-neutral-100 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-blue-500" />
-                  <span className="text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                    Active &mdash; {activeTodos.length}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-1">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700">
+                    <Target className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                    Active
                   </span>
+                  <span className="text-xs font-medium text-neutral-400 ml-auto">{activeTodos.length}</span>
                 </div>
-                <div className="divide-y divide-neutral-100">
+                <div className="space-y-2">
                   {activeTodos.map((todo) => (
                     <div
                       key={todo.id}
-                      className="group flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors border-l-2 border-l-transparent hover:border-l-blue-500"
+                      className="group relative flex items-center gap-3 bg-white rounded-xl pl-4 pr-3 py-3 shadow-sm border border-neutral-200/60 hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
                     >
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-600 to-indigo-700" />
                       <Checkbox
                         checked={todo.completed}
                         onCheckedChange={() => toggleTodo(todo.id)}
-                        className="data-[state=checked]:bg-neutral-900 data-[state=checked]:border-neutral-900"
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                       />
-                      <span className="flex-1 text-sm text-neutral-800">{todo.text}</span>
+                      <span className="flex-1 text-sm font-medium text-neutral-800">{todo.text}</span>
                       <button
                         onClick={() => deleteTodo(todo.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 transition-all"
+                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -226,18 +230,20 @@ export function TodoItems() {
             )}
 
             {completedTodos.length > 0 && (
-              <div className="bg-white rounded-xl border border-neutral-200/50 shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-neutral-100">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-1">
                   <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                    Completed &mdash; {completedTodos.length}
+                    Completed
                   </span>
+                  <span className="text-xs font-medium text-neutral-300 ml-auto">{completedTodos.length}</span>
                 </div>
-                <div className="divide-y divide-neutral-100">
+                <div className="space-y-2">
                   {completedTodos.map((todo) => (
                     <div
                       key={todo.id}
-                      className="group flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors border-l-2 border-l-transparent hover:border-l-blue-500"
+                      className="group relative flex items-center gap-3 bg-white/60 rounded-xl pl-4 pr-3 py-2.5 border border-neutral-200/40 hover:bg-white transition-all duration-200 overflow-hidden"
                     >
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-300" />
                       <Checkbox
                         checked={todo.completed}
                         onCheckedChange={() => toggleTodo(todo.id)}
@@ -246,7 +252,7 @@ export function TodoItems() {
                       <span className="flex-1 text-sm text-neutral-400 line-through">{todo.text}</span>
                       <button
                         onClick={() => deleteTodo(todo.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 transition-all"
+                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -257,9 +263,11 @@ export function TodoItems() {
             )}
 
             {filteredTodos.length === 0 && (
-              <div className="text-center py-12">
-                <ListTodo className="w-12 h-12 text-blue-300 mx-auto mb-3" />
-                <p className="text-neutral-500 text-sm">No tasks yet</p>
+              <div className="text-center py-16">
+                <div className="inline-flex p-4 bg-blue-50 rounded-2xl mb-3">
+                  <ListTodo className="w-10 h-10 text-blue-400" />
+                </div>
+                <p className="text-neutral-700 text-sm font-medium">No tasks yet</p>
                 <p className="text-neutral-400 text-xs mt-1">Add something to get started</p>
               </div>
             )}
