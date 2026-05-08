@@ -313,14 +313,16 @@ function CategoryCard({ category, count, activeFilter }: { category: typeof cate
   return (
     <div
       onClick={() => navigate(`/todos/${category.name.toLowerCase()}`, { state: { period: activeFilter } })}
-      className={`${category.color} backdrop-blur-sm border border-white/20 p-2 rounded-xl hover:shadow-lg ${category.shadowColor} transition-all duration-200 active:scale-[0.98] cursor-pointer`}
+      className={`${category.color} backdrop-blur-sm border border-white/20 p-4 rounded-2xl hover:shadow-xl ${category.shadowColor} transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-2`}
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-white">{category.name}</span>
-        <Icon className="w-3.5 h-3.5 text-white/80" />
+      <div className="flex items-center justify-between">
+        <Icon className="w-5 h-5 text-white/90" />
+        <span className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">{category.name}</span>
       </div>
-      <span className="text-2xl font-bold text-white">{animatedCount}</span>
-      <span className="text-xs text-white/80 ml-1">tasks</span>
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-3xl font-bold text-white">{animatedCount}</span>
+        <span className="text-xs text-white/70">tasks</span>
+      </div>
     </div>
   )
 }
@@ -331,14 +333,16 @@ function BudgetCard({ balance, activeFilter }: { balance: number; activeFilter: 
   return (
     <div
       onClick={() => navigate("/todos/budget", { state: { period: activeFilter } })}
-      className="bg-emerald-500 backdrop-blur-sm border border-white/20 p-2 rounded-xl hover:shadow-lg shadow-emerald-500/20 transition-all duration-200 active:scale-[0.98] cursor-pointer"
+      className="bg-emerald-500 backdrop-blur-sm border border-white/20 p-4 rounded-2xl hover:shadow-xl shadow-emerald-500/20 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-2"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-white">Budget</span>
-        <Wallet className="w-3.5 h-3.5 text-white/80" />
+      <div className="flex items-center justify-between">
+        <Wallet className="w-5 h-5 text-white/90" />
+        <span className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Budget</span>
       </div>
-      <span className="text-2xl font-bold text-white">{animatedCount}</span>
-      <span className="text-xs text-white/80 ml-1">R</span>
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-3xl font-bold text-white">{animatedCount}</span>
+        <span className="text-xs text-white/70">R</span>
+      </div>
     </div>
   )
 }

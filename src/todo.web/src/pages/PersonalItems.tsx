@@ -52,7 +52,7 @@ export function PersonalItems() {
         <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
       </div>
 
-      <div className="relative bg-gradient-to-br from-purple-600 via-purple-600 to-rose-500 px-4 pt-12 pb-6">
+      <div className="relative bg-gradient-to-br from-purple-600 via-purple-600 to-rose-500 px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => navigate("/todos")}

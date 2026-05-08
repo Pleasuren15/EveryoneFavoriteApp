@@ -1,13 +1,16 @@
 import { useState, useMemo, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { ArrowLeft, ListTodo, Trash2, Calendar, CalendarDays, Plus, Search, Target } from "lucide-react"
+import { ArrowLeft, ListTodo, Trash2, CalendarDays, Plus, Search, Target, CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { Calendar as CalendarPicker } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
 import type { PeriodFilter } from "@/lib/types"
 
-const periodIcons: Record<PeriodFilter, typeof Calendar> = {
-  Day: Calendar,
+const periodIcons: Record<PeriodFilter, typeof CalendarIcon> = {
+  Day: CalendarIcon,
   Week: CalendarDays,
   Month: CalendarDays,
   Year: CalendarDays,
@@ -20,6 +23,8 @@ export function TodoItems() {
   const [loading, setLoading] = useState(true)
 
   const [newTodoText, setNewTodoText] = useState("")
+  const [newTodoDate, setNewTodoDate] = useState("")
+  const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
 
   const period: PeriodFilter = (location.state as { period?: PeriodFilter })?.period ?? "Day"
@@ -30,8 +35,17 @@ export function TodoItems() {
   }, [])
 
   const periodTodos = useMemo(
-    () => todos.filter((t) => t.category === "Todo" && matchesPeriod(t.createdAt, period)),
-    [todos, period]
+    () => todos.filter((t) => {
+      if (t.category !== "Todo") return false
+      if (filterDate) {
+        const d = new Date(t.createdAt)
+        return d.getFullYear() === filterDate.getFullYear() &&
+               d.getMonth() === filterDate.getMonth() &&
+               d.getDate() === filterDate.getDate()
+      }
+      return matchesPeriod(t.createdAt, period)
+    }),
+    [todos, period, filterDate]
   )
 
   const filteredTodos = useMemo(
@@ -53,7 +67,7 @@ export function TodoItems() {
         <div className="absolute top-1/3 -left-20 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000" />
       </div>
 
-      <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 px-4 pt-12 pb-6">
+      <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => navigate("/todos")}
@@ -111,25 +125,60 @@ export function TodoItems() {
           onSubmit={(e) => {
             e.preventDefault()
             if (!newTodoText.trim()) return
-            addTodo(newTodoText.trim(), "Todo")
+            addTodo(newTodoText.trim(), "Todo", newTodoDate || undefined)
             setNewTodoText("")
+            setNewTodoDate("")
           }}
-          className="flex gap-2"
+          className="flex flex-col gap-2"
         >
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Add a new task..."
+              value={newTodoText}
+              onChange={(e) => setNewTodoText(e.target.value)}
+              className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-neutral-800 placeholder:text-neutral-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+            />
+            <button
+              type="submit"
+              className="px-3 py-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 transition-all rounded-xl shadow-md"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
           <input
-            type="text"
-            placeholder="Add a new task..."
-            value={newTodoText}
-            onChange={(e) => setNewTodoText(e.target.value)}
-            className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-neutral-800 placeholder:text-neutral-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+            type="date"
+            value={newTodoDate}
+            onChange={(e) => setNewTodoDate(e.target.value)}
+            className="w-full px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-neutral-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
           />
-          <button
-            type="submit"
-            className="px-3 py-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 transition-all rounded-xl shadow-md"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
         </form>
+
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-sm text-neutral-800 hover:border-blue-500/50 transition-all shadow-sm">
+                <CalendarIcon className="w-4 h-4 text-neutral-600" />
+                <span>{filterDate ? format(filterDate, "PP") : "Filter by date"}</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarPicker
+                mode="single"
+                selected={filterDate}
+                onSelect={(date) => setFilterDate(date)}
+              />
+            </PopoverContent>
+          </Popover>
+          {filterDate && (
+            <button
+              onClick={() => setFilterDate(undefined)}
+              className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
+            >
+              Clear
+            </button>
+          )}
+        </div>
 
         {loading ? (
           <div className="space-y-3">

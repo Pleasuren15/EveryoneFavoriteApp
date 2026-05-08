@@ -52,7 +52,7 @@ export function OthersItems() {
         <div className="absolute -bottom-20 right-1/4 w-64 h-64 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
       </div>
 
-      <div className="relative bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 px-4 pt-12 pb-6">
+      <div className="relative bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => navigate("/todos")}

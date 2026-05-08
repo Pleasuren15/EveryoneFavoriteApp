@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
 import type { Todo, Category, PeriodFilter } from "./types"
 
 export function matchesPeriod(date: Date, period: PeriodFilter): boolean {
@@ -47,21 +47,6 @@ interface TodoContextType {
 
 const TodoContext = createContext<TodoContextType | null>(null)
 
-const STORAGE_KEY = "everyone-favorite-app-todos"
-
-function loadTodos(): Todo[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (!stored) return []
-    return JSON.parse(stored, (key, value) => {
-      if (key === "createdAt") return new Date(value)
-      return value
-    })
-  } catch {
-    return []
-  }
-}
-
 const defaultTodos: Todo[] = [
   { id: "1", text: "Review project proposal", completed: false, category: "Work", createdAt: new Date(), dueDate: "2026-05-10", subtasks: [{ id: "s1", text: "Read through draft", completed: true }, { id: "s2", text: "Add feedback notes", completed: false }, { id: "s3", text: "Send to manager", completed: false }] },
   { id: "2", text: "Buy groceries for the week", completed: true, category: "Shopping", createdAt: new Date(), price: 85 },
@@ -78,17 +63,7 @@ const defaultTodos: Todo[] = [
 ]
 
 export function TodoProvider({ children }: { children: ReactNode }) {
-  const [todos, setTodos] = useState<Todo[]>(() => {
-    const stored = loadTodos()
-    if (stored.length === 0) {
-      return defaultTodos
-    }
-    return stored
-  })
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-  }, [todos])
+  const [todos, setTodos] = useState<Todo[]>(defaultTodos)
 
   const addTodo = useCallback((text: string, category: Category, dueDate?: string, price?: number) => {
     setTodos((prev) => [

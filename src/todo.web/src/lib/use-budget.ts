@@ -1,17 +1,5 @@
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback } from "react"
 import type { BudgetEntry } from "./types"
-
-const BUDGET_KEY = "everyone-favorite-budget"
-
-function loadEntries(): BudgetEntry[] {
-  try {
-    const stored = localStorage.getItem(BUDGET_KEY)
-    if (!stored) return []
-    return JSON.parse(stored)
-  } catch {
-    return []
-  }
-}
 
 const defaultEntries: BudgetEntry[] = [
   { id: "b1", type: "income", category: "Income", amount: 5000, description: "Monthly salary", date: "2026-05-01" },
@@ -23,14 +11,7 @@ const defaultEntries: BudgetEntry[] = [
 ]
 
 export function useBudget() {
-  const [entries, setEntries] = useState<BudgetEntry[]>(() => {
-    const stored = loadEntries()
-    return stored.length > 0 ? stored : defaultEntries
-  })
-
-  useEffect(() => {
-    localStorage.setItem(BUDGET_KEY, JSON.stringify(entries))
-  }, [entries])
+  const [entries, setEntries] = useState<BudgetEntry[]>(defaultEntries)
 
   const addEntry = useCallback((entry: Omit<BudgetEntry, "id">) => {
     setEntries((prev) => [...prev, { ...entry, id: crypto.randomUUID() }])

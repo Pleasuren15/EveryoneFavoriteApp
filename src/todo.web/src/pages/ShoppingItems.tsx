@@ -72,7 +72,7 @@ export function ShoppingItems() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-400/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative bg-gradient-to-b from-emerald-700 to-emerald-900 px-4 pt-12 pb-8">
+      <div className="relative bg-gradient-to-b from-emerald-700 to-emerald-900 px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => navigate("/todos")} className="p-2 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors rounded-full">
             <ArrowLeft className="w-5 h-5" />
@@ -82,18 +82,20 @@ export function ShoppingItems() {
             <span>#{Math.floor(Math.random() * 9000 + 1000)}</span>
           </div>
         </div>
-        <div className="text-center">
-          <div className="inline-flex p-3 bg-emerald-600/40 backdrop-blur-sm rounded-2xl mb-3">
-            <ShoppingCart className="w-8 h-8 text-emerald-200" />
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-emerald-600/40 backdrop-blur-sm rounded-xl">
+            <ShoppingCart className="w-6 h-6 text-emerald-200" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Shopping List</h1>
-          {loading ? (
-            <Skeleton className="h-4 w-40 mx-auto mt-1" />
-          ) : (
-            <p className="text-sm text-emerald-300/70 font-mono mt-1">
-              {activeTodos.length} items &middot; {totalQty} units &middot; R{totalPrice.toFixed(2)}
-            </p>
-          )}
+          <div>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Shopping List</h1>
+            {loading ? (
+              <Skeleton className="h-4 w-40 mt-1" />
+            ) : (
+              <p className="text-sm text-emerald-300/70 font-mono mt-0.5">
+                {activeTodos.length} items &middot; {totalQty} units &middot; R{totalPrice.toFixed(2)}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

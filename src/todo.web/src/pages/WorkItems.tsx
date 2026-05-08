@@ -77,7 +77,7 @@ export function WorkItems() {
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-taupe-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000" />
       </div>
 
-      <div className="relative bg-gradient-to-br from-powder-blush-500 to-powder-blush-600 px-4 pt-12 pb-5">
+      <div className="relative bg-gradient-to-br from-powder-blush-500 to-powder-blush-600 px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => navigate("/todos")} className="p-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors rounded-full">
             <ArrowLeft className="w-5 h-5" />
