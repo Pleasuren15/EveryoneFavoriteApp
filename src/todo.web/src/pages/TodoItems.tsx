@@ -146,39 +146,39 @@ export function TodoItems() {
               <Plus className="w-5 h-5" />
             </button>
           </div>
-          <input
-            type="date"
-            value={newTodoDate}
-            onChange={(e) => setNewTodoDate(e.target.value)}
-            className="w-full px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-neutral-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
-          />
-        </form>
-
-        <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-sm text-neutral-800 hover:border-blue-500/50 transition-all shadow-sm">
-                <CalendarIcon className="w-4 h-4 text-neutral-600" />
-                <span>{filterDate ? format(filterDate, "PP") : "Filter by date"}</span>
+          <div className="flex gap-2">
+            <input
+              type="date"
+              value={newTodoDate}
+              onChange={(e) => setNewTodoDate(e.target.value)}
+              className="flex-1 px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-neutral-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-sm text-neutral-800 hover:border-blue-500/50 transition-all shadow-sm">
+                  <CalendarIcon className="w-4 h-4 text-neutral-600" />
+                  <span className="text-xs">{filterDate ? format(filterDate, "MMM d") : "Filter"}</span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarPicker
+                  mode="single"
+                  selected={filterDate}
+                  onSelect={(date) => setFilterDate(date)}
+                />
+              </PopoverContent>
+            </Popover>
+            {filterDate && (
+              <button
+                type="button"
+                onClick={() => setFilterDate(undefined)}
+                className="px-2 py-2 text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
+              >
+                Clear
               </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <CalendarPicker
-                mode="single"
-                selected={filterDate}
-                onSelect={(date) => setFilterDate(date)}
-              />
-            </PopoverContent>
-          </Popover>
-          {filterDate && (
-            <button
-              onClick={() => setFilterDate(undefined)}
-              className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
-            >
-              Clear
-            </button>
-          )}
-        </div>
+            )}
+          </div>
+        </form>
 
         {loading ? (
           <div className="space-y-3">
@@ -194,18 +194,18 @@ export function TodoItems() {
         ) : (
           <>
             {activeTodos.length > 0 && (
-              <div className="bg-white/80 backdrop-blur-sm border border-blue-100 rounded-2xl overflow-hidden shadow-sm">
-                <div className="px-4 py-2.5 border-b border-blue-100 flex items-center gap-2">
-                  <Target className="w-3.5 h-3.5 text-blue-500" />
-                  <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
+              <div className="bg-white rounded-xl border border-neutral-200/50 shadow-sm overflow-hidden">
+                <div className="px-4 py-3 border-b border-neutral-100 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-blue-500" />
+                  <span className="text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                     Active &mdash; {activeTodos.length}
                   </span>
                 </div>
-                <div className="divide-y divide-blue-50">
+                <div className="divide-y divide-neutral-100">
                   {activeTodos.map((todo) => (
                     <div
                       key={todo.id}
-                      className="group flex items-center gap-3 px-4 py-3 hover:bg-blue-50/50 transition-colors"
+                      className="group flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors border-l-2 border-l-transparent hover:border-l-blue-500"
                     >
                       <Checkbox
                         checked={todo.completed}
@@ -226,22 +226,22 @@ export function TodoItems() {
             )}
 
             {completedTodos.length > 0 && (
-              <div className="bg-white/60 backdrop-blur-sm border border-blue-100/50 rounded-2xl overflow-hidden shadow-sm">
-                <div className="px-4 py-2 border-b border-blue-100/50">
+              <div className="bg-white rounded-xl border border-neutral-200/50 shadow-sm overflow-hidden">
+                <div className="px-4 py-3 border-b border-neutral-100">
                   <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
                     Completed &mdash; {completedTodos.length}
                   </span>
                 </div>
-                <div className="divide-y divide-blue-50/50">
+                <div className="divide-y divide-neutral-100">
                   {completedTodos.map((todo) => (
                     <div
                       key={todo.id}
-                      className="group flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50/30 transition-colors"
+                      className="group flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors border-l-2 border-l-transparent hover:border-l-blue-500"
                     >
                       <Checkbox
                         checked={todo.completed}
                         onCheckedChange={() => toggleTodo(todo.id)}
-                        className="data-[state=checked]:bg-neutral-900 data-[state=checked]:border-neutral-900"
+                        className="data-[state=checked]:bg-neutral-400 data-[state=checked]:border-neutral-400"
                       />
                       <span className="flex-1 text-sm text-neutral-400 line-through">{todo.text}</span>
                       <button

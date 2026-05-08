@@ -151,19 +151,18 @@ export function ShoppingItems() {
             </div>
           </div>
         ) : (
-          <div className="bg-neutral-900/80 backdrop-blur-sm border border-neutral-800 rounded-2xl overflow-hidden">
-            <div className="px-4 py-2 border-b border-neutral-800">
-              <p className="text-neutral-500 text-xs font-mono leading-5">&mdash;&mdash;&mdash;  SHOPPING LIST  &mdash;&mdash;&mdash;</p>
-              <p className="text-neutral-500 text-xs font-mono leading-5">Date: {new Date().toLocaleDateString()}</p>
-              <p className="text-neutral-500 text-xs font-mono leading-5">&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</p>
+          <div className="bg-neutral-800/90 rounded-xl border border-neutral-700/50 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-neutral-700/50 flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4 text-emerald-500" />
+              <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Shopping List</span>
             </div>
 
             {activeTodos.length > 0 && (
-              <div className="divide-y divide-neutral-800/50">
+              <div className="divide-y divide-neutral-700/30">
                 {activeTodos.map((todo) => {
                   const { label, qty } = parseQuantity(todo.text)
                   return (
-                    <div key={todo.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-neutral-800/50 transition-colors">
+                    <div key={todo.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-neutral-700/50 transition-colors border-l-2 border-l-transparent hover:border-l-emerald-500">
                       <Checkbox checked={todo.completed} onCheckedChange={() => toggleTodo(todo.id)}
                         className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 border-neutral-600" />
                       <div className="flex-1 min-w-0">
@@ -174,7 +173,7 @@ export function ShoppingItems() {
                         {todo.price != null && (
                           <span className="text-xs font-mono text-emerald-400">R{(todo.price * qty).toFixed(2)}</span>
                         )}
-                        <div className="flex items-center gap-1 bg-neutral-800 rounded-lg px-2 py-1">
+                        <div className="flex items-center gap-1 bg-neutral-700 rounded-lg px-2 py-1">
                           <Hash className="w-3 h-3 text-neutral-500" />
                           <span className="text-xs font-mono text-emerald-400 font-semibold">{qty}</span>
                         </div>
@@ -188,23 +187,23 @@ export function ShoppingItems() {
 
             {completedTodos.length > 0 && (
               <>
-                <div className="px-4 py-2 border-t border-neutral-800">
-                  <p className="text-neutral-600 text-xs font-mono">&mdash;&mdash;&mdash;  CHECKED OFF  &mdash;&mdash;&mdash;</p>
+                <div className="px-4 py-2 border-t border-neutral-700/30">
+                  <span className="text-xs font-semibold text-neutral-600 uppercase tracking-wider">Checked Off &mdash; {completedTodos.length}</span>
                 </div>
-                <div className="divide-y divide-neutral-800/30">
+                <div className="divide-y divide-neutral-700/20">
                   {completedTodos.map((todo) => {
                     const { label, qty } = parseQuantity(todo.text)
                     return (
-                      <div key={todo.id} className="group flex items-center gap-3 px-4 py-2.5 hover:bg-neutral-800/50 transition-colors">
+                      <div key={todo.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-neutral-700/50 transition-colors border-l-2 border-l-transparent hover:border-l-emerald-500">
                         <Checkbox checked={todo.completed} onCheckedChange={() => toggleTodo(todo.id)}
                           className="data-[state=checked]:bg-neutral-600 data-[state=checked]:border-neutral-600 border-neutral-700" />
                         <div className="flex-1 min-w-0">
-                          <span className="text-sm text-neutral-600 line-through">{label}</span>
+                          <span className="text-sm text-neutral-500 line-through">{label}</span>
                           <DueDateBadge dueDate={todo.dueDate} />
                         </div>
                         <div className="flex items-center gap-2">
-                          {todo.price != null && <span className="text-xs font-mono text-neutral-600">R{(todo.price * qty).toFixed(2)}</span>}
-                          <span className="text-xs font-mono text-neutral-700">{qty}</span>
+                          {todo.price != null && <span className="text-xs font-mono text-neutral-500">R{(todo.price * qty).toFixed(2)}</span>}
+                          <span className="text-xs font-mono text-neutral-600">{qty}</span>
                           <button onClick={() => deleteTodo(todo.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-600 hover:text-red-400 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                         </div>
                       </div>
@@ -214,10 +213,9 @@ export function ShoppingItems() {
               </>
             )}
 
-            <div className="px-4 py-3 border-t border-neutral-800 flex items-center justify-between">
+            <div className="px-4 py-3 border-t border-neutral-700/30 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-mono text-neutral-600">{activeTodos.length} items &middot; {totalQty} units</span>
-                <DueDateBadge dueDate={activeTodos[0]?.dueDate} />
+                <span className="text-xs font-mono text-neutral-500">{activeTodos.length} items &middot; {totalQty} units</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-mono text-neutral-500">TOTAL</span>
