@@ -61,21 +61,16 @@ export function TodoItems() {
   const progress = filteredTodos.length > 0 ? Math.round((completedTodos.length / filteredTodos.length) * 100) : 0
 
   return (
-    <div className="min-h-svh bg-gradient-to-br from-blue-50 to-indigo-50 relative flex flex-col">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -right-20 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob" />
-        <div className="absolute top-1/3 -left-20 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000" />
-      </div>
-
-      <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 px-4 pt-4 pb-4">
+    <div className="h-svh flex flex-col bg-white">
+      <div className="relative bg-blue-600 px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => navigate("/todos")}
-            className="p-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors rounded-full"
+            className="p-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2 text-blue-200 text-sm font-medium bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
+          <div className="flex items-center gap-2 text-blue-200 text-sm font-medium bg-white/15 backdrop-blur-sm px-3 py-1.5">
             {(() => {
               const Icon = periodIcons[period]
               return <Icon className="w-4 h-4" />
@@ -85,7 +80,7 @@ export function TodoItems() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl">
+          <div className="p-2.5 bg-white/20 backdrop-blur-sm">
             <ListTodo className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -98,9 +93,9 @@ export function TodoItems() {
 
         {!loading && filteredTodos.length > 0 && (
           <div className="mt-4 flex items-center gap-3">
-            <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 bg-white/20 overflow-hidden">
               <div
-                className="h-full bg-white rounded-full transition-all duration-500"
+                className="h-full bg-white transition-all duration-500"
                 style={{ width: `${Math.max(progress, 4)}%` }}
               />
             </div>
@@ -109,18 +104,114 @@ export function TodoItems() {
         )}
       </div>
 
-      <div className="relative flex-1 px-4 py-4 overflow-y-auto space-y-4">
+      <div className="relative flex-1 px-4 py-4 overflow-y-auto space-y-4 pb-24">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 z-10 pointer-events-none" />
           <input
             type="text"
             placeholder="Search tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-neutral-800 placeholder:text-neutral-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+            className="w-full pl-9 pr-4 py-2.5 bg-white/90 backdrop-blur-sm border border-blue-200/50 text-neutral-800 placeholder:text-neutral-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
           />
         </div>
 
+        {loading ? (
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-24" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 w-full" />
+            ))}
+            <Skeleton className="h-6 w-32 mt-6" />
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
+        ) : (
+          <>
+            {activeTodos.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-1">
+                  <div className="p-1.5 bg-blue-600">
+                    <Target className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                    Active
+                  </span>
+                  <span className="text-xs font-medium text-neutral-400 ml-auto">{activeTodos.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {activeTodos.map((todo) => (
+                    <div
+                      key={todo.id}
+                      className="group relative flex items-center gap-3 bg-white pl-4 pr-3 py-3 shadow-sm border border-neutral-200/60 hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+                    >
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600" />
+                      <Checkbox
+                        checked={todo.completed}
+                        onCheckedChange={() => toggleTodo(todo.id)}
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
+                      <span className="flex-1 text-sm font-medium text-neutral-800">{todo.text}</span>
+                      <button
+                        onClick={() => deleteTodo(todo.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {completedTodos.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-1">
+                  <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                    Completed
+                  </span>
+                  <span className="text-xs font-medium text-neutral-300 ml-auto">{completedTodos.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {completedTodos.map((todo) => (
+                    <div
+                      key={todo.id}
+                      className="group relative flex items-center gap-3 bg-white/60 pl-4 pr-3 py-2.5 border border-neutral-200/40 hover:bg-white transition-all duration-200 overflow-hidden"
+                    >
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-300" />
+                      <Checkbox
+                        checked={todo.completed}
+                        onCheckedChange={() => toggleTodo(todo.id)}
+                        className="data-[state=checked]:bg-neutral-400 data-[state=checked]:border-neutral-400"
+                      />
+                      <span className="flex-1 text-sm text-neutral-400 line-through">{todo.text}</span>
+                      <button
+                        onClick={() => deleteTodo(todo.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {filteredTodos.length === 0 && (
+              <div className="text-center py-16">
+                <div className="inline-flex p-4 bg-blue-50 mb-3">
+                  <ListTodo className="w-10 h-10 text-blue-400" />
+                </div>
+                <p className="text-neutral-700 text-sm font-medium">No tasks yet</p>
+                <p className="text-neutral-400 text-xs mt-1">Add something to get started</p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-4 py-3">
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -137,11 +228,11 @@ export function TodoItems() {
               placeholder="Add a new task..."
               value={newTodoText}
               onChange={(e) => setNewTodoText(e.target.value)}
-              className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-neutral-800 placeholder:text-neutral-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+              className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur-sm border border-blue-200/50 text-neutral-800 placeholder:text-neutral-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
             />
             <button
               type="submit"
-              className="px-3 py-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 transition-all rounded-xl shadow-md"
+              className="px-3 py-2.5 bg-blue-600 text-white hover:bg-blue-500 transition-all shadow-md"
             >
               <Plus className="w-5 h-5" />
             </button>
@@ -151,11 +242,11 @@ export function TodoItems() {
               type="date"
               value={newTodoDate}
               onChange={(e) => setNewTodoDate(e.target.value)}
-              className="flex-1 px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-neutral-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+              className="flex-1 px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 text-neutral-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
             />
             <Popover>
               <PopoverTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 rounded-xl text-sm text-neutral-800 hover:border-blue-500/50 transition-all shadow-sm">
+                <button className="flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 text-sm text-neutral-800 hover:border-blue-500/50 transition-all shadow-sm">
                   <CalendarIcon className="w-4 h-4 text-neutral-600" />
                   <span className="text-xs">{filterDate ? format(filterDate, "MMM d") : "Filter"}</span>
                 </button>
@@ -179,100 +270,6 @@ export function TodoItems() {
             )}
           </div>
         </form>
-
-        {loading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-6 w-24" />
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 w-full rounded-xl" />
-            ))}
-            <Skeleton className="h-6 w-32 mt-6" />
-            {Array.from({ length: 2 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-xl" />
-            ))}
-          </div>
-        ) : (
-          <>
-            {activeTodos.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 px-1">
-                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700">
-                    <Target className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">
-                    Active
-                  </span>
-                  <span className="text-xs font-medium text-neutral-400 ml-auto">{activeTodos.length}</span>
-                </div>
-                <div className="space-y-2">
-                  {activeTodos.map((todo) => (
-                    <div
-                      key={todo.id}
-                      className="group relative flex items-center gap-3 bg-white rounded-xl pl-4 pr-3 py-3 shadow-sm border border-neutral-200/60 hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-600 to-indigo-700" />
-                      <Checkbox
-                        checked={todo.completed}
-                        onCheckedChange={() => toggleTodo(todo.id)}
-                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                      />
-                      <span className="flex-1 text-sm font-medium text-neutral-800">{todo.text}</span>
-                      <button
-                        onClick={() => deleteTodo(todo.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {completedTodos.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 px-1">
-                  <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                    Completed
-                  </span>
-                  <span className="text-xs font-medium text-neutral-300 ml-auto">{completedTodos.length}</span>
-                </div>
-                <div className="space-y-2">
-                  {completedTodos.map((todo) => (
-                    <div
-                      key={todo.id}
-                      className="group relative flex items-center gap-3 bg-white/60 rounded-xl pl-4 pr-3 py-2.5 border border-neutral-200/40 hover:bg-white transition-all duration-200 overflow-hidden"
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-300" />
-                      <Checkbox
-                        checked={todo.completed}
-                        onCheckedChange={() => toggleTodo(todo.id)}
-                        className="data-[state=checked]:bg-neutral-400 data-[state=checked]:border-neutral-400"
-                      />
-                      <span className="flex-1 text-sm text-neutral-400 line-through">{todo.text}</span>
-                      <button
-                        onClick={() => deleteTodo(todo.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {filteredTodos.length === 0 && (
-              <div className="text-center py-16">
-                <div className="inline-flex p-4 bg-blue-50 rounded-2xl mb-3">
-                  <ListTodo className="w-10 h-10 text-blue-400" />
-                </div>
-                <p className="text-neutral-700 text-sm font-medium">No tasks yet</p>
-                <p className="text-neutral-400 text-xs mt-1">Add something to get started</p>
-              </div>
-            )}
-          </>
-        )}
       </div>
     </div>
   )

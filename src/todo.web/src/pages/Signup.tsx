@@ -17,7 +17,7 @@ export function Signup() {
   }
 
   return (
-    <div className="min-h-svh relative overflow-hidden flex items-center justify-center p-4">
+    <div className="h-svh flex flex-col relative overflow-hidden items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${bgUrl})` }}
@@ -36,13 +36,13 @@ export function Signup() {
                   Full Name
                 </label>
                 <div className="relative group">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe-400 group-focus-within:text-cornflower-blue-500 transition-colors" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60 z-10 pointer-events-none" />
                   <input
                     id="name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white border border-taupe-200 rounded-xl text-taupe-900 placeholder:text-taupe-400 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10 transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-white/15 border border-white/20 text-white placeholder:text-white/40 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10 transition-all"
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -53,13 +53,13 @@ export function Signup() {
                   Email
                 </label>
                 <div className="relative group">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe-400 group-focus-within:text-cornflower-blue-500 transition-colors" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60 z-10 pointer-events-none" />
                   <input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white border border-taupe-200 rounded-xl text-taupe-900 placeholder:text-taupe-400 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10 transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-white/15 border border-white/20 text-white placeholder:text-white/40 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10 transition-all"
                     placeholder="Enter your email"
                   />
                 </div>
@@ -70,19 +70,18 @@ export function Signup() {
                   Password
                 </label>
                 <div className="relative group">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe-400 group-focus-within:text-cornflower-blue-500 transition-colors" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60 z-10 pointer-events-none" />
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-12 py-3 bg-white border border-taupe-200 rounded-xl text-taupe-900 placeholder:text-taupe-400 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10 transition-all"
-                    placeholder="Create a password"
+                    className="w-full pl-10 pr-12 py-3 bg-white/15 border border-white/20 text-white placeholder:text-white/40 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10 transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-taupe-400 hover:text-taupe-600 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/80 transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -94,19 +93,18 @@ export function Signup() {
                   Confirm Password
                 </label>
                 <div className="relative group">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe-400 group-focus-within:text-cornflower-blue-500 transition-colors" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60 z-10 pointer-events-none" />
                   <input
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-10 pr-12 py-3 bg-white border border-taupe-200 rounded-xl text-taupe-900 placeholder:text-taupe-400 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10 transition-all"
-                    placeholder="Confirm your password"
+                    className="w-full pl-10 pr-12 py-3 bg-white/15 border border-white/20 text-white placeholder:text-white/40 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10 transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-taupe-400 hover:text-taupe-600 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/80 transition-colors"
                   >
                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -115,7 +113,7 @@ export function Signup() {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-cornflower-blue-500 to-cornflower-blue-600 text-white font-semibold rounded-xl hover:from-cornflower-blue-600 hover:to-cornflower-blue-700 hover:shadow-lg hover:shadow-cornflower-blue-500/30 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 bg-cornflower-blue-600 text-white font-semibold hover:bg-cornflower-blue-700 hover:shadow-lg hover:shadow-cornflower-blue-500/30 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
               >
                 <UserPlus className="w-4 h-4" />
                 Create Account

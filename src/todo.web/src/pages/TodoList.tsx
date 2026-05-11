@@ -2,18 +2,13 @@ import { useState, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Search, Calendar, CalendarDays, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, Info, LogOut, ChevronDown, Wallet } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
 import { useCountUp } from "@/lib/hooks"
 import { useBudget } from "@/lib/use-budget"
 import type { Category, PeriodFilter } from "@/lib/types"
+
+const bgUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YWJzdHJhY3R8ZW58MHx8MHx8fDA%3D"
 
 const categoryMeta: Record<Category, { gradient: string; shadowColor: string; icon: typeof ListTodo; badge: string }> = {
   Todo: { gradient: "from-blue-600 to-indigo-600", shadowColor: "shadow-blue-600/20", icon: ListTodo, badge: "bg-blue-600" },
@@ -92,8 +87,6 @@ export function TodoList() {
     { id: "Year", label: "Year", icon: CalendarDays },
   ]
 
-  const activeFilterData = filters.find(f => f.id === activeFilter) || filters[0]
-
   const periodTodos = useMemo(
     () => todos.filter((t) => matchesPeriod(t.createdAt, activeFilter)),
     [todos, activeFilter]
@@ -114,32 +107,27 @@ export function TodoList() {
   const displayedCompleted = showAllCompleted ? completedTodos : completedTodos.slice(0, 3)
 
   return (
-    <div className="min-h-svh bg-taupe-50 relative overflow-hidden flex flex-col">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -right-20 w-60 h-60 bg-cornflower-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-        <div className="absolute top-1/3 -left-20 w-60 h-60 bg-icy-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-20 right-1/4 w-60 h-60 bg-powder-blush-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
-      </div>
+    <div className="h-svh flex flex-col bg-neutral-50">
 
-      <div className="relative bg-cover bg-center" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YWJzdHJhY3R8ZW58MHx8MHx8fDA%3D)'}}>
-        <div className="absolute inset-0 bg-black/50"></div>
-        <div className="relative z-10 py-6 flex flex-col gap-4">
-          <div className="flex items-start justify-between px-4">
+      <div className="relative bg-cover bg-center" style={{ backgroundImage: `url(${bgUrl})` }}>
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative px-4 pt-12 pb-4">
+          <div className="flex items-start justify-between">
             <div className="text-white">
               <div className="text-sm opacity-80">Today</div>
               <div className="text-xl font-bold">{dateStr}</div>
             </div>
             <div className="flex gap-2">
-              <button className="p-2 bg-sky-400 text-white hover:bg-sky-500 transition-colors rounded-full shadow-md">
+              <button className="p-2 bg-sky-400 text-white hover:bg-sky-500 transition-colors shadow-md">
                 <Info className="w-5 h-5" />
               </button>
-              <button onClick={() => navigate('/')} className="p-2 bg-rose-500 text-white hover:bg-rose-600 transition-colors rounded-full shadow-md">
+              <button onClick={() => navigate('/')} className="p-2 bg-rose-500 text-white hover:bg-rose-600 transition-colors shadow-md">
                 <LogOut className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          <div className="px-4 max-w-2xl">
+          <div className="mt-3 max-w-2xl">
             <p className="text-white text-base md:text-lg font-medium italic mb-2 leading-relaxed">
               "{randomQuote.quote}"
             </p>
@@ -148,43 +136,38 @@ export function TodoList() {
             </p>
           </div>
 
-          <div className="px-4">
-            <Select value={activeFilter} onValueChange={(value) => setActiveFilter(value as PeriodFilter)}>
-              <SelectTrigger className="w-full bg-powder-blush-500 backdrop-blur-md border-white/40 text-white [&>span]:text-white shadow-md">
-                <SelectValue>
-                  <div className="flex items-center gap-2 text-white">
-                    <activeFilterData.icon className="w-4 h-4" />
-                    <span>{activeFilterData.label}</span>
-                  </div>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-white/90 backdrop-blur-md border-taupe-200/70">
-                {filters.map((filter) => {
-                  const Icon = filter.icon
-                  return (
-                    <SelectItem key={filter.id} value={filter.id} className="text-taupe-700 focus:bg-cornflower-blue-500 focus:text-white">
-                      <div className="flex items-center gap-2">
-                        <Icon className="w-4 h-4" />
-                        <span>{filter.label}</span>
-                      </div>
-                    </SelectItem>
-                  )
-                })}
-              </SelectContent>
-            </Select>
+          <div className="mt-3 flex gap-1.5">
+            {filters.map((filter) => {
+              const Icon = filter.icon
+              const isActive = activeFilter === filter.id
+              return (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveFilter(filter.id as PeriodFilter)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all ${
+                    isActive
+                      ? "bg-white/20 text-white"
+                      : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90"
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {filter.label}
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>
 
       <div className="relative flex-1 px-4 py-4 overflow-y-auto space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 z-10 pointer-events-none" />
           <input
             type="text"
             placeholder="Search tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-white/80 backdrop-blur-sm border border-taupe-200/70 rounded-xl text-taupe-900 placeholder:text-taupe-400 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-2 focus:ring-cornflower-blue-500/20 transition-all"
+            className="w-full pl-9 pr-4 py-2 bg-white/80 backdrop-blur-sm border border-taupe-200/70 text-taupe-900 placeholder:text-taupe-400 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-2 focus:ring-cornflower-blue-500/20 transition-all"
           />
         </div>
 
@@ -192,12 +175,12 @@ export function TodoList() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
+                <Skeleton key={i} className="h-20" />
               ))}
             </div>
             <Skeleton className="h-8 w-24 mt-4" />
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-xl" />
+              <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         ) : (
@@ -225,7 +208,7 @@ export function TodoList() {
                 return (
                   <div
                     key={todo.id}
-                    className="group relative flex items-center gap-3 bg-white rounded-xl pl-4 pr-3 py-3 shadow-sm border border-neutral-200/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden"
+                    className="group relative flex items-center gap-3 bg-white pl-4 pr-3 py-3 shadow-sm border border-neutral-200/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden"
                     onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
                   >
                     <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${meta.gradient}`} />
@@ -237,7 +220,7 @@ export function TodoList() {
                       />
                     </div>
                     <span className="flex-1 text-sm text-neutral-800">{todo.text}</span>
-                    <div className={`${meta.badge} rounded-full p-1`}>
+                    <div className={`${meta.badge} p-1`}>
                       <BadgeIcon className="w-3 h-3 text-white" />
                     </div>
                   </div>
@@ -247,7 +230,7 @@ export function TodoList() {
             {activeTodos.length > 3 && (
               <button
                 onClick={() => setShowAllActive(!showAllActive)}
-                className="w-full mt-2 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-700 bg-white/60 backdrop-blur-sm border border-neutral-200/40 rounded-xl hover:bg-white/90 transition-all"
+                className="w-full mt-2 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-700 bg-white/60 backdrop-blur-sm border border-neutral-200/40 hover:bg-white/90 transition-all"
               >
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAllActive ? "rotate-180" : ""}`} />
                 {showAllActive ? "Show less" : `Show all (${activeTodos.length})`}
@@ -271,7 +254,7 @@ export function TodoList() {
                 return (
                   <div
                     key={todo.id}
-                    className="group relative flex items-center gap-3 bg-white/60 rounded-xl pl-4 pr-3 py-2.5 border border-neutral-200/40 hover:bg-white transition-all duration-200 cursor-pointer overflow-hidden"
+                    className="group relative flex items-center gap-3 bg-white/60 pl-4 pr-3 py-2.5 border border-neutral-200/40 hover:bg-white transition-all duration-200 cursor-pointer overflow-hidden"
                     onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
                   >
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-300" />
@@ -283,7 +266,7 @@ export function TodoList() {
                       />
                     </div>
                     <span className="flex-1 text-sm text-neutral-400 line-through">{todo.text}</span>
-                    <div className={`${meta.badge} rounded-full p-1 opacity-50`}>
+                    <div className={`${meta.badge} p-1 opacity-50`}>
                       <BadgeIcon className="w-3 h-3 text-white" />
                     </div>
                   </div>
@@ -293,7 +276,7 @@ export function TodoList() {
             {completedTodos.length > 3 && (
               <button
                 onClick={() => setShowAllCompleted(!showAllCompleted)}
-                className="w-full mt-2 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-700 bg-white/60 backdrop-blur-sm border border-neutral-200/40 rounded-xl hover:bg-white/90 transition-all"
+                className="w-full mt-2 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-700 bg-white/60 backdrop-blur-sm border border-neutral-200/40 hover:bg-white/90 transition-all"
               >
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAllCompleted ? "rotate-180" : ""}`} />
                 {showAllCompleted ? "Show less" : `Show all (${completedTodos.length})`}
@@ -321,10 +304,10 @@ function CategoryCard({ category, count, activeFilter }: { category: typeof cate
   return (
     <div
       onClick={() => navigate(`/todos/${category.name.toLowerCase()}`, { state: { period: activeFilter } })}
-      className={`bg-gradient-to-br ${category.gradient} p-4 rounded-2xl hover:shadow-xl ${category.shadowColor} hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3`}
+      className={`bg-gradient-to-br ${category.gradient} p-4 hover:shadow-xl ${category.shadowColor} hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3`}
     >
       <div className="flex items-center justify-between">
-        <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+        <div className="p-2 bg-white/20 backdrop-blur-sm">
           <Icon className="w-5 h-5 text-white" />
         </div>
         <span className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">{category.name}</span>
@@ -343,10 +326,10 @@ function BudgetCard({ balance, activeFilter }: { balance: number; activeFilter: 
   return (
     <div
       onClick={() => navigate("/todos/budget", { state: { period: activeFilter } })}
-      className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-4 rounded-2xl hover:shadow-xl shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3"
+      className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-4 hover:shadow-xl shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3"
     >
       <div className="flex items-center justify-between">
-        <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+        <div className="p-2 bg-white/20 backdrop-blur-sm">
           <Wallet className="w-5 h-5 text-white" />
         </div>
         <span className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Budget</span>

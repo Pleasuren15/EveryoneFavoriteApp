@@ -66,7 +66,7 @@ export function ShoppingItems() {
   const totalPrice = activeTodos.reduce((sum, t) => sum + (t.price ?? 0) * parseQuantity(t.text).qty, 0)
 
   return (
-    <div className="min-h-svh bg-neutral-950 relative flex flex-col">
+    <div className="h-svh flex flex-col bg-neutral-950 relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-400/5 rounded-full blur-3xl" />
@@ -74,16 +74,16 @@ export function ShoppingItems() {
 
       <div className="relative bg-gradient-to-b from-emerald-700 to-emerald-900 px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
-          <button onClick={() => navigate("/todos")} className="p-2 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors rounded-full">
+          <button onClick={() => navigate("/todos")} className="p-2 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2 text-emerald-200 text-xs font-mono bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5">
+          <div className="flex items-center gap-2 text-emerald-200 text-xs font-mono bg-white/10 backdrop-blur-sm px-3 py-1.5">
             <Receipt className="w-3.5 h-3.5" />
             <span>#{Math.floor(Math.random() * 9000 + 1000)}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-600/40 backdrop-blur-sm rounded-xl">
+          <div className="p-2.5 bg-emerald-600/40 backdrop-blur-sm">
             <ShoppingCart className="w-6 h-6 text-emerald-200" />
           </div>
           <div>
@@ -101,31 +101,31 @@ export function ShoppingItems() {
 
       <div className="relative flex-1 px-4 pt-4 pb-4 overflow-y-auto space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 z-10 pointer-events-none" />
           <input type="text" placeholder="Search items..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 rounded-xl text-neutral-100 placeholder:text-neutral-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
+            className="w-full pl-9 pr-4 py-2.5 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 text-neutral-100 placeholder:text-neutral-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); if (!newItemText.trim()) return; addTodo(newItemText.trim(), "Shopping", newItemDate || undefined, newItemPrice ? parseFloat(newItemPrice) : undefined); setNewItemText(""); setNewItemQty(1); setNewItemPrice(""); setNewItemDate("") }} className="flex flex-col gap-2">
           <div className="flex gap-2">
             <input type="text" placeholder="Add item..." value={newItemText} onChange={(e) => setNewItemText(e.target.value)}
-              className="flex-1 px-3 py-2.5 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 rounded-xl text-neutral-100 placeholder:text-neutral-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
-            <div className="flex items-center gap-1 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 rounded-xl px-2">
+              className="flex-1 px-3 py-2.5 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 text-neutral-100 placeholder:text-neutral-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
+            <div className="flex items-center gap-1 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 px-2">
               <button type="button" onClick={() => setNewItemQty(Math.max(1, newItemQty - 1))} className="p-1 text-neutral-400 hover:text-neutral-200 transition-colors"><Minus className="w-3.5 h-3.5" /></button>
               <span className="text-sm font-mono text-neutral-200 w-5 text-center">{newItemQty}</span>
               <button type="button" onClick={() => setNewItemQty(newItemQty + 1)} className="p-1 text-neutral-400 hover:text-neutral-200 transition-colors"><Plus className="w-3.5 h-3.5" /></button>
             </div>
-            <button type="submit" className="px-3 py-2.5 bg-emerald-600 text-white hover:bg-emerald-500 transition-colors rounded-xl shadow-md font-medium text-sm"><Plus className="w-5 h-5" /></button>
+            <button type="submit" className="px-3 py-2.5 bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shadow-md font-medium text-sm"><Plus className="w-5 h-5" /></button>
           </div>
           <div className="flex gap-2">
             <div className="flex-1 relative">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm font-mono text-neutral-500">R</span>
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm font-mono text-neutral-500 z-10 pointer-events-none">R</span>
               <input type="number" step="0.01" min="0" placeholder="0.00" value={newItemPrice} onChange={(e) => setNewItemPrice(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 rounded-xl text-neutral-100 placeholder:text-neutral-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
+                className="w-full pl-8 pr-3 py-2 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 text-neutral-100 placeholder:text-neutral-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
             </div>
             <Popover>
               <PopoverTrigger asChild>
-                <button className="flex-1 flex items-center gap-2 px-3 py-2 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 rounded-xl text-neutral-100 text-sm hover:border-emerald-500/50 transition-all">
+                <button className="flex-1 flex items-center gap-2 px-3 py-2 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 text-neutral-100 text-sm hover:border-emerald-500/50 transition-all">
                   <CalendarIcon className="w-3.5 h-3.5 text-neutral-500" />
                   <span className="flex-1 text-left">{newItemDate ? format(new Date(newItemDate + "T00:00:00"), "PP") : "Due date"}</span>
                 </button>
@@ -146,11 +146,11 @@ export function ShoppingItems() {
           <div className="space-y-3">
             <Skeleton className="h-6 w-24 bg-neutral-800" />
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 w-full rounded-xl bg-neutral-800" />
+              <Skeleton key={i} className="h-14 w-full bg-neutral-800" />
             ))}
             <Skeleton className="h-6 w-32 mt-6 bg-neutral-800" />
             {Array.from({ length: 2 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-xl bg-neutral-800" />
+              <Skeleton key={i} className="h-12 w-full bg-neutral-800" />
             ))}
           </div>
         ) : (
@@ -158,7 +158,7 @@ export function ShoppingItems() {
             {activeTodos.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 px-1">
-                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700">
+                  <div className="p-1.5 bg-gradient-to-br from-emerald-500 to-emerald-700">
                     <Sparkles className="w-3.5 h-3.5 text-white" />
                   </div>
                   <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
@@ -172,7 +172,7 @@ export function ShoppingItems() {
                     return (
                       <div
                         key={todo.id}
-                        className="group relative flex items-center gap-3 bg-neutral-800 rounded-xl pl-4 pr-3 py-3 shadow-sm border border-neutral-700/60 hover:shadow-md hover:border-emerald-500/60 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+                        className="group relative flex items-center gap-3 bg-neutral-800 pl-4 pr-3 py-3 shadow-sm border border-neutral-700/60 hover:shadow-md hover:border-emerald-500/60 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
                       >
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-emerald-700" />
                         <Checkbox
@@ -188,13 +188,13 @@ export function ShoppingItems() {
                           {todo.price != null && (
                             <span className="text-xs font-mono text-emerald-400">R{(todo.price * qty).toFixed(2)}</span>
                           )}
-                          <div className="flex items-center gap-1 bg-neutral-700/60 rounded-lg px-2 py-1">
+                          <div className="flex items-center gap-1 bg-neutral-700/60 px-2 py-1">
                             <Hash className="w-3 h-3 text-neutral-500" />
                             <span className="text-xs font-mono text-emerald-400 font-semibold">{qty}</span>
                           </div>
                           <button
                             onClick={() => deleteTodo(todo.id)}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                            className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -220,7 +220,7 @@ export function ShoppingItems() {
                     return (
                       <div
                         key={todo.id}
-                        className="group relative flex items-center gap-3 bg-neutral-800/60 rounded-xl pl-4 pr-3 py-2.5 border border-neutral-700/40 hover:bg-neutral-800 transition-all duration-200 overflow-hidden"
+                        className="group relative flex items-center gap-3 bg-neutral-800/60 pl-4 pr-3 py-2.5 border border-neutral-700/40 hover:bg-neutral-800 transition-all duration-200 overflow-hidden"
                       >
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-600" />
                         <Checkbox
@@ -237,7 +237,7 @@ export function ShoppingItems() {
                           <span className="text-xs font-mono text-neutral-600">{qty}</span>
                           <button
                             onClick={() => deleteTodo(todo.id)}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                            className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -250,7 +250,7 @@ export function ShoppingItems() {
             )}
 
             {(activeTodos.length > 0 || completedTodos.length > 0) && (
-              <div className="bg-neutral-800/80 rounded-xl border border-neutral-700/60 px-4 py-3 flex items-center justify-between">
+              <div className="bg-neutral-800/80 border border-neutral-700/60 px-4 py-3 flex items-center justify-between">
                 <span className="text-xs font-mono text-neutral-400">{activeTodos.length} items &middot; {totalQty} units</span>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-mono text-neutral-500">TOTAL</span>
@@ -261,7 +261,7 @@ export function ShoppingItems() {
 
             {filteredTodos.length === 0 && (
               <div className="text-center py-16">
-                <div className="inline-flex p-4 bg-emerald-500/10 rounded-2xl mb-3">
+                <div className="inline-flex p-4 bg-emerald-500/10 mb-3">
                   <ShoppingCart className="w-10 h-10 text-emerald-400" />
                 </div>
                 <p className="text-neutral-200 text-sm font-medium">No items on your list</p>

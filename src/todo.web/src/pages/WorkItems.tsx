@@ -71,24 +71,20 @@ export function WorkItems() {
   }
 
   return (
-    <div className="min-h-svh bg-gradient-to-br from-powder-blush-50 to-taupe-50 relative flex flex-col">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-powder-blush-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-taupe-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000" />
-      </div>
+    <div className="h-svh flex flex-col bg-white">
 
-      <div className="relative bg-gradient-to-br from-powder-blush-500 to-powder-blush-600 px-4 pt-4 pb-4">
+      <div className="relative bg-powder-blush-600 px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
-          <button onClick={() => navigate("/todos")} className="p-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors rounded-full">
+          <button onClick={() => navigate("/todos")} className="p-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2 text-powder-blush-100 text-xs font-medium bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
+          <div className="flex items-center gap-2 text-powder-blush-100 text-xs font-medium bg-white/15 backdrop-blur-sm px-3 py-1.5">
             {(() => { const Icon = periodIcons[period]; return <Icon className="w-3.5 h-3.5" /> })()}
             <span>{period}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl">
+          <div className="p-2.5 bg-white/20 backdrop-blur-sm">
             <Briefcase className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -100,20 +96,20 @@ export function WorkItems() {
 
       <div className="relative flex-1 px-4 py-4 overflow-y-auto space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 z-10 pointer-events-none" />
           <input type="text" placeholder="Search work items..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-white/90 backdrop-blur-sm border border-powder-blush-200/50 rounded-xl text-taupe-800 placeholder:text-taupe-400 text-sm focus:outline-none focus:border-powder-blush-500 focus:ring-2 focus:ring-powder-blush-500/20 transition-all shadow-sm" />
+            className="w-full pl-9 pr-4 py-2.5 bg-white/90 backdrop-blur-sm border border-powder-blush-200/50 text-taupe-800 placeholder:text-taupe-400 text-sm focus:outline-none focus:border-powder-blush-500 focus:ring-2 focus:ring-powder-blush-500/20 transition-all shadow-sm" />
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); if (!newTodoText.trim()) return; addTodo(newTodoText.trim(), "Work", newTodoDate || undefined); setNewTodoText(""); setNewTodoDate("") }} className="flex flex-col gap-2">
           <div className="flex gap-2">
             <input type="text" placeholder="Add work item..." value={newTodoText} onChange={(e) => setNewTodoText(e.target.value)}
-              className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur-sm border border-powder-blush-200/50 rounded-xl text-neutral-800 placeholder:text-neutral-400 text-sm focus:outline-none focus:border-powder-blush-500 focus:ring-2 focus:ring-powder-blush-500/20 transition-all shadow-sm" />
-            <button type="submit" className="px-3 py-2.5 bg-gradient-to-br from-powder-blush-500 to-powder-blush-600 text-white hover:from-powder-blush-400 hover:to-powder-blush-500 transition-all rounded-xl shadow-md"><Plus className="w-5 h-5" /></button>
+              className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur-sm border border-powder-blush-200/50 text-neutral-800 placeholder:text-neutral-400 text-sm focus:outline-none focus:border-powder-blush-500 focus:ring-2 focus:ring-powder-blush-500/20 transition-all shadow-sm" />
+            <button type="submit" className="px-3 py-2.5 bg-powder-blush-600 text-white hover:bg-powder-blush-500 transition-all shadow-md"><Plus className="w-5 h-5" /></button>
           </div>
           <div className="flex gap-2">
             <input type="date" value={newTodoDate} onChange={(e) => setNewTodoDate(e.target.value)}
-              className="flex-1 px-3 py-2 bg-white/90 backdrop-blur-sm border border-powder-blush-200/50 rounded-xl text-neutral-800 text-sm focus:outline-none focus:border-powder-blush-500 focus:ring-2 focus:ring-powder-blush-500/20 transition-all shadow-sm" />
+              className="flex-1 px-3 py-2 bg-white/90 backdrop-blur-sm border border-powder-blush-200/50 text-neutral-800 text-sm focus:outline-none focus:border-powder-blush-500 focus:ring-2 focus:ring-powder-blush-500/20 transition-all shadow-sm" />
           </div>
         </form>
 
@@ -121,11 +117,11 @@ export function WorkItems() {
           <div className="space-y-3">
             <Skeleton className="h-6 w-24" />
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 w-full rounded-xl" />
+              <Skeleton key={i} className="h-14 w-full" />
             ))}
             <Skeleton className="h-6 w-32 mt-6" />
             {Array.from({ length: 2 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-xl" />
+              <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         ) : (
@@ -133,7 +129,7 @@ export function WorkItems() {
         {activeTodos.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2 px-1">
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-powder-blush-500 to-powder-blush-600">
+              <div className="p-1.5 bg-gradient-to-br from-powder-blush-500 to-powder-blush-600">
                 <TrendingUp className="w-3.5 h-3.5 text-white" />
               </div>
               <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">Active</span>
@@ -145,7 +141,7 @@ export function WorkItems() {
                 const doneCount = todo.subtasks?.filter((s) => s.completed).length ?? 0
                 const isExpanded = expandedTodos.has(todo.id)
                 return (
-                  <div key={todo.id} className="relative bg-white rounded-xl shadow-sm border border-neutral-200/60 hover:shadow-md hover:border-powder-blush-300 transition-all duration-200 overflow-hidden">
+                  <div key={todo.id} className="relative bg-white shadow-sm border border-neutral-200/60 hover:shadow-md hover:border-powder-blush-300 transition-all duration-200 overflow-hidden">
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-powder-blush-500 to-powder-blush-600" />
                     <div className="group flex items-center gap-2 pl-4 pr-3 py-3">
                       {subCount > 0 ? (
@@ -162,11 +158,11 @@ export function WorkItems() {
                         <DueDateBadge dueDate={todo.dueDate} />
                       </div>
                       {subCount > 0 && (
-                        <span className="text-[10px] font-mono text-powder-blush-600 bg-powder-blush-50 border border-powder-blush-200 rounded-md px-1.5 py-0.5">
+                        <span className="text-[10px] font-mono text-powder-blush-600 bg-powder-blush-50 border border-powder-blush-200 px-1.5 py-0.5">
                           {doneCount}/{subCount}
                         </span>
                       )}
-                      <button onClick={() => deleteTodo(todo.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => deleteTodo(todo.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                     </div>
                     {isExpanded && subCount > 0 && (
                       <div className="border-t border-neutral-100 bg-neutral-50/60">
@@ -180,7 +176,7 @@ export function WorkItems() {
                         ))}
                         <form onSubmit={(e) => { e.preventDefault(); const val = subtaskInputs[todo.id]?.trim(); if (!val) return; addSubtask(todo.id, val); setSubtaskInputs((prev) => ({ ...prev, [todo.id]: "" })) }} className="flex items-center gap-2 pl-11 pr-4 py-2 border-t border-neutral-100">
                           <input type="text" placeholder="Add subtask..." value={subtaskInputs[todo.id] ?? ""} onChange={(e) => setSubtaskInputs((prev) => ({ ...prev, [todo.id]: e.target.value }))}
-                            className="flex-1 px-2 py-1 bg-white border border-neutral-200 rounded-lg text-neutral-700 placeholder:text-neutral-400 text-xs focus:outline-none focus:border-powder-blush-500 transition-all" />
+                            className="flex-1 px-2 py-1 bg-white border border-neutral-200 text-neutral-700 placeholder:text-neutral-400 text-xs focus:outline-none focus:border-powder-blush-500 transition-all" />
                           <button type="submit" className="p-1 text-neutral-400 hover:text-powder-blush-500 transition-colors"><Plus className="w-3 h-3" /></button>
                         </form>
                       </div>
@@ -200,12 +196,12 @@ export function WorkItems() {
             </div>
             <div className="space-y-2">
               {completedTodos.map((todo) => (
-                <div key={todo.id} className="group relative flex items-center gap-3 bg-white/60 rounded-xl pl-4 pr-3 py-2.5 border border-neutral-200/40 hover:bg-white transition-all duration-200 overflow-hidden">
+                <div key={todo.id} className="group relative flex items-center gap-3 bg-white/60 pl-4 pr-3 py-2.5 border border-neutral-200/40 hover:bg-white transition-all duration-200 overflow-hidden">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-300" />
                   <Checkbox checked={todo.completed} onCheckedChange={() => toggleTodo(todo.id)}
                     className="data-[state=checked]:bg-neutral-400 data-[state=checked]:border-neutral-400" />
                   <span className="flex-1 text-sm text-neutral-400 line-through">{todo.text}</span>
-                  <button onClick={() => deleteTodo(todo.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => deleteTodo(todo.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
               ))}
             </div>
@@ -214,7 +210,7 @@ export function WorkItems() {
 
         {!loading && filteredTodos.length === 0 && (
           <div className="text-center py-16">
-            <div className="inline-flex p-4 bg-powder-blush-50 rounded-2xl mb-3">
+            <div className="inline-flex p-4 bg-powder-blush-50 mb-3">
               <Briefcase className="w-10 h-10 text-powder-blush-400" />
             </div>
             <p className="text-neutral-700 text-sm font-medium">No work items</p>

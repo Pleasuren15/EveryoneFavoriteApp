@@ -78,17 +78,13 @@ export function BudgetPage() {
   }
 
   return (
-    <div className="min-h-svh bg-gradient-to-br from-emerald-50 to-teal-50 relative flex flex-col">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -right-20 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob" />
-        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000" />
-      </div>
+    <div className="h-svh flex flex-col bg-white">
 
-      <div className="relative bg-gradient-to-br from-emerald-600 to-teal-700 px-4 pt-12 pb-6">
+      <div className="relative bg-emerald-600 px-4 pt-12 pb-6">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => navigate("/todos")}
-            className="p-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors rounded-full"
+            className="p-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -116,7 +112,7 @@ export function BudgetPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl">
+          <div className="p-2.5 bg-white/20 backdrop-blur-sm">
             <Wallet className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -131,7 +127,7 @@ export function BudgetPage() {
       <div className="relative flex-1 px-4 py-4 overflow-y-auto space-y-4">
         {loading ? (
           <>
-            <div className="bg-white/80 backdrop-blur-sm border border-emerald-100 rounded-2xl p-4 shadow-sm">
+            <div className="bg-white/80 backdrop-blur-sm border border-emerald-100 p-4 shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-center justify-center">
                   <Skeleton className="w-[180px] h-[180px] rounded-full" />
@@ -140,12 +136,12 @@ export function BudgetPage() {
                   <Skeleton className="h-5 w-full" />
                   <Skeleton className="h-5 w-full" />
                   <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-10 w-full rounded-xl" />
-                  <Skeleton className="h-10 w-full rounded-xl" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm border border-emerald-100 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-white/80 backdrop-blur-sm border border-emerald-100 overflow-hidden shadow-sm">
               <div className="px-4 py-3 border-b border-emerald-100">
                 <Skeleton className="h-4 w-32" />
               </div>
@@ -158,7 +154,7 @@ export function BudgetPage() {
           </>
         ) : (
           <>
-            <div className="bg-white/80 backdrop-blur-sm border border-emerald-100 rounded-2xl p-4 shadow-sm">
+            <div className="bg-white/80 backdrop-blur-sm border border-emerald-100 p-4 shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-center justify-center">
                   {filteredEntries.length > 0 ? (
@@ -204,7 +200,7 @@ export function BudgetPage() {
                         <input
                           type="number" step="0.01" min="0" placeholder="0.00"
                           value={entryAmount} onChange={(e) => setEntryAmount(e.target.value)}
-                          className="w-full pl-7 pr-3 py-2 bg-white border border-emerald-200 rounded-xl text-emerald-800 placeholder:text-emerald-300 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                          className="w-full pl-7 pr-3 py-2 bg-white border border-emerald-200 text-emerald-800 placeholder:text-emerald-300 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                         />
                       </div>
                     </div>
@@ -212,7 +208,7 @@ export function BudgetPage() {
                       <input
                         type="text" placeholder="Description"
                         value={entryDescription} onChange={(e) => setEntryDescription(e.target.value)}
-                        className="flex-1 px-3 py-2 bg-white border border-emerald-200 rounded-xl text-emerald-800 placeholder:text-emerald-300 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                        className="flex-1 px-3 py-2 bg-white border border-emerald-200 text-emerald-800 placeholder:text-emerald-300 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                       />
                       {entryType === "expense" && (
                         <Select value={entryCategory} onValueChange={setEntryCategory}>
@@ -229,7 +225,7 @@ export function BudgetPage() {
                     </div>
                     <button
                       type="submit"
-                      className="w-full flex items-center justify-center gap-1.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-medium rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all shadow-sm"
+                      className="w-full flex items-center justify-center gap-1.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-medium hover:from-emerald-400 hover:to-emerald-500 transition-all shadow-sm"
                     >
                       <Plus className="w-4 h-4" />
                       Add Entry
@@ -239,7 +235,7 @@ export function BudgetPage() {
               </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm border border-emerald-100 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-white/80 backdrop-blur-sm border border-emerald-100 overflow-hidden shadow-sm">
               <div className="px-4 py-3 border-b border-emerald-100 flex items-center justify-between">
                 <h3 className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Entries</h3>
                 <span className="text-[10px] font-mono text-emerald-400">{filteredEntries.length} entries</span>
