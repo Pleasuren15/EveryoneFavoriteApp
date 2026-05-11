@@ -15,20 +15,20 @@ import { useCountUp } from "@/lib/hooks"
 import { useBudget } from "@/lib/use-budget"
 import type { Category, PeriodFilter } from "@/lib/types"
 
-const categoryMeta: Record<Category, { color: string; shadowColor: string; icon: typeof ListTodo; badge: string }> = {
-  Todo: { color: "bg-cornflower-blue-500", shadowColor: "shadow-cornflower-blue-500/20", icon: ListTodo, badge: "bg-cornflower-blue-500" },
-  Shopping: { color: "bg-grapefruit-pink-500", shadowColor: "shadow-grapefruit-pink-500/20", icon: ShoppingCart, badge: "bg-grapefruit-pink-500" },
-  Personal: { color: "bg-icy-blue-500", shadowColor: "shadow-icy-blue-500/20", icon: User, badge: "bg-icy-blue-500" },
-  Work: { color: "bg-powder-blush-500", shadowColor: "shadow-powder-blush-500/20", icon: Briefcase, badge: "bg-powder-blush-500" },
-  Others: { color: "bg-taupe-500", shadowColor: "shadow-taupe-500/20", icon: MoreHorizontal, badge: "bg-taupe-500" },
+const categoryMeta: Record<Category, { gradient: string; shadowColor: string; icon: typeof ListTodo; badge: string }> = {
+  Todo: { gradient: "from-blue-600 to-indigo-600", shadowColor: "shadow-blue-600/20", icon: ListTodo, badge: "bg-blue-600" },
+  Shopping: { gradient: "from-emerald-600 to-emerald-800", shadowColor: "shadow-emerald-600/20", icon: ShoppingCart, badge: "bg-emerald-600" },
+  Personal: { gradient: "from-purple-600 to-rose-600", shadowColor: "shadow-purple-600/20", icon: User, badge: "bg-purple-600" },
+  Work: { gradient: "from-pink-500 via-purple-500 to-indigo-500", shadowColor: "shadow-pink-500/20", icon: Briefcase, badge: "bg-pink-500" },
+  Others: { gradient: "from-amber-500 to-orange-600", shadowColor: "shadow-amber-500/20", icon: MoreHorizontal, badge: "bg-amber-500" },
 }
 
-const categories: { name: Category; color: string; shadowColor: string; icon: typeof ListTodo }[] = [
-  { name: "Todo", color: "bg-cornflower-blue-500", shadowColor: "shadow-cornflower-blue-500/20", icon: ListTodo },
-  { name: "Shopping", color: "bg-grapefruit-pink-500", shadowColor: "shadow-grapefruit-pink-500/20", icon: ShoppingCart },
-  { name: "Personal", color: "bg-icy-blue-500", shadowColor: "shadow-icy-blue-500/20", icon: User },
-  { name: "Work", color: "bg-powder-blush-500", shadowColor: "shadow-powder-blush-500/20", icon: Briefcase },
-  { name: "Others", color: "bg-taupe-500", shadowColor: "shadow-taupe-500/20", icon: MoreHorizontal },
+const categories: { name: Category; gradient: string; shadowColor: string; icon: typeof ListTodo }[] = [
+  { name: "Todo", gradient: "from-blue-600 to-indigo-600", shadowColor: "shadow-blue-600/20", icon: ListTodo },
+  { name: "Shopping", gradient: "from-emerald-600 to-emerald-800", shadowColor: "shadow-emerald-600/20", icon: ShoppingCart },
+  { name: "Personal", gradient: "from-purple-600 to-rose-600", shadowColor: "shadow-purple-600/20", icon: User },
+  { name: "Work", gradient: "from-pink-500 via-purple-500 to-indigo-500", shadowColor: "shadow-pink-500/20", icon: Briefcase },
+  { name: "Others", gradient: "from-amber-500 to-orange-600", shadowColor: "shadow-amber-500/20", icon: MoreHorizontal },
 ]
 
 export function TodoList() {
@@ -212,19 +212,23 @@ export function TodoList() {
 
         {activeTodos.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold text-taupe-500 uppercase tracking-wider mb-2">
-              Active — {activeTodos.length}
-            </h2>
-            <div className="space-y-1.5">
+            <div className="flex items-center gap-2 px-1 mb-2">
+              <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                Active
+              </span>
+              <span className="text-xs font-medium text-neutral-400 ml-auto">{activeTodos.length}</span>
+            </div>
+            <div className="space-y-2">
               {displayedActive.map((todo) => {
                 const meta = categoryMeta[todo.category]
                 const BadgeIcon = meta.icon
                 return (
                   <div
                     key={todo.id}
-                    className="group flex items-center gap-3 bg-white/90 backdrop-blur-sm border border-taupe-200/50 rounded-xl px-3 py-2.5 hover:shadow-sm transition-all cursor-pointer"
+                    className="group relative flex items-center gap-3 bg-white rounded-xl pl-4 pr-3 py-3 shadow-sm border border-neutral-200/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden"
                     onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
                   >
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${meta.gradient}`} />
                     <div onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={todo.completed}
@@ -232,7 +236,7 @@ export function TodoList() {
                         className="data-[state=checked]:bg-neutral-900 data-[state=checked]:border-neutral-900"
                       />
                     </div>
-                    <span className="flex-1 text-sm text-taupe-900">{todo.text}</span>
+                    <span className="flex-1 text-sm text-neutral-800">{todo.text}</span>
                     <div className={`${meta.badge} rounded-full p-1`}>
                       <BadgeIcon className="w-3 h-3 text-white" />
                     </div>
@@ -243,10 +247,10 @@ export function TodoList() {
             {activeTodos.length > 3 && (
               <button
                 onClick={() => setShowAllActive(!showAllActive)}
-                className="w-full mt-1.5 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-taupe-500 hover:text-taupe-700 bg-white/60 backdrop-blur-sm border border-taupe-200/40 rounded-xl hover:bg-white/90 transition-all"
+                className="w-full mt-2 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-700 bg-white/60 backdrop-blur-sm border border-neutral-200/40 rounded-xl hover:bg-white/90 transition-all"
               >
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAllActive ? "rotate-180" : ""}`} />
-                {showAllActive ? "Show less" : `Show all (${activeTodos.length} tasks)`}
+                {showAllActive ? "Show less" : `Show all (${activeTodos.length})`}
               </button>
             )}
           </div>
@@ -254,28 +258,32 @@ export function TodoList() {
 
         {completedTodos.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold text-taupe-500 uppercase tracking-wider mb-2">
-              Completed — {completedTodos.length}
-            </h2>
-            <div className="space-y-1.5">
+            <div className="flex items-center gap-2 px-1 mb-2">
+              <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                Completed
+              </span>
+              <span className="text-xs font-medium text-neutral-300 ml-auto">{completedTodos.length}</span>
+            </div>
+            <div className="space-y-2">
               {displayedCompleted.map((todo) => {
                 const meta = categoryMeta[todo.category]
                 const BadgeIcon = meta.icon
                 return (
                   <div
                     key={todo.id}
-                    className="group flex items-center gap-3 bg-white/70 backdrop-blur-sm border border-taupe-200/30 rounded-xl px-3 py-2.5 hover:shadow-sm transition-all cursor-pointer"
+                    className="group relative flex items-center gap-3 bg-white/60 rounded-xl pl-4 pr-3 py-2.5 border border-neutral-200/40 hover:bg-white transition-all duration-200 cursor-pointer overflow-hidden"
                     onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
                   >
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-300" />
                     <div onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={todo.completed}
                         onCheckedChange={() => toggleTodo(todo.id)}
-                        className="data-[state=checked]:bg-neutral-900 data-[state=checked]:border-neutral-900"
+                        className="data-[state=checked]:bg-neutral-400 data-[state=checked]:border-neutral-400"
                       />
                     </div>
-                    <span className="flex-1 text-sm text-taupe-400 line-through">{todo.text}</span>
-                    <div className={`${meta.badge} rounded-full p-1`}>
+                    <span className="flex-1 text-sm text-neutral-400 line-through">{todo.text}</span>
+                    <div className={`${meta.badge} rounded-full p-1 opacity-50`}>
                       <BadgeIcon className="w-3 h-3 text-white" />
                     </div>
                   </div>
@@ -285,10 +293,10 @@ export function TodoList() {
             {completedTodos.length > 3 && (
               <button
                 onClick={() => setShowAllCompleted(!showAllCompleted)}
-                className="w-full mt-1.5 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-taupe-500 hover:text-taupe-700 bg-white/60 backdrop-blur-sm border border-taupe-200/40 rounded-xl hover:bg-white/90 transition-all"
+                className="w-full mt-2 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-700 bg-white/60 backdrop-blur-sm border border-neutral-200/40 rounded-xl hover:bg-white/90 transition-all"
               >
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAllCompleted ? "rotate-180" : ""}`} />
-                {showAllCompleted ? "Show less" : `Show all (${completedTodos.length} tasks)`}
+                {showAllCompleted ? "Show less" : `Show all (${completedTodos.length})`}
               </button>
             )}
           </div>
@@ -313,10 +321,12 @@ function CategoryCard({ category, count, activeFilter }: { category: typeof cate
   return (
     <div
       onClick={() => navigate(`/todos/${category.name.toLowerCase()}`, { state: { period: activeFilter } })}
-      className={`${category.color} backdrop-blur-sm border border-white/20 p-4 rounded-2xl hover:shadow-xl ${category.shadowColor} transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-2`}
+      className={`bg-gradient-to-br ${category.gradient} p-4 rounded-2xl hover:shadow-xl ${category.shadowColor} hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3`}
     >
       <div className="flex items-center justify-between">
-        <Icon className="w-5 h-5 text-white/90" />
+        <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+          <Icon className="w-5 h-5 text-white" />
+        </div>
         <span className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">{category.name}</span>
       </div>
       <div className="flex items-baseline gap-1.5">
@@ -333,15 +343,16 @@ function BudgetCard({ balance, activeFilter }: { balance: number; activeFilter: 
   return (
     <div
       onClick={() => navigate("/todos/budget", { state: { period: activeFilter } })}
-      className="bg-emerald-500 backdrop-blur-sm border border-white/20 p-4 rounded-2xl hover:shadow-xl shadow-emerald-500/20 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-2"
+      className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-4 rounded-2xl hover:shadow-xl shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3"
     >
       <div className="flex items-center justify-between">
-        <Wallet className="w-5 h-5 text-white/90" />
+        <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+          <Wallet className="w-5 h-5 text-white" />
+        </div>
         <span className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Budget</span>
       </div>
       <div className="flex items-baseline gap-1.5">
-        <span className="text-3xl font-bold text-white">{animatedCount}</span>
-        <span className="text-xs text-white/70">R</span>
+        <span className="text-3xl font-bold text-white">R{animatedCount}</span>
       </div>
     </div>
   )
