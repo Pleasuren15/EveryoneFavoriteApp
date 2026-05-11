@@ -1,0 +1,79 @@
+@startuml
+!theme plain
+
+hide circle
+skinparam linetype ortho
+
+entity users {
+  * id: uuid [PK]
+  --
+  * email: varchar(255) [UNIQUE]
+  * password_hash: varchar(255)
+  * display_name: varchar(100)
+  created_at: timestamp
+}
+
+entity categories {
+  * id: uuid [PK]
+  --
+  * name: varchar(50) [UNIQUE]
+  * label: varchar(50)
+  * sort_order: int
+}
+
+entity todos {
+  * id: uuid [PK]
+  --
+  * user_id: uuid [FK -> users.id]
+  * category_id: uuid [FK -> categories.id]
+  * text: text
+  * completed: boolean
+  * created_at: timestamp
+  due_date: date
+  price: decimal(10,2)
+}
+
+entity subtasks {
+  * id: uuid [PK]
+  --
+  * todo_id: uuid [FK -> todos.id]
+  * text: text
+  * completed: boolean
+  * sort_order: int
+}
+
+entity budget_entries {
+  * id: uuid [PK]
+  --
+  * user_id: uuid [FK -> users.id]
+  * type: varchar(10)
+  * category: varchar(100)
+  * amount: decimal(12,2)
+  * description: text
+  * date: date
+  created_at: timestamp
+}
+
+users ||--o{ todos
+users ||--o{ budget_entries
+categories ||--o{ todos
+todos ||--o{ subtasks
+
+note top of users
+  Auth pages exist but no auth
+  context yet — placeholder
+  for future implementation
+end note
+
+note right of categories
+  Seeded values:
+  Todo, Shopping, Personal,
+  Work, Others
+end note
+
+note right of subtasks
+  Currently stored as JSON
+  array on the Todo type
+  (embedded/nested)
+end note
+@enduml
