@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="../src/aspire/aspire.csproj" />
+  <Project Path="../src/todo.api/todo.api.csproj" Id="f9e16bcb-b86c-437d-8bd2-c2d4256aa8e0" />
 </Solution>

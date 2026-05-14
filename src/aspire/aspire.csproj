@@ -16,4 +16,8 @@
     <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\todo.api\todo.api.csproj" />
+  </ItemGroup>
+
 </Project>

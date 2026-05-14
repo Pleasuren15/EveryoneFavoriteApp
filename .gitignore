@@ -144,3 +144,5 @@ vite.config.ts.timestamp-*
 /EveryoneFavoriteApp/.vs/EveryoneFavoriteApp.slnx
 /src/aspire/bin/Debug/net10.0
 /src/aspire/obj
+/src/todo.api/bin/Debug/net10.0
+/src/todo.api/obj
