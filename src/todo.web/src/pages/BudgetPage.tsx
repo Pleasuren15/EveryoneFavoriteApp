@@ -130,7 +130,7 @@ export function BudgetPage() {
             <div className="bg-white/80 backdrop-blur-sm border border-emerald-100 p-4 shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-center justify-center">
-                  <Skeleton className="w-[180px] h-[180px] rounded-full" />
+                  <Skeleton className="w-[180px] h-[180px]" />
                 </div>
                 <div className="space-y-4">
                   <Skeleton className="h-5 w-full" />
@@ -225,7 +225,7 @@ export function BudgetPage() {
                     </div>
                     <button
                       type="submit"
-                      className="w-full flex items-center justify-center gap-1.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-medium hover:from-emerald-400 hover:to-emerald-500 transition-all shadow-sm"
+                      className="w-full flex items-center justify-center gap-1.5 py-2 bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-all shadow-sm"
                     >
                       <Plus className="w-4 h-4" />
                       Add Entry

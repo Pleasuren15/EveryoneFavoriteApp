@@ -10,20 +10,20 @@ import type { Category, PeriodFilter } from "@/lib/types"
 
 const bgUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YWJzdHJhY3R8ZW58MHx8MHx8fDA%3D"
 
-const categoryMeta: Record<Category, { gradient: string; shadowColor: string; icon: typeof ListTodo; badge: string }> = {
-  Todo: { gradient: "from-blue-600 to-indigo-600", shadowColor: "shadow-blue-600/20", icon: ListTodo, badge: "bg-blue-600" },
-  Shopping: { gradient: "from-emerald-600 to-emerald-800", shadowColor: "shadow-emerald-600/20", icon: ShoppingCart, badge: "bg-emerald-600" },
-  Personal: { gradient: "from-purple-600 to-rose-600", shadowColor: "shadow-purple-600/20", icon: User, badge: "bg-purple-600" },
-  Work: { gradient: "from-pink-500 via-purple-500 to-indigo-500", shadowColor: "shadow-pink-500/20", icon: Briefcase, badge: "bg-pink-500" },
-  Others: { gradient: "from-amber-500 to-orange-600", shadowColor: "shadow-amber-500/20", icon: MoreHorizontal, badge: "bg-amber-500" },
+const categoryMeta: Record<Category, { color: string; shadowColor: string; icon: typeof ListTodo; badge: string }> = {
+  Todo: { color: "bg-blue-600", shadowColor: "shadow-blue-600/20", icon: ListTodo, badge: "bg-blue-600" },
+  Shopping: { color: "bg-emerald-600", shadowColor: "shadow-emerald-600/20", icon: ShoppingCart, badge: "bg-emerald-600" },
+  Personal: { color: "bg-purple-600", shadowColor: "shadow-purple-600/20", icon: User, badge: "bg-purple-600" },
+  Work: { color: "bg-pink-500", shadowColor: "shadow-pink-500/20", icon: Briefcase, badge: "bg-pink-500" },
+  Others: { color: "bg-amber-500", shadowColor: "shadow-amber-500/20", icon: MoreHorizontal, badge: "bg-amber-500" },
 }
 
-const categories: { name: Category; gradient: string; shadowColor: string; icon: typeof ListTodo }[] = [
-  { name: "Todo", gradient: "from-blue-600 to-indigo-600", shadowColor: "shadow-blue-600/20", icon: ListTodo },
-  { name: "Shopping", gradient: "from-emerald-600 to-emerald-800", shadowColor: "shadow-emerald-600/20", icon: ShoppingCart },
-  { name: "Personal", gradient: "from-purple-600 to-rose-600", shadowColor: "shadow-purple-600/20", icon: User },
-  { name: "Work", gradient: "from-pink-500 via-purple-500 to-indigo-500", shadowColor: "shadow-pink-500/20", icon: Briefcase },
-  { name: "Others", gradient: "from-amber-500 to-orange-600", shadowColor: "shadow-amber-500/20", icon: MoreHorizontal },
+const categories: { name: Category; color: string; shadowColor: string; icon: typeof ListTodo }[] = [
+  { name: "Todo", color: "bg-blue-600", shadowColor: "shadow-blue-600/20", icon: ListTodo },
+  { name: "Shopping", color: "bg-emerald-600", shadowColor: "shadow-emerald-600/20", icon: ShoppingCart },
+  { name: "Personal", color: "bg-purple-600", shadowColor: "shadow-purple-600/20", icon: User },
+  { name: "Work", color: "bg-pink-500", shadowColor: "shadow-pink-500/20", icon: Briefcase },
+  { name: "Others", color: "bg-amber-500", shadowColor: "shadow-amber-500/20", icon: MoreHorizontal },
 ]
 
 export function TodoList() {
@@ -211,7 +211,7 @@ export function TodoList() {
                     className="group relative flex items-center gap-3 bg-white pl-4 pr-3 py-3 shadow-sm border border-neutral-200/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden"
                     onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
                   >
-                    <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${meta.gradient}`} />
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${meta.color}`} />
                     <div onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={todo.completed}
@@ -304,7 +304,7 @@ function CategoryCard({ category, count, activeFilter }: { category: typeof cate
   return (
     <div
       onClick={() => navigate(`/todos/${category.name.toLowerCase()}`, { state: { period: activeFilter } })}
-      className={`bg-gradient-to-br ${category.gradient} p-4 hover:shadow-xl ${category.shadowColor} hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3`}
+      className={`${category.color} p-4 hover:shadow-xl ${category.shadowColor} hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3`}
     >
       <div className="flex items-center justify-between">
         <div className="p-2 bg-white/20 backdrop-blur-sm">
@@ -326,7 +326,7 @@ function BudgetCard({ balance, activeFilter }: { balance: number; activeFilter: 
   return (
     <div
       onClick={() => navigate("/todos/budget", { state: { period: activeFilter } })}
-      className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-4 hover:shadow-xl shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3"
+      className="bg-emerald-600 p-4 hover:shadow-xl shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3"
     >
       <div className="flex items-center justify-between">
         <div className="p-2 bg-white/20 backdrop-blur-sm">

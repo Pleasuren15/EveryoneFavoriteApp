@@ -129,7 +129,7 @@ export function WorkItems() {
         {activeTodos.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2 px-1">
-              <div className="p-1.5 bg-gradient-to-br from-powder-blush-500 to-powder-blush-600">
+              <div className="p-1.5 bg-powder-blush-600">
                 <TrendingUp className="w-3.5 h-3.5 text-white" />
               </div>
               <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">Active</span>
@@ -142,7 +142,7 @@ export function WorkItems() {
                 const isExpanded = expandedTodos.has(todo.id)
                 return (
                   <div key={todo.id} className="relative bg-white shadow-sm border border-neutral-200/60 hover:shadow-md hover:border-powder-blush-300 transition-all duration-200 overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-powder-blush-500 to-powder-blush-600" />
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-powder-blush-600" />
                     <div className="group flex items-center gap-2 pl-4 pr-3 py-3">
                       {subCount > 0 ? (
                         <button onClick={() => toggleExpand(todo.id)} className="p-0.5 text-neutral-400 hover:text-neutral-700 transition-colors">

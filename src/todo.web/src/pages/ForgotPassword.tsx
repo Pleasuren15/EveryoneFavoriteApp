@@ -22,14 +22,14 @@ export function ForgotPassword() {
       <div className="absolute inset-0 bg-black/50" />
 
       <div className="relative w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-2xl rounded-3xl overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-2xl overflow-hidden">
           <div className="px-8 md:px-10 py-12">
             <h1 className="text-4xl font-bold text-taupe-900 tracking-tight mb-2">Reset Password</h1>
             <p className="text-taupe-500 text-sm mb-8">Enter your email to receive a reset link.</p>
 
             {sent ? (
               <div className="text-center animate-in fade-in zoom-in-95 duration-500">
-                <div className="inline-flex p-3 bg-emerald-100 rounded-2xl mb-4">
+                <div className="inline-flex p-3 bg-emerald-100 mb-4">
                   <Send className="w-6 h-6 text-emerald-600" />
                 </div>
                 <p className="text-taupe-900 font-semibold mb-1">Check your email</p>

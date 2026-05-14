@@ -75,7 +75,7 @@ export function BudgetPieChart({ data, size = 180 }: BudgetPieChartProps) {
       <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
         {slices.map((slice, i) => (
           <div key={i} className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: slice.color || "#6b7280" }} />
+            <div className="w-2.5 h-2.5 shrink-0" style={{ backgroundColor: slice.color || "#6b7280" }} />
             <span className="text-[11px] text-neutral-600 font-medium">{slice.label}</span>
             <span className="text-[11px] text-neutral-400 font-mono">{slice.percentage.toFixed(0)}%</span>
           </div>

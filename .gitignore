@@ -141,3 +141,6 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+/EveryoneFavoriteApp/.vs/EveryoneFavoriteApp.slnx
+/src/aspire/bin/Debug/net10.0
+/src/aspire/obj

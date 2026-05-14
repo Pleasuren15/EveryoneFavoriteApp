@@ -68,11 +68,11 @@ export function ShoppingItems() {
   return (
     <div className="h-svh flex flex-col bg-neutral-950 relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-400/5 rounded-full blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/10 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-400/5 blur-3xl" />
       </div>
 
-      <div className="relative bg-gradient-to-b from-emerald-700 to-emerald-900 px-4 pt-4 pb-4">
+      <div className="relative bg-emerald-800 px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => navigate("/todos")} className="p-2 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors">
             <ArrowLeft className="w-5 h-5" />
@@ -158,7 +158,7 @@ export function ShoppingItems() {
             {activeTodos.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 px-1">
-                  <div className="p-1.5 bg-gradient-to-br from-emerald-500 to-emerald-700">
+                  <div className="p-1.5 bg-emerald-600">
                     <Sparkles className="w-3.5 h-3.5 text-white" />
                   </div>
                   <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
@@ -174,7 +174,7 @@ export function ShoppingItems() {
                         key={todo.id}
                         className="group relative flex items-center gap-3 bg-neutral-800 pl-4 pr-3 py-3 shadow-sm border border-neutral-700/60 hover:shadow-md hover:border-emerald-500/60 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
                       >
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-emerald-700" />
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600" />
                         <Checkbox
                           checked={todo.completed}
                           onCheckedChange={() => toggleTodo(todo.id)}

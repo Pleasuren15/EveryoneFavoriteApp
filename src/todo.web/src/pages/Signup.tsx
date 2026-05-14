@@ -25,7 +25,7 @@ export function Signup() {
       <div className="absolute inset-0 bg-black/50" />
 
       <div className="relative w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-2xl rounded-3xl overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-2xl overflow-hidden">
           <div className="px-8 md:px-10 py-12">
             <h1 className="text-4xl font-bold text-taupe-900 tracking-tight mb-2">Create Account</h1>
             <p className="text-taupe-500 text-sm mb-8">Sign up to get started.</p>
