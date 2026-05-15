@@ -1,5 +1,6 @@
 export type Category = "Todo" | "Shopping" | "Personal" | "Work" | "Others"
 export type PeriodFilter = "Day" | "Week" | "Month" | "Year"
+export type Priority = "low" | "medium" | "high"
 
 export interface Subtask {
   id: string
@@ -26,6 +27,7 @@ export interface Todo {
   category: Category
   createdAt: Date
   dueDate?: string
+  priority?: Priority
   price?: number
   subtasks?: Subtask[]
 }

@@ -1,15 +1,17 @@
 import { useState, useMemo, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { ArrowLeft, Plus, Search, Trash2, CheckCircle2, Circle, Calendar, ShoppingCart, X } from "lucide-react"
+import { ArrowLeft, Plus, Search, Trash2, CheckCircle2, Circle, Calendar, ShoppingCart, X, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
-import type { PeriodFilter } from "@/lib/types"
+import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
+import type { PeriodFilter, Priority } from "@/lib/types"
 import { SubtaskSection } from "@/components/SubtaskSection"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -38,6 +40,7 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
   const [loading, setLoading] = useState(true)
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
+  const [taskPriority, setTaskPriority] = useState<Priority>("medium")
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(taskSchema),
     defaultValues: { text: "", date: "" },
@@ -75,6 +78,19 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
 
   const completedTodos = filteredTodos.filter((t) => t.completed)
   const activeTodos = filteredTodos.filter((t) => !t.completed)
+
+  const sortedActiveTodos = useMemo(
+    () => [...activeTodos].sort((a, b) => {
+      const pa = priorityOrder[a.priority ?? "low"]
+      const pb = priorityOrder[b.priority ?? "low"]
+      if (pa !== pb) return pa - pb
+      const oa = isOverdue(a.dueDate) ? 0 : 1
+      const ob = isOverdue(b.dueDate) ? 0 : 1
+      return oa - ob
+    }),
+    [activeTodos]
+  )
+
   const progress = filteredTodos.length > 0 ? Math.round((completedTodos.length / filteredTodos.length) * 100) : 0
 
   return (
@@ -100,14 +116,10 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
             </div>
           </div>
 
-          {/* Progress Bar */}
           {filteredTodos.length > 0 && (
             <div className="flex items-center gap-3">
               <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-white transition-all duration-500"
-                  style={{ width: `${Math.max(progress, 3)}%` }}
-                />
+                <div className="h-full bg-white transition-all duration-500" style={{ width: `${Math.max(progress, 3)}%` }} />
               </div>
               <span className="text-xs font-semibold text-white/90">{progress}%</span>
             </div>
@@ -121,8 +133,8 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
           {/* Search */}
           <div className="flex gap-2 sm:gap-3 flex-col sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-               <Input
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60 z-10 pointer-events-none" />
+              <Input
                 type="text"
                 placeholder="Search items..."
                 value={searchQuery}
@@ -131,30 +143,20 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
               />
             </div>
             <div className="flex gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 border-white/10 bg-black/30 text-slate-300 hover:text-white hover:bg-black/50">
-                  <Calendar className="w-4 h-4" />
-                  <span className="text-xs">{filterDate ? format(filterDate, "MMM d") : "Filter"}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarPicker
-                  mode="single"
-                  selected={filterDate}
-                  onSelect={(date) => setFilterDate(date)}
-                />
-              </PopoverContent>
-            </Popover>
-            {filterDate && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-slate-400 hover:text-white"
-                onClick={() => setFilterDate(undefined)}
-              >
-                <X className="w-4 h-4 sm:mr-1" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 border-white/10 bg-black/30 text-slate-300 hover:text-white hover:bg-black/50">
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-xs">{filterDate ? format(filterDate, "MMM d") : "Filter"}</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarPicker mode="single" selected={filterDate} onSelect={(date) => setFilterDate(date)} />
+                </PopoverContent>
+              </Popover>
+              {filterDate && (
+                <Button type="button" variant="ghost" size="sm" className="text-slate-400 hover:text-white" onClick={() => setFilterDate(undefined)}>
+                  <X className="w-4 h-4 sm:mr-1" />
                   <span className="hidden sm:inline">Clear</span>
                 </Button>
               )}
@@ -169,50 +171,63 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
             </div>
           ) : (
             <>
-              {/* Active Tasks */}
-               {activeTodos.length > 0 && (
+              {sortedActiveTodos.length > 0 && (
                 <div>
                   <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <Circle className={`w-5 h-5 text-${config.accentColor}-600`} />
                     Active Items
                   </h2>
                   <div className="space-y-2">
-                    {activeTodos.map((todo) => (
-                       <Card
-                         key={todo.id}
-                         className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all group"
-                       >
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-4">
-                            <button
-                              onClick={() => toggleTodo(todo.id)}
-                              className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer border-${config.accentColor}-600 hover:bg-${config.accentColor}-100`}
-                            >
-                              {todo.completed && <Circle className={`w-4 h-4 text-${config.accentColor}-600`} />}
-                            </button>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-white truncate">{todo.text}</p>
-                              {todo.dueDate && (
-                                <p className="text-xs text-slate-400 mt-1">Due: {format(new Date(todo.dueDate + "T00:00:00"), "MMM d, yyyy")}</p>
-                              )}
+                    {sortedActiveTodos.map((todo) => {
+                      const overdue = isOverdue(todo.dueDate)
+                      const pCfg = todo.priority ? priorityConfig[todo.priority] : null
+                      return (
+                        <Card key={todo.id} className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all group">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-4">
+                              <button
+                                onClick={() => toggleTodo(todo.id)}
+                                className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer border-${config.accentColor}-600 hover:bg-${config.accentColor}-100`}
+                              >
+                                {todo.completed && <Circle className={`w-4 h-4 text-${config.accentColor}-600`} />}
+                              </button>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-white truncate">{todo.text}</p>
+                                <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                                  {pCfg && (
+                                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${pCfg.bg} ${pCfg.color}`}>
+                                      {pCfg.label}
+                                    </span>
+                                  )}
+                                  {overdue && (
+                                    <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-red-500/20 text-red-400 flex items-center gap-1">
+                                      <AlertCircle className="w-3 h-3" />Overdue
+                                    </span>
+                                  )}
+                                  {todo.dueDate && (
+                                    <span className={`text-xs ${overdue ? "text-red-400" : "text-slate-400"}`}>
+                                      Due {format(new Date(todo.dueDate + "T00:00:00"), "MMM d, yyyy")}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => deleteTodo(todo.id)}
+                                className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
-                            <button
-                              onClick={() => deleteTodo(todo.id)}
-                              className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                          <SubtaskSection todo={todo} onToggle={toggleSubtask} onAdd={addSubtask} />
-                        </CardContent>
-                      </Card>
-                    ))}
+                            <SubtaskSection todo={todo} onToggle={toggleSubtask} onAdd={addSubtask} />
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
                   </div>
                 </div>
               )}
 
-              {/* Completed Tasks */}
-               {completedTodos.length > 0 && (
+              {completedTodos.length > 0 && (
                 <div>
                   <h2 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -220,10 +235,7 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
                   </h2>
                   <div className="space-y-2">
                     {completedTodos.slice(0, 10).map((todo) => (
-                       <Card
-                         key={todo.id}
-                         className="border-white/5 bg-black/20 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all group"
-                       >
+                      <Card key={todo.id} className="border-white/5 bg-black/20 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all group">
                         <CardContent className="p-4">
                           <div className="flex items-start gap-4">
                             <button
@@ -250,7 +262,7 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
                 </div>
               )}
 
-               {activeTodos.length === 0 && completedTodos.length === 0 && (
+              {activeTodos.length === 0 && completedTodos.length === 0 && (
                 <div className="text-center py-16">
                   <div className="inline-flex p-4 bg-black/30 backdrop-blur-xl rounded-full mb-4">
                     <ShoppingCart className="w-10 h-10 text-cyan-600" />
@@ -271,32 +283,35 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <form
             onSubmit={handleSubmit((data) => {
-              addTodo(data.text.trim(), category, data.date || undefined, data.price ? parseFloat(data.price) : undefined)
+              addTodo(data.text.trim(), category, data.date || undefined, data.price ? parseFloat(data.price) : undefined, taskPriority)
               reset()
+              setTaskPriority("medium")
             })}
             className="flex gap-2 sm:gap-3 flex-col sm:flex-row"
           >
             <div className="flex-1">
               <Input
                 type="text"
-                placeholder={`Add a new item...`}
+                placeholder="Add a new item..."
                 {...register("text")}
                 className="w-full h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500"
               />
               {errors.text && <p className="text-red-400 text-xs mt-1">{errors.text.message as string}</p>}
             </div>
             <div className="flex gap-2">
-              <Input
-                type="date"
-                {...register("date")}
-                className="h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 flex-1 sm:flex-none"
-              />
+              <Select value={taskPriority} onValueChange={(v) => setTaskPriority(v as Priority)}>
+                <SelectTrigger className="h-11 w-28 border-white/10 bg-black/30 backdrop-blur-xl text-white text-sm flex-shrink-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-black/90 text-white">
+                  <SelectItem value="high" className="text-red-400 focus:bg-white/10 focus:text-red-400">High</SelectItem>
+                  <SelectItem value="medium" className="text-amber-400 focus:bg-white/10 focus:text-amber-400">Medium</SelectItem>
+                  <SelectItem value="low" className="text-slate-400 focus:bg-white/10 focus:text-slate-400">Low</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input type="date" {...register("date")} className="h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 flex-1 sm:flex-none" />
               <Input type="number" step="0.01" min="0" placeholder="Price" {...register("price")} className="h-11 w-28 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg" />
-              <Button
-                type="submit"
-                size="icon"
-                className={`bg-gradient-to-r ${config.btnColor} text-white hover:shadow-lg transition-all flex-shrink-0 cursor-pointer`}
-              >
+              <Button type="submit" size="icon" className={`bg-gradient-to-r ${config.btnColor} text-white hover:shadow-lg transition-all flex-shrink-0 cursor-pointer`}>
                 <Plus className="w-5 h-5" />
               </Button>
             </div>

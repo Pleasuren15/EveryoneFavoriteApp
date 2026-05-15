@@ -30,6 +30,7 @@ entity Todo {
   * Completed: boolean [DEFAULT false]
   * CreatedAt: timestamptz [DEFAULT now()]
   DueDate: date [NULLABLE]
+  Priority: varchar(10) [CHECK: 'low'|'medium'|'high', NULLABLE]
   Price: decimal(10,2) [NULLABLE]
 }
 

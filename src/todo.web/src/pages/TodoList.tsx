@@ -1,16 +1,21 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, Wallet, ChevronRight, Clock, CheckCircle2, Circle, LogOut, CalendarDays, ArrowRight, RefreshCw } from "lucide-react"
+import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useTodos, matchesPeriod } from "@/lib/todo-context"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarPicker } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { useTodos } from "@/lib/todo-context"
 import { useCountUp } from "@/lib/hooks"
 import { useBudget } from "@/lib/use-budget"
-import type { Category, PeriodFilter } from "@/lib/types"
+import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
+import type { Category, Priority } from "@/lib/types"
 
 const categoryMeta: Record<Category, { color: string; bgColor: string; icon: typeof ListTodo; accentColor: string }> = {
   Todo: { color: "text-purple-600", bgColor: "bg-purple-50 dark:bg-purple-950/30", icon: ListTodo, accentColor: "from-purple-600 to-indigo-700" },
@@ -52,34 +57,22 @@ function CategoryCard({ category, count, meta, onClick }: {
   )
 }
 
+const emptyQuickAdd = { text: "", category: "Todo" as Category, priority: "medium" as Priority, dueDate: "" }
+
 export function TodoList() {
   const navigate = useNavigate()
-  const { todos, toggleTodo } = useTodos()
-  const [activeFilter, setActiveFilter] = useState<PeriodFilter>("Day")
+  const { todos, toggleTodo, addTodo } = useTodos()
+  const [customRange, setCustomRange] = useState<{ from?: Date; to?: Date }>({})
+  const [periodOpen, setPeriodOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [loading, setLoading] = useState(true)
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
+  const [quickAdd, setQuickAdd] = useState(emptyQuickAdd)
 
   const { balance } = useBudget()
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
-  const [statIndex, setStatIndex] = useState(0)
-
-  const scrollToStat = useCallback((i: number) => {
-    cardRefs.current[i]?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" })
-    setStatIndex(i)
-  }, [])
-
-  useEffect(() => {
-    const container = scrollRef.current
-    if (!container) return
-    const onScroll = () => {
-      const idx = Math.round(container.scrollLeft / container.clientWidth)
-      setStatIndex(Math.min(idx, stats.length - 1))
-    }
-    container.addEventListener("scroll", onScroll, { passive: true })
-    return () => container.removeEventListener("scroll", onScroll)
-  }, [])
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600)
@@ -89,17 +82,14 @@ export function TodoList() {
   const today = new Date()
   const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
-  const filters: Array<{ id: PeriodFilter; label: string }> = [
-    { id: "Day", label: "Today" },
-    { id: "Week", label: "This Week" },
-    { id: "Month", label: "This Month" },
-    { id: "Year", label: "This Year" },
-  ]
-
-  const periodTodos = useMemo(
-    () => todos.filter((t) => matchesPeriod(t.createdAt, activeFilter)),
-    [todos, activeFilter]
-  )
+  const periodTodos = useMemo(() => {
+    if (customRange.from && customRange.to) {
+      const from = new Date(customRange.from); from.setHours(0, 0, 0, 0)
+      const to = new Date(customRange.to); to.setHours(23, 59, 59, 999)
+      return todos.filter((t) => { const d = new Date(t.createdAt); return d >= from && d <= to })
+    }
+    return todos
+  }, [todos, customRange])
 
   const searchedTodos = useMemo(
     () => {
@@ -114,13 +104,33 @@ export function TodoList() {
   const totalTasks = activeTodos.length + completedTodos.length
   const completionRate = totalTasks > 0 ? Math.round((completedTodos.length / totalTasks) * 100) : 0
 
+  const sortedActiveTodos = useMemo(
+    () => [...activeTodos].sort((a, b) => {
+      const pa = priorityOrder[a.priority ?? "low"]
+      const pb = priorityOrder[b.priority ?? "low"]
+      if (pa !== pb) return pa - pb
+      const oa = isOverdue(a.dueDate) ? 0 : 1
+      const ob = isOverdue(b.dueDate) ? 0 : 1
+      return oa - ob
+    }),
+    [activeTodos]
+  )
+
   const stats = useMemo(() => [
-    { label: "Total Tasks", value: totalTasks, icon: ListTodo, border: "border-white/10", iconBg: "bg-gradient-to-br from-slate-500 to-slate-600", labelColor: "text-slate-400", valueColor: "text-white" },
-    { label: "Active", value: activeTodos.length, icon: Circle, border: "border-purple-500/20", iconBg: "bg-gradient-to-br from-purple-500 to-purple-600", labelColor: "text-purple-400", valueColor: "text-white" },
-    { label: "Completed", value: completedTodos.length, icon: CheckCircle2, border: "border-emerald-500/20", iconBg: "bg-gradient-to-br from-emerald-500 to-emerald-600", labelColor: "text-emerald-400", valueColor: "text-white" },
-    { label: "Progress", value: `${completionRate}%`, icon: Clock, border: "border-blue-500/20", iconBg: "bg-gradient-to-br from-blue-500 to-blue-600", labelColor: "text-blue-400", valueColor: "text-white" },
-    { label: "Balance", value: `R${Math.abs(balance).toFixed(2)}`, icon: Wallet, border: "border-amber-500/20", iconBg: "bg-gradient-to-br from-amber-500 to-amber-600", labelColor: "text-amber-400", valueColor: balance >= 0 ? "text-emerald-400" : "text-red-400" },
+    { label: "Total Tasks", value: totalTasks,                           border: "border-white/15",       gradient: "from-white/10 to-white/3",         shadow: "shadow-black/20",       labelColor: "text-slate-300",  valueColor: "text-white" },
+    { label: "Active",      value: activeTodos.length,                   border: "border-purple-400/30",  gradient: "from-purple-500/20 to-purple-500/5",  shadow: "shadow-purple-900/40",  labelColor: "text-purple-300", valueColor: "text-white" },
+    { label: "Completed",   value: completedTodos.length,                border: "border-emerald-400/30", gradient: "from-emerald-500/20 to-emerald-500/5", shadow: "shadow-emerald-900/40", labelColor: "text-emerald-300",valueColor: "text-white" },
+    { label: "Progress",    value: `${completionRate}%`,                 border: "border-blue-400/30",    gradient: "from-blue-500/20 to-blue-500/5",      shadow: "shadow-blue-900/40",    labelColor: "text-blue-300",   valueColor: "text-white" },
+    { label: "Balance",     value: `R${Math.abs(balance).toFixed(2)}`,   border: "border-amber-400/30",   gradient: "from-amber-500/20 to-amber-500/5",    shadow: "shadow-amber-900/40",   labelColor: "text-amber-300",  valueColor: balance >= 0 ? "text-emerald-300" : "text-red-400" },
   ], [totalTasks, activeTodos.length, completedTodos.length, completionRate, balance])
+
+  function handleQuickAdd(e: React.FormEvent) {
+    e.preventDefault()
+    if (!quickAdd.text.trim()) return
+    addTodo(quickAdd.text.trim(), quickAdd.category, quickAdd.dueDate || undefined, undefined, quickAdd.priority)
+    setQuickAdd(emptyQuickAdd)
+    setQuickAddOpen(false)
+  }
 
   return (
     <div className="h-svh flex flex-col font-sans">
@@ -148,19 +158,63 @@ export function TodoList() {
             </div>
           </div>
 
-          {/* Period Filter */}
-          <div className="flex items-center gap-2">
-            <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as PeriodFilter)}>
-              <SelectTrigger className="w-40 border-white/20 bg-black/30 backdrop-blur-xl text-white text-sm shadow-lg">
-                <CalendarDays className="w-4 h-4" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="border-white/10 bg-black/90 text-white">
-                {filters.map((filter) => (
-                  <SelectItem key={filter.id} value={filter.id} className="text-white focus:bg-white/10 focus:text-white">{filter.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Period Filter + Stats */}
+          <div className="flex items-center gap-2 overflow-hidden">
+            {/* Period picker — styled as a stat card */}
+            <Popover open={periodOpen} onOpenChange={setPeriodOpen}>
+              <PopoverTrigger asChild>
+                <button className="border border-purple-500/30 bg-gradient-to-br from-purple-500/20 to-purple-500/5 backdrop-blur-xl rounded-xl px-4 py-3 shrink-0 text-left hover:from-purple-500/30 hover:to-purple-500/10 transition-colors shadow-sm shadow-purple-900/40">
+                  <p className="text-xs text-purple-400 font-semibold uppercase tracking-wider whitespace-nowrap">Period</p>
+                  <p className="text-base font-bold mt-0.5 text-white whitespace-nowrap">
+                    {customRange.from && customRange.to
+                      ? `${format(customRange.from, "MMM d")} – ${format(customRange.to, "MMM d")}`
+                      : customRange.from
+                      ? `${format(customRange.from, "MMM d")} – ...`
+                      : "All time"}
+                  </p>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 border-white/10 bg-black/90" align="start">
+                {/* Range calendar */}
+                <CalendarPicker
+                  mode="range"
+                  selected={{ from: customRange.from, to: customRange.to }}
+                  onSelect={(range) => {
+                    setCustomRange({ from: range?.from, to: range?.to })
+                    if (range?.from && range?.to) setPeriodOpen(false)
+                  }}
+                  numberOfMonths={1}
+                  className="text-white [&_.rdp-day_button:hover]:bg-purple-500/20 [&_.rdp-day_button.rdp-day_selected]:bg-purple-600"
+                />
+                {customRange.from && (
+                  <div className="px-3 pb-3">
+                    <button
+                      onClick={() => setCustomRange({})}
+                      className="w-full text-xs text-slate-400 hover:text-white py-1.5 rounded border border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      Clear range
+                    </button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+
+            {/* Stats Carousel */}
+            <div
+              ref={scrollRef}
+              className="flex gap-2 overflow-x-auto scrollbar-none flex-1 snap-x snap-mandatory"
+            >
+              {stats.map((stat, i) => (
+                <div
+                  key={stat.label}
+                  ref={(el) => { cardRefs.current[i] = el }}
+                  className={`border ${stat.border} bg-gradient-to-br ${stat.gradient} backdrop-blur-xl rounded-xl px-4 py-3 shadow-sm ${stat.shadow} snap-start shrink-0`}
+                >
+                  <p className={`text-xs ${stat.labelColor} font-semibold uppercase tracking-wider whitespace-nowrap`}>{stat.label}</p>
+                  <p className={`text-base font-bold mt-0.5 ${stat.valueColor} whitespace-nowrap`}>{stat.value}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -183,51 +237,9 @@ export function TodoList() {
             </div>
           ) : (
             <>
-              {/* Stats Carousel */}
-              <div className="space-y-3">
-                {/* Breadcrumbs */}
-                <div className="flex gap-1.5 justify-center md:hidden">
-                  {stats.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => scrollToStat(i)}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        i === statIndex ? "bg-white w-4" : "bg-white/30 hover:bg-white/50"
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                {/* Stats Cards */}
-                <div
-                  ref={scrollRef}
-                  className="flex gap-0 overflow-x-auto snap-x snap-mandatory scrollbar-none md:grid md:grid-cols-2 lg:grid-cols-6 md:overflow-x-visible md:gap-4"
-                >
-                  {stats.map((stat, i) => (
-                    <Card
-                      key={stat.label}
-                      ref={(el) => { cardRefs.current[i] = el }}
-                      className={`${stat.border} bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all group snap-start shrink-0 w-[calc(100vw-2rem)] md:w-auto ${i === 5 ? 'lg:col-span-2' : ''}`}
-                    >
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
-                          <div className={`p-2.5 ${stat.iconBg} rounded-xl shadow-md flex-shrink-0`}>
-                            <stat.icon className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="text-right">
-                            <p className={`text-xs ${stat.labelColor} font-semibold uppercase tracking-wider`}>{stat.label}</p>
-                            <p className={`text-2xl font-bold mt-1 ${stat.valueColor}`}>{stat.value}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
               {/* Search Bar */}
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60 z-10 pointer-events-none" />
                 <Input
                   type="text"
                   placeholder="Search tasks..."
@@ -250,27 +262,29 @@ export function TodoList() {
                         category={category}
                         count={count}
                         meta={meta}
-                        onClick={() => navigate(`/todos/${category.toLowerCase()}`, { state: { period: activeFilter } })}
+                        onClick={() => navigate(`/todos/${category.toLowerCase()}`, { state: { period: "Day" } })}
                       />
                     )
                   })}
                 </div>
               </div>
 
-              {/* Tasks Lists */}
-              {activeTodos.length > 0 && (
+              {/* Active Tasks */}
+              {sortedActiveTodos.length > 0 && (
                 <div>
                   <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <Circle className="w-5 h-5 text-purple-400" />
                     Active Tasks
                   </h2>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {activeTodos.slice(0, 5).map((todo) => {
+                    {sortedActiveTodos.slice(0, 5).map((todo) => {
+                      const overdue = isOverdue(todo.dueDate)
+                      const pCfg = todo.priority ? priorityConfig[todo.priority] : null
                       return (
                         <Card
                           key={todo.id}
                           className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all duration-200 group cursor-pointer"
-                          onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
+                          onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: "Day" } })}
                         >
                           <CardContent className="p-4 flex items-start gap-4">
                             <div onClick={(e) => { e.stopPropagation(); toggleTodo(todo.id) }} className="flex-shrink-0">
@@ -280,7 +294,24 @@ export function TodoList() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-white truncate">{todo.text}</p>
-                              <Badge variant="secondary" className="mt-1 text-xs bg-white/10 text-slate-300">{todo.category}</Badge>
+                              <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                                {pCfg && (
+                                  <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${pCfg.bg} ${pCfg.color}`}>
+                                    {pCfg.label}
+                                  </span>
+                                )}
+                                {overdue && (
+                                  <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-red-500/20 text-red-400 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />Overdue
+                                  </span>
+                                )}
+                                <Badge variant="secondary" className="text-xs bg-white/10 text-slate-300">{todo.category}</Badge>
+                                {todo.dueDate && (
+                                  <span className={`text-xs ${overdue ? "text-red-400" : "text-slate-400"}`}>
+                                    Due {new Date(todo.dueDate + "T00:00:00").toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors flex-shrink-0" />
                           </CardContent>
@@ -288,10 +319,10 @@ export function TodoList() {
                       )
                     })}
                   </div>
-                  {activeTodos.length > 5 && (
+                  {sortedActiveTodos.length > 5 && (
                     <Button variant="ghost" className="w-full mt-4 text-slate-400 hover:text-white">
                       <ArrowRight className="w-4 h-4 mr-2" />
-                      View all {activeTodos.length} tasks
+                      View all {sortedActiveTodos.length} tasks
                     </Button>
                   )}
                 </div>
@@ -348,6 +379,79 @@ export function TodoList() {
           )}
         </div>
       </div>
+
+      {/* Quick Add FAB */}
+      <button
+        onClick={() => setQuickAddOpen(true)}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-full shadow-lg shadow-purple-500/30 flex items-center justify-center text-white hover:shadow-xl hover:scale-105 transition-all z-50"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
+
+      {/* Quick Add Dialog */}
+      <Dialog open={quickAddOpen} onOpenChange={(open) => { setQuickAddOpen(open); if (!open) setQuickAdd(emptyQuickAdd) }}>
+        <DialogContent className="bg-black/90 border-white/10 text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Flag className="w-4 h-4 text-purple-400" />
+              Quick Add Task
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleQuickAdd} className="space-y-4 mt-2">
+            <Input
+              autoFocus
+              placeholder="What needs to be done?"
+              value={quickAdd.text}
+              onChange={(e) => setQuickAdd((p) => ({ ...p, text: e.target.value }))}
+              className="h-11 border-white/10 bg-white/5 text-white placeholder:text-slate-500"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400 font-medium">Category</p>
+                <Select value={quickAdd.category} onValueChange={(v) => setQuickAdd((p) => ({ ...p, category: v as Category }))}>
+                  <SelectTrigger className="h-10 border-white/10 bg-white/5 text-white text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/10 bg-black/90 text-white">
+                    {categories.map((c) => (
+                      <SelectItem key={c} value={c} className="text-white focus:bg-white/10 focus:text-white">{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400 font-medium">Priority</p>
+                <Select value={quickAdd.priority} onValueChange={(v) => setQuickAdd((p) => ({ ...p, priority: v as Priority }))}>
+                  <SelectTrigger className="h-10 border-white/10 bg-white/5 text-white text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/10 bg-black/90 text-white">
+                    <SelectItem value="high" className="text-red-400 focus:bg-white/10 focus:text-red-400">High</SelectItem>
+                    <SelectItem value="medium" className="text-amber-400 focus:bg-white/10 focus:text-amber-400">Medium</SelectItem>
+                    <SelectItem value="low" className="text-slate-400 focus:bg-white/10 focus:text-slate-400">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-slate-400 font-medium">Due Date (optional)</p>
+              <Input
+                type="date"
+                value={quickAdd.dueDate}
+                onChange={(e) => setQuickAdd((p) => ({ ...p, dueDate: e.target.value }))}
+                className="h-10 border-white/10 bg-white/5 text-white"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-700 text-white hover:shadow-lg"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Task
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
      </div>
     )
 }
