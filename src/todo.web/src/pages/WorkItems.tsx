@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
 import type { PeriodFilter } from "@/lib/types"
+import { SubtaskSection } from "@/components/SubtaskSection"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -33,7 +34,7 @@ interface WorkItemsProps {
 export function WorkItems({ category = "Work" }: WorkItemsProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { todos, toggleTodo, deleteTodo, addTodo } = useTodos()
+  const { todos, toggleTodo, deleteTodo, addTodo, toggleSubtask, addSubtask } = useTodos()
   const [loading, setLoading] = useState(true)
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
@@ -181,25 +182,28 @@ export function WorkItems({ category = "Work" }: WorkItemsProps) {
                          key={todo.id}
                          className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all group"
                        >
-                        <CardContent className="p-4 flex items-start gap-4">
-                           <button
-                             onClick={() => toggleTodo(todo.id)}
-                             className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer border-${config.accentColor}-600 hover:bg-${config.accentColor}-100`}
-                           >
-                            {todo.completed && <Circle className={`w-4 h-4 text-${config.accentColor}-600`} />}
-                          </button>
-                           <div className="flex-1 min-w-0">
-                             <p className="text-sm font-medium text-white truncate">{todo.text}</p>
-                             {todo.dueDate && (
-                               <p className="text-xs text-slate-400 mt-1">Due: {format(new Date(todo.dueDate + "T00:00:00"), "MMM d, yyyy")}</p>
-                             )}
-                           </div>
-                          <button
-                            onClick={() => deleteTodo(todo.id)}
-                            className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            <button
+                              onClick={() => toggleTodo(todo.id)}
+                              className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer border-${config.accentColor}-600 hover:bg-${config.accentColor}-100`}
+                            >
+                              {todo.completed && <Circle className={`w-4 h-4 text-${config.accentColor}-600`} />}
+                            </button>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-white truncate">{todo.text}</p>
+                              {todo.dueDate && (
+                                <p className="text-xs text-slate-400 mt-1">Due: {format(new Date(todo.dueDate + "T00:00:00"), "MMM d, yyyy")}</p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => deleteTodo(todo.id)}
+                              className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <SubtaskSection todo={todo} onToggle={toggleSubtask} onAdd={addSubtask} />
                         </CardContent>
                       </Card>
                     ))}
@@ -220,22 +224,25 @@ export function WorkItems({ category = "Work" }: WorkItemsProps) {
                          key={todo.id}
                          className="border-white/5 bg-black/20 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all group"
                        >
-                        <CardContent className="p-4 flex items-start gap-4">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
                             <button
                               onClick={() => toggleTodo(todo.id)}
                               className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/30 flex items-center justify-center hover:bg-emerald-500/50 transition-all cursor-pointer"
                             >
                               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                             </button>
-                           <div className="flex-1 min-w-0">
-                             <p className="text-sm text-slate-500 line-through truncate">{todo.text}</p>
-                           </div>
-                          <button
-                            onClick={() => deleteTodo(todo.id)}
-                            className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-slate-500 line-through truncate">{todo.text}</p>
+                            </div>
+                            <button
+                              onClick={() => deleteTodo(todo.id)}
+                              className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <SubtaskSection todo={todo} onToggle={toggleSubtask} onAdd={addSubtask} />
                         </CardContent>
                       </Card>
                     ))}
