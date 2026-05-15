@@ -4,76 +4,81 @@
 hide circle
 skinparam linetype ortho
 
-entity users {
-  * id: uuid [PK]
+entity User {
+  * Id: uuid [PK]
   --
-  * email: varchar(255) [UNIQUE]
-  * password_hash: varchar(255)
-  * display_name: varchar(100)
-  created_at: timestamp
+  * Email: varchar(255) [UNIQUE]
+  * PasswordHash: varchar(255)
+  * DisplayName: varchar(100)
+  * CreatedAt: timestamptz [DEFAULT now()]
 }
 
-entity categories {
-  * id: uuid [PK]
+entity Category {
+  * Id: uuid [PK]
   --
-  * name: varchar(50) [UNIQUE]
-  * label: varchar(50)
-  * sort_order: int
+  * Name: varchar(50) [UNIQUE]
+  * Label: varchar(50)
+  * SortOrder: int [DEFAULT 0]
 }
 
-entity todos {
-  * id: uuid [PK]
+entity Todo {
+  * Id: uuid [PK]
   --
-  * user_id: uuid [FK -> users.id]
-  * category_id: uuid [FK -> categories.id]
-  * text: text
-  * completed: boolean
-  * created_at: timestamp
-  due_date: date
-  price: decimal(10,2)
+  * UserId: uuid [FK -> User.Id]
+  * CategoryId: uuid [FK -> Category.Id]
+  * Text: text
+  * Completed: boolean [DEFAULT false]
+  * CreatedAt: timestamptz [DEFAULT now()]
+  DueDate: date [NULLABLE]
+  Price: decimal(10,2) [NULLABLE]
 }
 
-entity subtasks {
-  * id: uuid [PK]
+entity Subtask {
+  * Id: uuid [PK]
   --
-  * todo_id: uuid [FK -> todos.id]
-  * text: text
-  * completed: boolean
-  * sort_order: int
+  * TodoId: uuid [FK -> Todo.Id]
+  * Text: text
+  * Completed: boolean [DEFAULT false]
+  * SortOrder: int [DEFAULT 0]
 }
 
-entity budget_entries {
-  * id: uuid [PK]
+entity BudgetEntry {
+  * Id: uuid [PK]
   --
-  * user_id: uuid [FK -> users.id]
-  * type: varchar(10)
-  * category: varchar(100)
-  * amount: decimal(12,2)
-  * description: text
-  * date: date
-  created_at: timestamp
+  * UserId: uuid [FK -> User.Id]
+  * Type: varchar(10) [CHECK: 'income'|'expense']
+  * Category: varchar(100)
+  * Amount: decimal(12,2) [CHECK: >= 0]
+  * Description: text [DEFAULT '']
+  * Date: date
+  * CreatedAt: timestamptz [DEFAULT now()]
 }
 
-users ||--o{ todos
-users ||--o{ budget_entries
-categories ||--o{ todos
-todos ||--o{ subtasks
+User ||--o{ Todo : owns
+User ||--o{ BudgetEntry : owns
+Category ||--o{ Todo : categorizes
+Todo ||--o{ Subtask : contains
 
-note top of users
+note top of User
   Auth pages exist but no auth
   context yet — placeholder
   for future implementation
 end note
 
-note right of categories
+note right of Category
   Seeded values:
   Todo, Shopping, Personal,
   Work, Others
 end note
 
-note right of subtasks
-  Currently stored as JSON
-  array on the Todo type
-  (embedded/nested)
+note right of BudgetEntry
+  Tracks income and expenses
+  for user budget management
+end note
+
+note bottom of Subtask
+  Cascade delete with Todo
+  Stored as separate entity
+  (not embedded JSON)
 end note
 @enduml
