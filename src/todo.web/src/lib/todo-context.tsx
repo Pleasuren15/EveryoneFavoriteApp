@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
 import type { Todo, Category, PeriodFilter } from "./types"
 
@@ -48,17 +49,17 @@ interface TodoContextType {
 const TodoContext = createContext<TodoContextType | null>(null)
 
 const defaultTodos: Todo[] = [
-  { id: "1", text: "Review project proposal", completed: false, category: "Work", createdAt: new Date(), dueDate: "2026-05-10", subtasks: [{ id: "s1", text: "Read through draft", completed: true }, { id: "s2", text: "Add feedback notes", completed: false }, { id: "s3", text: "Send to manager", completed: false }] },
+  { id: "1", text: "Review project proposal", completed: false, category: "Work", createdAt: new Date(), dueDate: "2026-05-10", subtasks: [{ id: "s1", todoId: "1", text: "Read through draft", completed: true, sortOrder: 0 }, { id: "s2", todoId: "1", text: "Add feedback notes", completed: false, sortOrder: 1 }, { id: "s3", todoId: "1", text: "Send to manager", completed: false, sortOrder: 2 }] },
   { id: "2", text: "Buy groceries for the week", completed: true, category: "Shopping", createdAt: new Date(), price: 85 },
   { id: "3", text: "Morning exercise routine", completed: false, category: "Personal", createdAt: new Date(), dueDate: "2026-05-07" },
-  { id: "4", text: "Prepare team presentation", completed: false, category: "Work", createdAt: new Date(), dueDate: "2026-05-12", subtasks: [{ id: "s4", text: "Create slides", completed: false }, { id: "s5", text: "Gather metrics", completed: false }] },
+  { id: "4", text: "Prepare team presentation", completed: false, category: "Work", createdAt: new Date(), dueDate: "2026-05-12", subtasks: [{ id: "s4", todoId: "4", text: "Create slides", completed: false, sortOrder: 0 }, { id: "s5", todoId: "4", text: "Gather metrics", completed: false, sortOrder: 1 }] },
   { id: "5", text: "Read a chapter of a book", completed: false, category: "Personal", createdAt: new Date(), dueDate: "2026-05-10" },
   { id: "6", text: "Plan weekend trip", completed: false, category: "Others", createdAt: new Date(), dueDate: "2026-05-08" },
   { id: "7", text: "Organize desk workspace", completed: false, category: "Todo", createdAt: new Date(), dueDate: "2026-05-07" },
   { id: "8", text: "Call plumber about leak", completed: false, category: "Others", createdAt: new Date() },
   { id: "9", text: "Pick up dry cleaning", completed: true, category: "Shopping", createdAt: new Date(), price: 15 },
   { id: "10", text: "Write daily journal entry", completed: false, category: "Personal", createdAt: new Date() },
-  { id: "11", text: "Fix login page bug", completed: false, category: "Work", createdAt: new Date(), dueDate: "2026-05-09", subtasks: [{ id: "s6", text: "Reproduce the bug", completed: true }, { id: "s7", text: "Fix the issue", completed: false }, { id: "s8", text: "Write tests", completed: false }] },
+  { id: "11", text: "Fix login page bug", completed: false, category: "Work", createdAt: new Date(), dueDate: "2026-05-09", subtasks: [{ id: "s6", todoId: "11", text: "Reproduce the bug", completed: true, sortOrder: 0 }, { id: "s7", todoId: "11", text: "Fix the issue", completed: false, sortOrder: 1 }, { id: "s8", todoId: "11", text: "Write tests", completed: false, sortOrder: 2 }] },
   { id: "12", text: "Clean out email inbox", completed: false, category: "Todo", createdAt: new Date() },
 ]
 
@@ -110,7 +111,13 @@ export function TodoProvider({ children }: { children: ReactNode }) {
       prev.map((todo) =>
         todo.id !== todoId ? todo : {
           ...todo,
-          subtasks: [...(todo.subtasks ?? []), { id: crypto.randomUUID(), text, completed: false }],
+          subtasks: [...(todo.subtasks ?? []), {
+            id: crypto.randomUUID(),
+            todoId,
+            text,
+            completed: false,
+            sortOrder: (todo.subtasks ?? []).length,
+          }],
         }
       )
     )

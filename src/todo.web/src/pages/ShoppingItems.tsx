@@ -1,55 +1,67 @@
 import { useState, useMemo, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { ArrowLeft, ShoppingCart, Trash2, Plus, Search, Minus, Hash, Receipt, CalendarIcon, Sparkles } from "lucide-react"
+import { ArrowLeft, Plus, Search, Trash2, CheckCircle2, Circle, Calendar, ShoppingCart, X } from "lucide-react"
 import { format } from "date-fns"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Calendar } from "@/components/ui/calendar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
+import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
 import type { PeriodFilter } from "@/lib/types"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 
-function parseQuantity(text: string): { label: string; qty: number } {
-  const match = text.match(/^(.+?)\s+x(\d+)$/i)
-  if (match) return { label: match[1].trim(), qty: parseInt(match[2]) }
-  return { label: text, qty: 1 }
+const taskSchema = z.object({
+  text: z.string().min(1, "Task text is required"),
+  date: z.string().optional(),
+  price: z.string().optional(),
+})
+
+const categoryConfig = {
+  Shopping: { color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "cyan", bgColor: "bg-cyan-500/20", textColor: "text-cyan-400", btnColor: "from-teal-700 to-teal-600" },
 }
 
-function DueDateBadge({ dueDate }: { dueDate?: string }) {
-  if (!dueDate) return null
-  const today = new Date(); today.setHours(0, 0, 0, 0)
-  const due = new Date(dueDate + "T00:00:00")
-  const diff = Math.round((due.getTime() - today.getTime()) / 86400000)
-  let text: string, color: string
-  if (diff < 0) { text = `${Math.abs(diff)}d overdue`; color = "text-red-400" }
-  else if (diff === 0) { text = "Today"; color = "text-orange-400" }
-  else if (diff === 1) { text = "Tomorrow"; color = "text-amber-400" }
-  else { text = due.toLocaleDateString("en-US", { month: "short", day: "numeric" }); color = "text-neutral-500" }
-  return <span className={`text-[10px] font-mono ${color}`}>{text}</span>
+type CategoryType = "Shopping"
+
+interface ShoppingItemsProps {
+  category?: CategoryType
 }
 
-export function ShoppingItems() {
+export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { todos, toggleTodo, deleteTodo, addTodo } = useTodos()
   const [loading, setLoading] = useState(true)
-
-  const [newItemText, setNewItemText] = useState("")
-  const [newItemQty, setNewItemQty] = useState(1)
-  const [newItemPrice, setNewItemPrice] = useState("")
-  const [newItemDate, setNewItemDate] = useState("")
+  const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: zodResolver(taskSchema),
+    defaultValues: { text: "", date: "" },
+  })
 
   const period: PeriodFilter = (location.state as { period?: PeriodFilter })?.period ?? "Day"
+  const config = categoryConfig[category]
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 600)
+    const t = setTimeout(() => setLoading(false), 300)
     return () => clearTimeout(t)
   }, [])
 
   const periodTodos = useMemo(
-    () => todos.filter((t) => t.category === "Shopping" && matchesPeriod(t.createdAt, period)),
-    [todos, period]
+    () => todos.filter((t) => {
+      if (t.category !== category) return false
+      if (filterDate) {
+        const d = new Date(t.createdAt)
+        return d.getFullYear() === filterDate.getFullYear() &&
+               d.getMonth() === filterDate.getMonth() &&
+               d.getDate() === filterDate.getDate()
+      }
+      return matchesPeriod(t.createdAt, period)
+    }),
+    [todos, period, filterDate, category]
   )
 
   const filteredTodos = useMemo(
@@ -62,214 +74,227 @@ export function ShoppingItems() {
 
   const completedTodos = filteredTodos.filter((t) => t.completed)
   const activeTodos = filteredTodos.filter((t) => !t.completed)
-  const totalQty = activeTodos.reduce((sum, t) => sum + parseQuantity(t.text).qty, 0)
-  const totalPrice = activeTodos.reduce((sum, t) => sum + (t.price ?? 0) * parseQuantity(t.text).qty, 0)
+  const progress = filteredTodos.length > 0 ? Math.round((completedTodos.length / filteredTodos.length) * 100) : 0
 
   return (
-    <div className="h-svh flex flex-col bg-neutral-950 relative">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/10 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-400/5 blur-3xl" />
+    <div className="h-svh flex flex-col">
+      {/* Header */}
+      <div className={`${config.color} sticky top-0 z-40`}>
+        <div className="px-4 sm:px-6 py-6 sm:py-8 max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <Button
+              onClick={() => navigate("/todos")}
+              variant="ghost"
+              size="icon"
+              className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-lg flex-shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8 text-white flex-shrink-0" />
+                <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">Shopping</h1>
+              </div>
+              <p className="text-white/80 text-xs sm:text-sm truncate">{activeTodos.length} active • {completedTodos.length} completed</p>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          {filteredTodos.length > 0 && (
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-white transition-all duration-500"
+                  style={{ width: `${Math.max(progress, 3)}%` }}
+                />
+              </div>
+              <span className="text-xs font-semibold text-white/90">{progress}%</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="relative bg-emerald-800 px-4 pt-4 pb-4">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => navigate("/todos")} className="p-2 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-2 text-emerald-200 text-xs font-mono bg-white/10 backdrop-blur-sm px-3 py-1.5">
-            <Receipt className="w-3.5 h-3.5" />
-            <span>#{Math.floor(Math.random() * 9000 + 1000)}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-600/40 backdrop-blur-sm">
-            <ShoppingCart className="w-6 h-6 text-emerald-200" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Shopping List</h1>
-            {loading ? (
-              <Skeleton className="h-4 w-40 mt-1" />
-            ) : (
-              <p className="text-sm text-emerald-300/70 font-mono mt-0.5">
-                {activeTodos.length} items &middot; {totalQty} units &middot; R{totalPrice.toFixed(2)}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="relative flex-1 px-4 pt-4 pb-4 overflow-y-auto space-y-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 z-10 pointer-events-none" />
-          <input type="text" placeholder="Search items..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 text-neutral-100 placeholder:text-neutral-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
-        </div>
-
-        <form onSubmit={(e) => { e.preventDefault(); if (!newItemText.trim()) return; addTodo(newItemText.trim(), "Shopping", newItemDate || undefined, newItemPrice ? parseFloat(newItemPrice) : undefined); setNewItemText(""); setNewItemQty(1); setNewItemPrice(""); setNewItemDate("") }} className="flex flex-col gap-2">
-          <div className="flex gap-2">
-            <input type="text" placeholder="Add item..." value={newItemText} onChange={(e) => setNewItemText(e.target.value)}
-              className="flex-1 px-3 py-2.5 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 text-neutral-100 placeholder:text-neutral-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
-            <div className="flex items-center gap-1 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 px-2">
-              <button type="button" onClick={() => setNewItemQty(Math.max(1, newItemQty - 1))} className="p-1 text-neutral-400 hover:text-neutral-200 transition-colors"><Minus className="w-3.5 h-3.5" /></button>
-              <span className="text-sm font-mono text-neutral-200 w-5 text-center">{newItemQty}</span>
-              <button type="button" onClick={() => setNewItemQty(newItemQty + 1)} className="p-1 text-neutral-400 hover:text-neutral-200 transition-colors"><Plus className="w-3.5 h-3.5" /></button>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
+          {/* Search */}
+          <div className="flex gap-2 sm:gap-3 flex-col sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+               <Input
+                type="text"
+                placeholder="Search items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500"
+              />
             </div>
-            <button type="submit" className="px-3 py-2.5 bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shadow-md font-medium text-sm"><Plus className="w-5 h-5" /></button>
-          </div>
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm font-mono text-neutral-500 z-10 pointer-events-none">R</span>
-              <input type="number" step="0.01" min="0" placeholder="0.00" value={newItemPrice} onChange={(e) => setNewItemPrice(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 text-neutral-100 placeholder:text-neutral-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
-            </div>
+            <div className="flex gap-2">
             <Popover>
               <PopoverTrigger asChild>
-                <button className="flex-1 flex items-center gap-2 px-3 py-2 bg-neutral-800/80 backdrop-blur-sm border border-neutral-700/50 text-neutral-100 text-sm hover:border-emerald-500/50 transition-all">
-                  <CalendarIcon className="w-3.5 h-3.5 text-neutral-500" />
-                  <span className="flex-1 text-left">{newItemDate ? format(new Date(newItemDate + "T00:00:00"), "PP") : "Due date"}</span>
-                </button>
+                <Button variant="outline" size="sm" className="gap-2 border-white/10 bg-black/30 text-slate-300 hover:text-white hover:bg-black/50">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-xs">{filterDate ? format(filterDate, "MMM d") : "Filter"}</span>
+                </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-neutral-900 border-neutral-700" align="start">
-                <Calendar
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarPicker
                   mode="single"
-                  selected={newItemDate ? new Date(newItemDate + "T00:00:00") : undefined}
-                  onSelect={(date) => setNewItemDate(date ? format(date, "yyyy-MM-dd") : "")}
-                  className="[&_.rdp-day]:text-neutral-200"
+                  selected={filterDate}
+                  onSelect={(date) => setFilterDate(date)}
                 />
               </PopoverContent>
             </Popover>
+            {filterDate && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-slate-400 hover:text-white"
+                onClick={() => setFilterDate(undefined)}
+              >
+                <X className="w-4 h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Clear</span>
+                </Button>
+              )}
+            </div>
           </div>
-        </form>
 
-        {loading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-6 w-24 bg-neutral-800" />
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 w-full bg-neutral-800" />
-            ))}
-            <Skeleton className="h-6 w-32 mt-6 bg-neutral-800" />
-            {Array.from({ length: 2 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full bg-neutral-800" />
-            ))}
-          </div>
-        ) : (
-          <>
-            {activeTodos.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 px-1">
-                  <div className="p-1.5 bg-emerald-600">
-                    <Sparkles className="w-3.5 h-3.5 text-white" />
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 w-full" />
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Active Tasks */}
+               {activeTodos.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Circle className={`w-5 h-5 text-${config.accentColor}-600`} />
+                    Active Items
+                  </h2>
+                  <div className="space-y-2">
+                    {activeTodos.map((todo) => (
+                       <Card
+                         key={todo.id}
+                         className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all group"
+                       >
+                        <CardContent className="p-4 flex items-start gap-4">
+                           <button
+                             onClick={() => toggleTodo(todo.id)}
+                             className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer border-${config.accentColor}-600 hover:bg-${config.accentColor}-100`}
+                           >
+                            {todo.completed && <Circle className={`w-4 h-4 text-${config.accentColor}-600`} />}
+                          </button>
+                           <div className="flex-1 min-w-0">
+                             <p className="text-sm font-medium text-white truncate">{todo.text}</p>
+                             {todo.dueDate && (
+                               <p className="text-xs text-slate-400 mt-1">Due: {format(new Date(todo.dueDate + "T00:00:00"), "MMM d, yyyy")}</p>
+                             )}
+                           </div>
+                          <button
+                            onClick={() => deleteTodo(todo.id)}
+                            className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                  <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
-                    To Buy
-                  </span>
-                  <span className="text-xs font-medium text-neutral-500 ml-auto">{activeTodos.length}</span>
                 </div>
-                <div className="space-y-2">
-                  {activeTodos.map((todo) => {
-                    const { label, qty } = parseQuantity(todo.text)
-                    return (
-                      <div
-                        key={todo.id}
-                        className="group relative flex items-center gap-3 bg-neutral-800 pl-4 pr-3 py-3 shadow-sm border border-neutral-700/60 hover:shadow-md hover:border-emerald-500/60 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
-                      >
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600" />
-                        <Checkbox
-                          checked={todo.completed}
-                          onCheckedChange={() => toggleTodo(todo.id)}
-                          className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 border-neutral-600"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm font-medium text-neutral-100">{label}</span>
-                          <div className="mt-0.5"><DueDateBadge dueDate={todo.dueDate} /></div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {todo.price != null && (
-                            <span className="text-xs font-mono text-emerald-400">R{(todo.price * qty).toFixed(2)}</span>
-                          )}
-                          <div className="flex items-center gap-1 bg-neutral-700/60 px-2 py-1">
-                            <Hash className="w-3 h-3 text-neutral-500" />
-                            <span className="text-xs font-mono text-emerald-400 font-semibold">{qty}</span>
-                          </div>
+              )}
+
+              {/* Completed Tasks */}
+               {completedTodos.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    Completed Items
+                  </h2>
+                  <div className="space-y-2">
+                    {completedTodos.slice(0, 10).map((todo) => (
+                       <Card
+                         key={todo.id}
+                         className="border-white/5 bg-black/20 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all group"
+                       >
+                        <CardContent className="p-4 flex items-start gap-4">
+                            <button
+                              onClick={() => toggleTodo(todo.id)}
+                              className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/30 flex items-center justify-center hover:bg-emerald-500/50 transition-all cursor-pointer"
+                            >
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                            </button>
+                           <div className="flex-1 min-w-0">
+                             <p className="text-sm text-slate-500 line-through truncate">{todo.text}</p>
+                           </div>
                           <button
                             onClick={() => deleteTodo(todo.id)}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                            className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
-                        </div>
-                      </div>
-                    )
-                  })}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {completedTodos.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 px-1">
-                  <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                    Checked Off
-                  </span>
-                  <span className="text-xs font-medium text-neutral-600 ml-auto">{completedTodos.length}</span>
+               {activeTodos.length === 0 && completedTodos.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="inline-flex p-4 bg-black/30 backdrop-blur-xl rounded-full mb-4">
+                    <ShoppingCart className="w-10 h-10 text-cyan-600" />
+                  </div>
+                  <p className="text-slate-300 font-medium">No items yet</p>
+                  <p className="text-sm text-slate-500 mt-1">Add something you need to buy</p>
                 </div>
-                <div className="space-y-2">
-                  {completedTodos.map((todo) => {
-                    const { label, qty } = parseQuantity(todo.text)
-                    return (
-                      <div
-                        key={todo.id}
-                        className="group relative flex items-center gap-3 bg-neutral-800/60 pl-4 pr-3 py-2.5 border border-neutral-700/40 hover:bg-neutral-800 transition-all duration-200 overflow-hidden"
-                      >
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-600" />
-                        <Checkbox
-                          checked={todo.completed}
-                          onCheckedChange={() => toggleTodo(todo.id)}
-                          className="data-[state=checked]:bg-neutral-500 data-[state=checked]:border-neutral-500 border-neutral-700"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm text-neutral-500 line-through">{label}</span>
-                          <div className="mt-0.5"><DueDateBadge dueDate={todo.dueDate} /></div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {todo.price != null && <span className="text-xs font-mono text-neutral-600">R{(todo.price * qty).toFixed(2)}</span>}
-                          <span className="text-xs font-mono text-neutral-600">{qty}</span>
-                          <button
-                            onClick={() => deleteTodo(todo.id)}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+              )}
+            </>
+          )}
 
-            {(activeTodos.length > 0 || completedTodos.length > 0) && (
-              <div className="bg-neutral-800/80 border border-neutral-700/60 px-4 py-3 flex items-center justify-between">
-                <span className="text-xs font-mono text-neutral-400">{activeTodos.length} items &middot; {totalQty} units</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-mono text-neutral-500">TOTAL</span>
-                  <span className="text-base font-mono text-emerald-400 font-bold">R{totalPrice.toFixed(2)}</span>
-                </div>
-              </div>
-            )}
+          <div className="h-20" />
+        </div>
+      </div>
 
-            {filteredTodos.length === 0 && (
-              <div className="text-center py-16">
-                <div className="inline-flex p-4 bg-emerald-500/10 mb-3">
-                  <ShoppingCart className="w-10 h-10 text-emerald-400" />
-                </div>
-                <p className="text-neutral-200 text-sm font-medium">No items on your list</p>
-                <p className="text-neutral-500 text-xs mt-1">Add something you need to buy</p>
-              </div>
-            )}
-          </>
-        )}
+      {/* Add Item Footer */}
+      <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+          <form
+            onSubmit={handleSubmit((data) => {
+              addTodo(data.text.trim(), category, data.date || undefined, data.price ? parseFloat(data.price) : undefined)
+              reset()
+            })}
+            className="flex gap-2 sm:gap-3 flex-col sm:flex-row"
+          >
+            <div className="flex-1">
+              <Input
+                type="text"
+                placeholder={`Add a new item...`}
+                {...register("text")}
+                className="w-full h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500"
+              />
+              {errors.text && <p className="text-red-400 text-xs mt-1">{errors.text.message as string}</p>}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="date"
+                {...register("date")}
+                className="h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 flex-1 sm:flex-none"
+              />
+              <Input type="number" step="0.01" min="0" placeholder="Price" {...register("price")} className="h-11 w-28 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg" />
+              <Button
+                type="submit"
+                size="icon"
+                className={`bg-gradient-to-r ${config.btnColor} text-white hover:shadow-lg transition-all flex-shrink-0 cursor-pointer`}
+              >
+                <Plus className="w-5 h-5" />
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )

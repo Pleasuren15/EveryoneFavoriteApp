@@ -1,91 +1,112 @@
-import { useState, type FormEvent } from "react"
+import { useState } from "react"
 import { Link } from "react-router-dom"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { Mail, ArrowLeft, Send } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 
-const bgUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YWJzdHJhY3R8ZW58MHx8MHx8fDA%3D"
+const forgotPasswordSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+})
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
 
 export function ForgotPassword() {
-  const [email, setEmail] = useState("")
   const [sent, setSent] = useState(false)
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+  })
+
+  const email = watch("email")
+
+  const onSubmit = () => {
     setSent(true)
   }
 
   return (
-    <div className="h-svh flex flex-col relative overflow-hidden items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${bgUrl})` }}
-      />
-      <div className="absolute inset-0 bg-black/50" />
-
-      <div className="relative w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="bg-white/90 backdrop-blur-xl border border-white/30 shadow-2xl overflow-hidden">
-          <div className="px-8 md:px-10 py-12">
-            <h1 className="text-4xl font-bold text-taupe-900 tracking-tight mb-2">Reset Password</h1>
-            <p className="text-taupe-500 text-sm mb-8">Enter your email to receive a reset link.</p>
-
+    <div className="h-svh flex flex-col relative items-center justify-center p-4">
+      <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <Card className="bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl overflow-hidden">
+          <CardHeader className="px-8 md:px-10 pt-12 pb-0">
+            <CardTitle className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Reset Password</CardTitle>
+            <CardDescription className="text-slate-400 text-sm mt-2">
+              Enter your email to receive a reset link.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-8 md:px-10 pb-12 pt-8">
             {sent ? (
               <div className="text-center animate-in fade-in zoom-in-95 duration-500">
-                <div className="inline-flex p-3 bg-emerald-100 mb-4">
+                <div className="inline-flex p-3 bg-emerald-100 rounded-lg mb-4">
                   <Send className="w-6 h-6 text-emerald-600" />
                 </div>
-                <p className="text-taupe-900 font-semibold mb-1">Check your email</p>
-                <p className="text-taupe-500 text-sm mb-6">
-                  We&apos;ve sent a reset link to <span className="font-medium text-taupe-700">{email}</span>
+                <p className="text-white font-semibold mb-1">Check your email</p>
+                <p className="text-slate-400 text-sm mb-6">
+                  We&apos;ve sent a reset link to <span className="font-medium text-slate-200">{email}</span>
                 </p>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-cornflower-blue-500 hover:text-cornflower-blue-600 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Login
-                </Link>
-              </div>
-            ) : (
-              <>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                  <div className="flex flex-col gap-1.5">
-                    <label htmlFor="email" className="text-sm font-semibold text-taupe-700 ml-1">
-                      Email
-                    </label>
-                    <div className="relative group">
-                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60 z-10 pointer-events-none" />
-                      <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-white/15 border border-white/20 text-white placeholder:text-white/40 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10 transition-all"
-                        placeholder="Enter your email"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 bg-cornflower-blue-600 text-white font-semibold hover:bg-cornflower-blue-700 hover:shadow-lg hover:shadow-cornflower-blue-500/30 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Send className="w-4 h-4" />
-                    Send Reset Link
-                  </button>
-                </form>
-
-                <div className="flex justify-center mt-6 pt-5 border-t border-taupe-100">
+                <Button variant="link" asChild>
                   <Link
                     to="/login"
-                    className="flex items-center gap-2 text-sm font-medium text-taupe-500 hover:text-cornflower-blue-500 transition-colors"
+                    className="inline-flex items-center gap-2"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Back to Login
                   </Link>
+                </Button>
+              </div>
+            ) : (
+              <>
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="email" className="text-sm font-semibold text-slate-200">
+                      Email
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60 z-10 pointer-events-none" />
+                      <Input
+                        id="email"
+                        type="email"
+                        {...register("email")}
+                        className="pl-10 bg-white/15 border-white/20 text-white placeholder:text-white/40 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                    {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full h-11 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-lg shadow-primary/30 active:scale-[0.98]"
+                  >
+                    <Send className="w-4 h-4" />
+                    Send Reset Link
+                  </Button>
+                </form>
+
+                <div className="flex justify-center mt-6 pt-5 border-t border-white/10">
+                  <Button variant="link" asChild>
+                    <Link
+                      to="/login"
+                      className="flex items-center gap-2"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      Back to Login
+                    </Link>
+                  </Button>
                 </div>
               </>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

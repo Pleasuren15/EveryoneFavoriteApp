@@ -1,42 +1,68 @@
 import { useState, useMemo, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { ArrowLeft, ListTodo, Trash2, CalendarDays, Plus, Search, Target, CalendarIcon } from "lucide-react"
+import { ArrowLeft, Plus, Search, Trash2, CheckCircle2, Circle, Calendar, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, X } from "lucide-react"
 import { format } from "date-fns"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
 import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
-import type { PeriodFilter } from "@/lib/types"
+import type { PeriodFilter, Category } from "@/lib/types"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 
-const periodIcons: Record<PeriodFilter, typeof CalendarIcon> = {
-  Day: CalendarIcon,
-  Week: CalendarDays,
-  Month: CalendarDays,
-  Year: CalendarDays,
+const taskSchema = z.object({
+  text: z.string().min(1, "Task text is required"),
+  date: z.string().optional(),
+  price: z.string().optional(),
+})
+
+const categoryConfig: Record<string, any> = {
+  Todo: { icon: ListTodo, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "purple", textColor: "text-purple-400", btnColor: "from-purple-700 to-purple-600" },
+  Shopping: { icon: ShoppingCart, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "cyan", textColor: "text-cyan-400", btnColor: "from-teal-700 to-teal-600" },
+  Personal: { icon: User, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "pink", textColor: "text-pink-400", btnColor: "from-rose-700 to-rose-600" },
+  Work: { icon: Briefcase, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "amber", textColor: "text-amber-400", btnColor: "from-amber-700 to-amber-600" },
+  Others: { icon: MoreHorizontal, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "indigo", textColor: "text-indigo-400", btnColor: "from-indigo-700 to-indigo-600" },
+}
+
+type CategoryType = keyof typeof categoryConfig
+
+interface TodoItemsProps {
+  category: CategoryType
 }
 
 export function TodoItems() {
+  const category: CategoryType = "Todo"
+  return <TodoItemsComponent category={category} />
+}
+
+function TodoItemsComponent({ category }: TodoItemsProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { todos, toggleTodo, deleteTodo, addTodo } = useTodos()
   const [loading, setLoading] = useState(true)
-
-  const [newTodoText, setNewTodoText] = useState("")
-  const [newTodoDate, setNewTodoDate] = useState("")
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: zodResolver(taskSchema),
+    defaultValues: { text: "", date: "" },
+  })
 
   const period: PeriodFilter = (location.state as { period?: PeriodFilter })?.period ?? "Day"
+  const config = categoryConfig[category]
+  const IconComponent = config.icon
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 600)
+    const t = setTimeout(() => setLoading(false), 300)
     return () => clearTimeout(t)
   }, [])
 
   const periodTodos = useMemo(
     () => todos.filter((t) => {
-      if (t.category !== "Todo") return false
+      if (t.category !== category) return false
       if (filterDate) {
         const d = new Date(t.createdAt)
         return d.getFullYear() === filterDate.getFullYear() &&
@@ -45,7 +71,7 @@ export function TodoItems() {
       }
       return matchesPeriod(t.createdAt, period)
     }),
-    [todos, period, filterDate]
+    [todos, period, filterDate, category]
   )
 
   const filteredTodos = useMemo(
@@ -61,215 +87,224 @@ export function TodoItems() {
   const progress = filteredTodos.length > 0 ? Math.round((completedTodos.length / filteredTodos.length) * 100) : 0
 
   return (
-    <div className="h-svh flex flex-col bg-white">
-      <div className="relative bg-blue-600 px-4 pt-4 pb-4">
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => navigate("/todos")}
-            className="p-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-2 text-blue-200 text-sm font-medium bg-white/15 backdrop-blur-sm px-3 py-1.5">
-            {(() => {
-              const Icon = periodIcons[period]
-              return <Icon className="w-4 h-4" />
-            })()}
-            <span>{period}</span>
+    <div className="h-svh flex flex-col font-sans">
+      {/* Header */}
+      <div className={`${config.color}`}>
+        <div className="px-4 sm:px-6 py-6 sm:py-8 max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <Button
+              onClick={() => navigate("/todos")}
+              variant="ghost"
+              size="icon"
+              className="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-lg flex-shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                <IconComponent className="w-6 h-6 sm:w-8 sm:h-8 text-white flex-shrink-0" />
+                <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">{category}</h1>
+              </div>
+              <p className="text-white/80 text-xs sm:text-sm truncate">{activeTodos.length} active • {completedTodos.length} completed</p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-white/20 backdrop-blur-sm">
-            <ListTodo className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Todo</h1>
-            <p className="text-sm text-blue-200/70">
-              {activeTodos.length} active &middot; {completedTodos.length} done
-            </p>
-          </div>
+          {/* Progress Bar */}
+          {filteredTodos.length > 0 && (
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-white transition-all duration-500"
+                  style={{ width: `${Math.max(progress, 3)}%` }}
+                />
+              </div>
+              <span className="text-xs font-semibold text-white/90">{progress}%</span>
+            </div>
+          )}
         </div>
+      </div>
 
-        {!loading && filteredTodos.length > 0 && (
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex-1 h-1.5 bg-white/20 overflow-hidden">
-              <div
-                className="h-full bg-white transition-all duration-500"
-                style={{ width: `${Math.max(progress, 4)}%` }}
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
+          {/* Search */}
+          <div className="flex gap-2 sm:gap-3 flex-col sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+              <Input
+                type="text"
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg"
               />
             </div>
-            <span className="text-xs font-medium text-blue-200">{progress}%</span>
+            <div className="flex gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 border-white/10 bg-black/30 text-slate-300 hover:text-white hover:bg-black/50">
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-xs">{filterDate ? format(filterDate, "MMM d") : "Filter"}</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 border-white/10 bg-black/90 text-white" align="start">
+                  <CalendarPicker
+                    mode="single"
+                    selected={filterDate}
+                    onSelect={(date) => setFilterDate(date)}
+                  />
+                </PopoverContent>
+              </Popover>
+              {filterDate && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setFilterDate(undefined)}
+                  className="text-slate-400 hover:text-white"
+                >
+                  <X className="w-4 h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Clear</span>
+                </Button>
+              )}
+            </div>
           </div>
-        )}
-      </div>
 
-      <div className="relative flex-1 px-4 py-4 overflow-y-auto space-y-4 pb-24">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 z-10 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search tasks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-white/90 backdrop-blur-sm border border-blue-200/50 text-neutral-800 placeholder:text-neutral-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
-          />
-        </div>
-
-        {loading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-6 w-24" />
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 w-full" />
-            ))}
-            <Skeleton className="h-6 w-32 mt-6" />
-            {Array.from({ length: 2 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        ) : (
-          <>
-            {activeTodos.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 px-1">
-                  <div className="p-1.5 bg-blue-600">
-                    <Target className="w-3.5 h-3.5 text-white" />
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 w-full" />
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Active Tasks */}
+              {activeTodos.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Circle className={config.textColor} />
+                    Active Tasks
+                  </h2>
+                  <div className="space-y-2">
+                    {activeTodos.map((todo) => (
+                      <Card
+                        key={todo.id}
+                        className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all group"
+                      >
+                        <CardContent className="p-4 flex items-start gap-4">
+                          <button
+                            onClick={() => toggleTodo(todo.id)}
+                            className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-slate-300`}
+                          >
+                            {todo.completed && <Circle className={`w-4 h-4 ${config.textColor}`} />}
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate">{todo.text}</p>
+                            {todo.dueDate && (
+                              <p className="text-xs text-slate-400 mt-1">Due: {format(new Date(todo.dueDate + "T00:00:00"), "MMM d, yyyy")}</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => deleteTodo(todo.id)}
+                            className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                  <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">
-                    Active
-                  </span>
-                  <span className="text-xs font-medium text-neutral-400 ml-auto">{activeTodos.length}</span>
                 </div>
-                <div className="space-y-2">
-                  {activeTodos.map((todo) => (
-                    <div
-                      key={todo.id}
-                      className="group relative flex items-center gap-3 bg-white pl-4 pr-3 py-3 shadow-sm border border-neutral-200/60 hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600" />
-                      <Checkbox
-                        checked={todo.completed}
-                        onCheckedChange={() => toggleTodo(todo.id)}
-                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                      />
-                      <span className="flex-1 text-sm font-medium text-neutral-800">{todo.text}</span>
-                      <button
-                        onClick={() => deleteTodo(todo.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-all"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
 
-            {completedTodos.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 px-1">
-                  <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                    Completed
-                  </span>
-                  <span className="text-xs font-medium text-neutral-300 ml-auto">{completedTodos.length}</span>
-                </div>
-                <div className="space-y-2">
-                  {completedTodos.map((todo) => (
-                    <div
-                      key={todo.id}
-                      className="group relative flex items-center gap-3 bg-white/60 pl-4 pr-3 py-2.5 border border-neutral-200/40 hover:bg-white transition-all duration-200 overflow-hidden"
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-300" />
-                      <Checkbox
-                        checked={todo.completed}
-                        onCheckedChange={() => toggleTodo(todo.id)}
-                        className="data-[state=checked]:bg-neutral-400 data-[state=checked]:border-neutral-400"
-                      />
-                      <span className="flex-1 text-sm text-neutral-400 line-through">{todo.text}</span>
-                      <button
-                        onClick={() => deleteTodo(todo.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-all"
+              {/* Completed Tasks */}
+              {completedTodos.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    Completed Tasks
+                  </h2>
+                  <div className="space-y-2">
+                    {completedTodos.slice(0, 10).map((todo) => (
+                      <Card
+                        key={todo.id}
+                        className="border-white/5 bg-black/20 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all group"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
+                        <CardContent className="p-4 flex items-start gap-4">
+                          <button
+                            onClick={() => toggleTodo(todo.id)}
+                            className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/30 flex items-center justify-center hover:bg-emerald-500/50 transition-all cursor-pointer"
+                          >
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-slate-500 line-through truncate">{todo.text}</p>
+                          </div>
+                          <button
+                            onClick={() => deleteTodo(todo.id)}
+                            className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {filteredTodos.length === 0 && (
-              <div className="text-center py-16">
-                <div className="inline-flex p-4 bg-blue-50 mb-3">
-                  <ListTodo className="w-10 h-10 text-blue-400" />
+              {activeTodos.length === 0 && completedTodos.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="inline-flex p-4 bg-black/30 backdrop-blur-xl rounded-full mb-4">
+                    <IconComponent className="w-8 h-8 text-slate-500" />
+                  </div>
+                  <p className="text-slate-300 font-medium">No tasks yet</p>
+                  <p className="text-sm text-slate-500 mt-1">Add your first task below to get started</p>
                 </div>
-                <p className="text-neutral-700 text-sm font-medium">No tasks yet</p>
-                <p className="text-neutral-400 text-xs mt-1">Add something to get started</p>
-              </div>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
+
+          <div className="h-20" />
+        </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-4 py-3">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (!newTodoText.trim()) return
-            addTodo(newTodoText.trim(), "Todo", newTodoDate || undefined)
-            setNewTodoText("")
-            setNewTodoDate("")
-          }}
-          className="flex flex-col gap-2"
-        >
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Add a new task..."
-              value={newTodoText}
-              onChange={(e) => setNewTodoText(e.target.value)}
-              className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur-sm border border-blue-200/50 text-neutral-800 placeholder:text-neutral-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
-            />
-            <button
-              type="submit"
-              className="px-3 py-2.5 bg-blue-600 text-white hover:bg-blue-500 transition-all shadow-md"
-            >
-              <Plus className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="date"
-              value={newTodoDate}
-              onChange={(e) => setNewTodoDate(e.target.value)}
-              className="flex-1 px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 text-neutral-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
-            />
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-sm border border-blue-200/50 text-sm text-neutral-800 hover:border-blue-500/50 transition-all shadow-sm">
-                  <CalendarIcon className="w-4 h-4 text-neutral-600" />
-                  <span className="text-xs">{filterDate ? format(filterDate, "MMM d") : "Filter"}</span>
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarPicker
-                  mode="single"
-                  selected={filterDate}
-                  onSelect={(date) => setFilterDate(date)}
-                />
-              </PopoverContent>
-            </Popover>
-            {filterDate && (
-              <button
-                type="button"
-                onClick={() => setFilterDate(undefined)}
-                className="px-2 py-2 text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
+      {/* Add Task Footer */}
+      <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <form
+            onSubmit={handleSubmit((data) => {
+              addTodo(data.text.trim(), category as Category, data.date || undefined, data.price ? parseFloat(data.price) : undefined)
+              reset()
+            })}
+            className="flex gap-2 sm:gap-3 flex-col sm:flex-row"
+          >
+            <div className="flex-1">
+              <Input
+                type="text"
+                placeholder={`Add a new ${category.toLowerCase()} task...`}
+                {...register("text")}
+                className="w-full h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg"
+              />
+              {errors.text && <p className="text-red-400 text-xs mt-1">{errors.text.message as string}</p>}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="date"
+                {...register("date")}
+                className="h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white shadow-lg flex-1 sm:flex-none"
+              />
+              <Input type="number" step="0.01" min="0" placeholder="Price" {...register("price")} className="h-11 w-28 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg" />
+              <Button
+                type="submit"
+                size="icon"
+                className={`bg-gradient-to-r ${config.btnColor} text-white hover:shadow-lg transition-all flex-shrink-0 cursor-pointer`}
               >
-                Clear
-              </button>
-            )}
-          </div>
-        </form>
+                <Plus className="w-5 h-5" />
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )

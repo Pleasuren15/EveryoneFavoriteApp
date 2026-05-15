@@ -3,8 +3,10 @@ export type PeriodFilter = "Day" | "Week" | "Month" | "Year"
 
 export interface Subtask {
   id: string
+  todoId: string
   text: string
   completed: boolean
+  sortOrder: number
 }
 
 export interface BudgetEntry {
@@ -14,6 +16,7 @@ export interface BudgetEntry {
   amount: number
   description: string
   date: string
+  createdAt: Date
 }
 
 export interface Todo {

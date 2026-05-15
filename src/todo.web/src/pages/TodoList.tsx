@@ -1,41 +1,85 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, Calendar, CalendarDays, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, Info, LogOut, ChevronDown, Wallet } from "lucide-react"
+import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, Wallet, ChevronRight, Clock, CheckCircle2, Circle, LogOut, CalendarDays, ArrowRight, RefreshCw } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
 import { useCountUp } from "@/lib/hooks"
 import { useBudget } from "@/lib/use-budget"
 import type { Category, PeriodFilter } from "@/lib/types"
 
-const bgUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YWJzdHJhY3R8ZW58MHx8MHx8fDA%3D"
-
-const categoryMeta: Record<Category, { color: string; shadowColor: string; icon: typeof ListTodo; badge: string }> = {
-  Todo: { color: "bg-blue-600", shadowColor: "shadow-blue-600/20", icon: ListTodo, badge: "bg-blue-600" },
-  Shopping: { color: "bg-emerald-600", shadowColor: "shadow-emerald-600/20", icon: ShoppingCart, badge: "bg-emerald-600" },
-  Personal: { color: "bg-purple-600", shadowColor: "shadow-purple-600/20", icon: User, badge: "bg-purple-600" },
-  Work: { color: "bg-pink-500", shadowColor: "shadow-pink-500/20", icon: Briefcase, badge: "bg-pink-500" },
-  Others: { color: "bg-amber-500", shadowColor: "shadow-amber-500/20", icon: MoreHorizontal, badge: "bg-amber-500" },
+const categoryMeta: Record<Category, { color: string; bgColor: string; icon: typeof ListTodo; accentColor: string }> = {
+  Todo: { color: "text-purple-600", bgColor: "bg-purple-50 dark:bg-purple-950/30", icon: ListTodo, accentColor: "from-purple-600 to-indigo-700" },
+  Shopping: { color: "text-cyan-600", bgColor: "bg-cyan-50 dark:bg-cyan-950/30", icon: ShoppingCart, accentColor: "from-cyan-500 to-teal-600" },
+  Personal: { color: "text-pink-600", bgColor: "bg-pink-50 dark:bg-pink-950/30", icon: User, accentColor: "from-pink-500 to-rose-600" },
+  Work: { color: "text-amber-600", bgColor: "bg-amber-50 dark:bg-amber-950/30", icon: Briefcase, accentColor: "from-amber-500 to-orange-600" },
+  Others: { color: "text-indigo-600", bgColor: "bg-indigo-50 dark:bg-indigo-950/30", icon: MoreHorizontal, accentColor: "from-indigo-600 to-blue-700" },
 }
 
-const categories: { name: Category; color: string; shadowColor: string; icon: typeof ListTodo }[] = [
-  { name: "Todo", color: "bg-blue-600", shadowColor: "shadow-blue-600/20", icon: ListTodo },
-  { name: "Shopping", color: "bg-emerald-600", shadowColor: "shadow-emerald-600/20", icon: ShoppingCart },
-  { name: "Personal", color: "bg-purple-600", shadowColor: "shadow-purple-600/20", icon: User },
-  { name: "Work", color: "bg-pink-500", shadowColor: "shadow-pink-500/20", icon: Briefcase },
-  { name: "Others", color: "bg-amber-500", shadowColor: "shadow-amber-500/20", icon: MoreHorizontal },
-]
+const categories: Array<Category> = ["Todo", "Shopping", "Personal", "Work", "Others"]
+
+function CategoryCard({ category, count, meta, onClick }: {
+  category: string
+  count: number
+  meta: typeof categoryMeta[Category]
+  onClick: () => void
+}) {
+  const animatedCount = useCountUp(count)
+  const Icon = meta.icon
+
+  return (
+    <Card
+      onClick={onClick}
+      className="cursor-pointer border-white/10 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-black/40 backdrop-blur-xl"
+    >
+      <CardContent className="pt-6 pb-4">
+        <div className="flex items-center justify-between">
+          <div className={`p-3 rounded-lg shadow-md bg-gradient-to-br ${meta.accentColor} flex-shrink-0`}>
+            <Icon className="w-6 h-6 text-white" />
+          </div>
+          <div className="text-right">
+            <p className={`text-xs font-semibold uppercase tracking-widest ${meta.color}`}>{category}</p>
+            <p className="text-3xl font-bold text-white mt-2">{animatedCount}</p>
+            <p className="text-xs text-slate-400 mt-1">{count === 1 ? 'task' : 'tasks'}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
 export function TodoList() {
   const navigate = useNavigate()
   const { todos, toggleTodo } = useTodos()
   const [activeFilter, setActiveFilter] = useState<PeriodFilter>("Day")
   const [searchQuery, setSearchQuery] = useState("")
-  const [showAllActive, setShowAllActive] = useState(false)
-  const [showAllCompleted, setShowAllCompleted] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const { balance } = useBudget()
-  const [loading, setLoading] = useState(true)
+
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [statIndex, setStatIndex] = useState(0)
+
+  const scrollToStat = useCallback((i: number) => {
+    cardRefs.current[i]?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" })
+    setStatIndex(i)
+  }, [])
+
+  useEffect(() => {
+    const container = scrollRef.current
+    if (!container) return
+    const onScroll = () => {
+      const idx = Math.round(container.scrollLeft / container.clientWidth)
+      setStatIndex(Math.min(idx, stats.length - 1))
+    }
+    container.addEventListener("scroll", onScroll, { passive: true })
+    return () => container.removeEventListener("scroll", onScroll)
+  }, [])
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600)
@@ -43,48 +87,13 @@ export function TodoList() {
   }, [])
 
   const today = new Date()
-  const dateStr = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
-  const quotes = [
-    { quote: "Failing to plan is planning to fail.", author: "Alan Lakein" },
-    { quote: "Plans are nothing; planning is everything.", author: "Dwight D. Eisenhower" },
-    { quote: "By failing to prepare, you are preparing to fail.", author: "Benjamin Franklin" },
-    { quote: "A goal without a plan is just a wish.", author: "Antoine de Saint-Exupéry" },
-    { quote: "Plans are only good intentions unless they immediately degenerate into hard work.", author: "Peter Drucker" },
-    { quote: "A goal is a dream with a deadline.", author: "Napoleon Hill" },
-    { quote: "The man who moves a mountain begins by carrying away small stones.", author: "Confucius" },
-    { quote: "The plans of the diligent lead surely to abundance.", author: "King Solomon" },
-    { quote: "The general who wins a battle makes many calculations in his temple before the battle is fought.", author: "Sun Tzu" },
-    { quote: "You were born to win, but to be a winner, you must plan to win.", author: "Zig Ziglar" },
-    { quote: "Every minute you spend in planning saves 10 minutes in execution.", author: "Brian Tracy" },
-    { quote: "Begin with the end in mind.", author: "Stephen R. Covey" },
-    { quote: "Give me six hours to chop down a tree and I will spend the first four sharpening the axe.", author: "Abraham Lincoln" },
-    { quote: "A good plan violently executed now is better than a perfect plan next week.", author: "George S. Patton" },
-    { quote: "If one does not know to which port one is sailing, no wind is favorable.", author: "Seneca" },
-    { quote: "If you don't know where you are going, you'll end up someplace else.", author: "Yogi Berra" },
-    { quote: "Setting goals is the first step in turning the invisible into the visible.", author: "Tony Robbins" },
-    { quote: "If you don't know where you are going, any road will get you there.", author: "Lewis Carroll" },
-    { quote: "No plan survives contact with the enemy.", author: "Helmuth von Moltke" },
-    { quote: "Commit to the Lord whatever you do, and he will establish your plans.", author: "King Solomon" },
-    { quote: "Time stays long enough for anyone who will use it.", author: "Leonardo da Vinci" },
-    { quote: "Careful planning is the key to success.", author: "Alexander Graham Bell" },
-    { quote: "Unless you have definite, precise, clearly set goals, you are not going to realize the maximum potential that lies within you.", author: "Zig Ziglar" },
-    { quote: "Long-range planning works best in the short run.", author: "Doug Evelyn" },
-    { quote: "The best way to predict the future is to create it.", author: "Peter Drucker" },
-    { quote: "A budget is telling your money where to go instead of wondering where it went.", author: "John C. Maxwell" },
-    { quote: "Good fortune is what happens when opportunity meets with planning.", author: "Thomas Edison" },
-    { quote: "He who every morning plans the transactions of the day and follows out that plan carries a thread that will guide him through the labyrinth of the most busy life.", author: "Victor Hugo" },
-    { quote: "Plans are useless, but planning is indispensable.", author: "Dwight D. Eisenhower" },
-    { quote: "Well begun is half done.", author: "Aristotle" }
-  ]
-
-  const [randomQuote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)])
-
-  const filters = [
-    { id: "Day", label: "Day", icon: Calendar },
-    { id: "Week", label: "Week", icon: CalendarDays },
-    { id: "Month", label: "Month", icon: CalendarDays },
-    { id: "Year", label: "Year", icon: CalendarDays },
+  const filters: Array<{ id: PeriodFilter; label: string }> = [
+    { id: "Day", label: "Today" },
+    { id: "Week", label: "This Week" },
+    { id: "Month", label: "This Month" },
+    { id: "Year", label: "This Year" },
   ]
 
   const periodTodos = useMemo(
@@ -102,241 +111,243 @@ export function TodoList() {
 
   const completedTodos = searchedTodos.filter((t) => t.completed)
   const activeTodos = searchedTodos.filter((t) => !t.completed)
+  const totalTasks = activeTodos.length + completedTodos.length
+  const completionRate = totalTasks > 0 ? Math.round((completedTodos.length / totalTasks) * 100) : 0
 
-  const displayedActive = showAllActive ? activeTodos : activeTodos.slice(0, 3)
-  const displayedCompleted = showAllCompleted ? completedTodos : completedTodos.slice(0, 3)
+  const stats = useMemo(() => [
+    { label: "Total Tasks", value: totalTasks, icon: ListTodo, border: "border-white/10", iconBg: "bg-gradient-to-br from-slate-500 to-slate-600", labelColor: "text-slate-400", valueColor: "text-white" },
+    { label: "Active", value: activeTodos.length, icon: Circle, border: "border-purple-500/20", iconBg: "bg-gradient-to-br from-purple-500 to-purple-600", labelColor: "text-purple-400", valueColor: "text-white" },
+    { label: "Completed", value: completedTodos.length, icon: CheckCircle2, border: "border-emerald-500/20", iconBg: "bg-gradient-to-br from-emerald-500 to-emerald-600", labelColor: "text-emerald-400", valueColor: "text-white" },
+    { label: "Progress", value: `${completionRate}%`, icon: Clock, border: "border-blue-500/20", iconBg: "bg-gradient-to-br from-blue-500 to-blue-600", labelColor: "text-blue-400", valueColor: "text-white" },
+    { label: "Balance", value: `R${Math.abs(balance).toFixed(2)}`, icon: Wallet, border: "border-amber-500/20", iconBg: "bg-gradient-to-br from-amber-500 to-amber-600", labelColor: "text-amber-400", valueColor: balance >= 0 ? "text-emerald-400" : "text-red-400" },
+  ], [totalTasks, activeTodos.length, completedTodos.length, completionRate, balance])
 
   return (
-    <div className="h-svh flex flex-col bg-neutral-50">
-
-      <div className="relative bg-cover bg-center" style={{ backgroundImage: `url(${bgUrl})` }}>
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative px-4 pt-12 pb-4">
-          <div className="flex items-start justify-between">
-            <div className="text-white">
-              <div className="text-sm opacity-80">Today</div>
-              <div className="text-xl font-bold">{dateStr}</div>
+    <div className="h-svh flex flex-col font-sans">
+      {/* Header */}
+      <div className="bg-black/40 backdrop-blur-xl border-b border-white/10 sticky top-0 z-40 shadow-lg shadow-black/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+              <div className="p-2 sm:p-2.5 bg-white/10 backdrop-blur-sm rounded-xl flex-shrink-0">
+                <ListTodo className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-3xl font-bold text-white truncate">Dashboard</h1>
+                <p className="text-xs sm:text-sm text-purple-200 mt-0.5 sm:mt-1 truncate">{dateStr}</p>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button className="p-2 bg-sky-400 text-white hover:bg-sky-500 transition-colors shadow-md">
-                <Info className="w-5 h-5" />
-              </button>
-              <button onClick={() => navigate('/')} className="p-2 bg-rose-500 text-white hover:bg-rose-600 transition-colors shadow-md">
-                <LogOut className="w-5 h-5" />
-              </button>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => window.location.reload()} variant="ghost" size="sm" className="text-purple-200 hover:text-white hover:bg-white/10 flex-shrink-0">
+                <RefreshCw className="w-4 h-4" />
+              </Button>
+              <Button onClick={() => navigate('/')} variant="ghost" size="sm" className="text-purple-200 hover:text-white hover:bg-white/10 flex-shrink-0">
+                <LogOut className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
             </div>
           </div>
 
-          <div className="mt-3 max-w-2xl">
-            <p className="text-white text-base md:text-lg font-medium italic mb-2 leading-relaxed">
-              "{randomQuote.quote}"
-            </p>
-            <p className="text-white/80 text-sm font-semibold">
-              — {randomQuote.author}
-            </p>
+          {/* Period Filter */}
+          <div className="flex items-center gap-2">
+            <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as PeriodFilter)}>
+              <SelectTrigger className="w-40 border-white/20 bg-black/30 backdrop-blur-xl text-white text-sm shadow-lg">
+                <CalendarDays className="w-4 h-4" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="border-white/10 bg-black/90 text-white">
+                {filters.map((filter) => (
+                  <SelectItem key={filter.id} value={filter.id} className="text-white focus:bg-white/10 focus:text-white">{filter.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+        </div>
+      </div>
 
-          <div className="mt-3 flex gap-1.5">
-            {filters.map((filter) => {
-              const Icon = filter.icon
-              const isActive = activeFilter === filter.id
-              return (
-                <button
-                  key={filter.id}
-                  onClick={() => setActiveFilter(filter.id as PeriodFilter)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all ${
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-white/10 text-white/70 hover:bg-white/15 hover:text-white/90"
-                  }`}
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-8">
+          {loading ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-24" />
+                ))}
+              </div>
+              <div className="space-y-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Stats Carousel */}
+              <div className="space-y-3">
+                {/* Breadcrumbs */}
+                <div className="flex gap-1.5 justify-center md:hidden">
+                  {stats.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => scrollToStat(i)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        i === statIndex ? "bg-white w-4" : "bg-white/30 hover:bg-white/50"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {/* Stats Cards */}
+                <div
+                  ref={scrollRef}
+                  className="flex gap-0 overflow-x-auto snap-x snap-mandatory scrollbar-none md:grid md:grid-cols-2 lg:grid-cols-6 md:overflow-x-visible md:gap-4"
                 >
-                  <Icon className="w-3.5 h-3.5" />
-                  {filter.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
+                  {stats.map((stat, i) => (
+                    <Card
+                      key={stat.label}
+                      ref={(el) => { cardRefs.current[i] = el }}
+                      className={`${stat.border} bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all group snap-start shrink-0 w-[calc(100vw-2rem)] md:w-auto ${i === 5 ? 'lg:col-span-2' : ''}`}
+                    >
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className={`p-2.5 ${stat.iconBg} rounded-xl shadow-md flex-shrink-0`}>
+                            <stat.icon className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="text-right">
+                            <p className={`text-xs ${stat.labelColor} font-semibold uppercase tracking-wider`}>{stat.label}</p>
+                            <p className={`text-2xl font-bold mt-1 ${stat.valueColor}`}>{stat.value}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
 
-      <div className="relative flex-1 px-4 py-4 overflow-y-auto space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 z-10 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search tasks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-white/80 backdrop-blur-sm border border-taupe-200/70 text-taupe-900 placeholder:text-taupe-400 text-sm focus:outline-none focus:border-cornflower-blue-500 focus:ring-2 focus:ring-cornflower-blue-500/20 transition-all"
-          />
-        </div>
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Input
+                  type="text"
+                  placeholder="Search tasks..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg"
+                />
+              </div>
 
-        {loading ? (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-20" />
-              ))}
-            </div>
-            <Skeleton className="h-8 w-24 mt-4" />
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        ) : (
-        <>
-        <div className="grid grid-cols-2 gap-2">
-          {categories.map((category) => {
-            const count = periodTodos.filter((t) => t.category === category.name).length
-            return <CategoryCard key={category.name} category={category} count={count} activeFilter={activeFilter} />
-          })}
-          <BudgetCard balance={balance} activeFilter={activeFilter} />
-        </div>
-
-        {activeTodos.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 px-1 mb-2">
-              <span className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">
-                Active
-              </span>
-              <span className="text-xs font-medium text-neutral-400 ml-auto">{activeTodos.length}</span>
-            </div>
-            <div className="space-y-2">
-              {displayedActive.map((todo) => {
-                const meta = categoryMeta[todo.category]
-                const BadgeIcon = meta.icon
-                return (
-                  <div
-                    key={todo.id}
-                    className="group relative flex items-center gap-3 bg-white pl-4 pr-3 py-3 shadow-sm border border-neutral-200/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden"
-                    onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
-                  >
-                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${meta.color}`} />
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={todo.completed}
-                        onCheckedChange={() => toggleTodo(todo.id)}
-                        className="data-[state=checked]:bg-neutral-900 data-[state=checked]:border-neutral-900"
+              {/* Category Grid */}
+              <div>
+                <h2 className="text-lg font-semibold text-white mb-4">Categories</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  {categories.map((category) => {
+                    const count = periodTodos.filter((t) => t.category === category).length
+                    const meta = categoryMeta[category]
+                    return (
+                      <CategoryCard
+                        key={category}
+                        category={category}
+                        count={count}
+                        meta={meta}
+                        onClick={() => navigate(`/todos/${category.toLowerCase()}`, { state: { period: activeFilter } })}
                       />
-                    </div>
-                    <span className="flex-1 text-sm text-neutral-800">{todo.text}</span>
-                    <div className={`${meta.badge} p-1`}>
-                      <BadgeIcon className="w-3 h-3 text-white" />
-                    </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Tasks Lists */}
+              {activeTodos.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Circle className="w-5 h-5 text-purple-400" />
+                    Active Tasks
+                  </h2>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {activeTodos.slice(0, 5).map((todo) => {
+                      return (
+                        <Card
+                          key={todo.id}
+                          className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all duration-200 group cursor-pointer"
+                          onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
+                        >
+                          <CardContent className="p-4 flex items-start gap-4">
+                            <div onClick={(e) => { e.stopPropagation(); toggleTodo(todo.id) }} className="flex-shrink-0">
+                              <div className="w-6 h-6 rounded-full border-2 border-purple-500 flex items-center justify-center transition-all cursor-pointer">
+                                {todo.completed && <div className="w-3 h-3 bg-purple-500 rounded-full" />}
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-white truncate">{todo.text}</p>
+                              <Badge variant="secondary" className="mt-1 text-xs bg-white/10 text-slate-300">{todo.category}</Badge>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors flex-shrink-0" />
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
                   </div>
-                )
-              })}
-            </div>
-            {activeTodos.length > 3 && (
-              <button
-                onClick={() => setShowAllActive(!showAllActive)}
-                className="w-full mt-2 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-700 bg-white/60 backdrop-blur-sm border border-neutral-200/40 hover:bg-white/90 transition-all"
-              >
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAllActive ? "rotate-180" : ""}`} />
-                {showAllActive ? "Show less" : `Show all (${activeTodos.length})`}
-              </button>
-            )}
-          </div>
-        )}
+                  {activeTodos.length > 5 && (
+                    <Button variant="ghost" className="w-full mt-4 text-slate-400 hover:text-white">
+                      <ArrowRight className="w-4 h-4 mr-2" />
+                      View all {activeTodos.length} tasks
+                    </Button>
+                  )}
+                </div>
+              )}
 
-        {completedTodos.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 px-1 mb-2">
-              <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                Completed
-              </span>
-              <span className="text-xs font-medium text-neutral-300 ml-auto">{completedTodos.length}</span>
-            </div>
-            <div className="space-y-2">
-              {displayedCompleted.map((todo) => {
-                const meta = categoryMeta[todo.category]
-                const BadgeIcon = meta.icon
-                return (
-                  <div
-                    key={todo.id}
-                    className="group relative flex items-center gap-3 bg-white/60 pl-4 pr-3 py-2.5 border border-neutral-200/40 hover:bg-white transition-all duration-200 cursor-pointer overflow-hidden"
-                    onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: activeFilter } })}
-                  >
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-300" />
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={todo.completed}
-                        onCheckedChange={() => toggleTodo(todo.id)}
-                        className="data-[state=checked]:bg-neutral-400 data-[state=checked]:border-neutral-400"
-                      />
-                    </div>
-                    <span className="flex-1 text-sm text-neutral-400 line-through">{todo.text}</span>
-                    <div className={`${meta.badge} p-1 opacity-50`}>
-                      <BadgeIcon className="w-3 h-3 text-white" />
-                    </div>
+              {completedTodos.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    Completed Tasks
+                  </h2>
+                  <div className="space-y-3 max-h-48 overflow-y-auto">
+                    {completedTodos.slice(0, 3).map((todo) => {
+                      return (
+                        <Card
+                          key={todo.id}
+                          className="border-white/5 bg-black/20 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all duration-200 group cursor-pointer"
+                        >
+                          <CardContent className="p-4 flex items-start gap-4">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleTodo(todo.id) }}
+                              className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/30 hover:bg-emerald-500/50 transition-all cursor-pointer"
+                            >
+                              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                            </button>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-slate-500 line-through truncate">{todo.text}</p>
+                              <Badge variant="secondary" className="mt-1 text-xs bg-white/10 text-slate-500 opacity-60">{todo.category}</Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
                   </div>
-                )
-              })}
-            </div>
-            {completedTodos.length > 3 && (
-              <button
-                onClick={() => setShowAllCompleted(!showAllCompleted)}
-                className="w-full mt-2 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-700 bg-white/60 backdrop-blur-sm border border-neutral-200/40 hover:bg-white/90 transition-all"
-              >
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAllCompleted ? "rotate-180" : ""}`} />
-                {showAllCompleted ? "Show less" : `Show all (${completedTodos.length})`}
-              </button>
-            )}
-          </div>
-        )}
+                  {completedTodos.length > 3 && (
+                    <Button variant="ghost" className="w-full mt-4 text-slate-500 hover:text-white">
+                      <ArrowRight className="w-4 h-4 mr-2" />
+                      View all {completedTodos.length} completed
+                    </Button>
+                  )}
+                </div>
+              )}
 
-        {!loading && searchedTodos.length === 0 && searchQuery.trim() && (
-          <div className="text-center py-8">
-            <p className="text-taupe-500 text-sm">No tasks match your search</p>
-          </div>
-        )}
-        </>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function CategoryCard({ category, count, activeFilter }: { category: typeof categories[0]; count: number; activeFilter: string }) {
-  const navigate = useNavigate()
-  const animatedCount = useCountUp(count)
-  const Icon = category.icon
-  return (
-    <div
-      onClick={() => navigate(`/todos/${category.name.toLowerCase()}`, { state: { period: activeFilter } })}
-      className={`${category.color} p-4 hover:shadow-xl ${category.shadowColor} hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3`}
-    >
-      <div className="flex items-center justify-between">
-        <div className="p-2 bg-white/20 backdrop-blur-sm">
-          <Icon className="w-5 h-5 text-white" />
+              {activeTodos.length === 0 && completedTodos.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="inline-flex p-4 bg-black/30 backdrop-blur-xl rounded-full mb-4">
+                    <ListTodo className="w-8 h-8 text-slate-500" />
+                  </div>
+                  <p className="text-slate-300 font-medium">No tasks found</p>
+                  <p className="text-sm text-slate-500 mt-1">Start by adding a new task to a category</p>
+                </div>
+              )}
+            </>
+          )}
         </div>
-        <span className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">{category.name}</span>
       </div>
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-3xl font-bold text-white">{animatedCount}</span>
-        <span className="text-xs text-white/70">tasks</span>
-      </div>
-    </div>
-  )
-}
-
-function BudgetCard({ balance, activeFilter }: { balance: number; activeFilter: string }) {
-  const navigate = useNavigate()
-  const animatedCount = useCountUp(Math.round(Math.abs(balance)))
-  return (
-    <div
-      onClick={() => navigate("/todos/budget", { state: { period: activeFilter } })}
-      className="bg-emerald-600 p-4 hover:shadow-xl shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.97] cursor-pointer flex flex-col gap-3"
-    >
-      <div className="flex items-center justify-between">
-        <div className="p-2 bg-white/20 backdrop-blur-sm">
-          <Wallet className="w-5 h-5 text-white" />
-        </div>
-        <span className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Budget</span>
-      </div>
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-3xl font-bold text-white">R{animatedCount}</span>
-      </div>
-    </div>
-  )
+     </div>
+    )
 }
