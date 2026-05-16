@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using todo.api.Infrastructure;
 
 namespace todo.api.Extensions;
@@ -12,5 +12,13 @@ public static class ServiceCollectionsExtensions
 
         services.AddAuthorization();
         services.AddOpenApi();
+    }
+
+    public static async Task UseSeedDataAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.MigrateAsync();
+        await DbInitializer.SeedAsync(db);
     }
 }

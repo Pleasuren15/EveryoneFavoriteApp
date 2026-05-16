@@ -1,0 +1,134 @@
+using Microsoft.EntityFrameworkCore;
+using Todo.Api.Models.Database;
+
+namespace todo.api.Infrastructure;
+
+public static class DbInitializer
+{
+    public static async Task SeedAsync(AppDbContext db)
+    {
+        if (await db.Categories.AnyAsync() || await db.Users.AnyAsync())
+            return;
+
+        var categories = new List<Category>
+        {
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), Name = "Todo", Label = "Todo", SortOrder = 1 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000002"), Name = "Shopping", Label = "Shopping", SortOrder = 2 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000003"), Name = "Personal", Label = "Personal", SortOrder = 3 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000004"), Name = "Work", Label = "Work", SortOrder = 4 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000005"), Name = "Others", Label = "Others", SortOrder = 5 },
+        };
+
+        var user = new User
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-00000000000a"),
+            Email = "demo@example.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123"),
+            DisplayName = "Demo User",
+            CreatedAt = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero),
+        };
+
+        var todos = new List<Todo.Api.Models.Database.Todo>
+        {
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000101"), UserId = user.Id, CategoryId = categories[3].Id,
+                Text = "Review project proposal", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                DueDate = new DateOnly(2026, 5, 10),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000102"), UserId = user.Id, CategoryId = categories[1].Id,
+                Text = "Buy groceries for the week", Completed = true, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                Price = 85m,
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000103"), UserId = user.Id, CategoryId = categories[2].Id,
+                Text = "Morning exercise routine", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                DueDate = new DateOnly(2026, 5, 7),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000104"), UserId = user.Id, CategoryId = categories[3].Id,
+                Text = "Prepare team presentation", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                DueDate = new DateOnly(2026, 5, 12),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000105"), UserId = user.Id, CategoryId = categories[2].Id,
+                Text = "Read a chapter of a book", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                DueDate = new DateOnly(2026, 5, 10),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000106"), UserId = user.Id, CategoryId = categories[4].Id,
+                Text = "Plan weekend trip", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                DueDate = new DateOnly(2026, 5, 8),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000107"), UserId = user.Id, CategoryId = categories[0].Id,
+                Text = "Organize desk workspace", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                DueDate = new DateOnly(2026, 5, 7),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000108"), UserId = user.Id, CategoryId = categories[4].Id,
+                Text = "Call plumber about leak", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000109"), UserId = user.Id, CategoryId = categories[1].Id,
+                Text = "Pick up dry cleaning", Completed = true, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                Price = 15m,
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-00000000010a"), UserId = user.Id, CategoryId = categories[2].Id,
+                Text = "Write daily journal entry", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-00000000010b"), UserId = user.Id, CategoryId = categories[3].Id,
+                Text = "Fix login page bug", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                DueDate = new DateOnly(2026, 5, 9),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-00000000010c"), UserId = user.Id, CategoryId = categories[0].Id,
+                Text = "Clean out email inbox", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+            },
+        };
+
+        var subtasks = new List<Subtask>
+        {
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000201"), TodoId = todos[0].Id, Text = "Read through draft", Completed = true, SortOrder = 0 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000202"), TodoId = todos[0].Id, Text = "Add feedback notes", Completed = false, SortOrder = 1 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000203"), TodoId = todos[0].Id, Text = "Send to manager", Completed = false, SortOrder = 2 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000204"), TodoId = todos[3].Id, Text = "Create slides", Completed = false, SortOrder = 0 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000205"), TodoId = todos[3].Id, Text = "Gather metrics", Completed = false, SortOrder = 1 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000206"), TodoId = todos[10].Id, Text = "Reproduce the bug", Completed = true, SortOrder = 0 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000207"), TodoId = todos[10].Id, Text = "Fix the issue", Completed = false, SortOrder = 1 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000208"), TodoId = todos[10].Id, Text = "Write tests", Completed = false, SortOrder = 2 },
+        };
+
+        var budgetEntries = new List<BudgetEntry>
+        {
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000301"), UserId = user.Id, Type = "income", Category = "Income", Amount = 5000m, Description = "Monthly salary", Date = new DateOnly(2026, 5, 1), CreatedAt = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero) },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000302"), UserId = user.Id, Type = "expense", Category = "Food", Amount = 800m, Description = "Groceries", Date = new DateOnly(2026, 5, 3), CreatedAt = new DateTimeOffset(2026, 5, 3, 0, 0, 0, TimeSpan.Zero) },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000303"), UserId = user.Id, Type = "expense", Category = "Bills", Amount = 1200m, Description = "Rent", Date = new DateOnly(2026, 5, 1), CreatedAt = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero) },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000304"), UserId = user.Id, Type = "expense", Category = "Transport", Amount = 400m, Description = "Fuel", Date = new DateOnly(2026, 5, 5), CreatedAt = new DateTimeOffset(2026, 5, 5, 0, 0, 0, TimeSpan.Zero) },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000305"), UserId = user.Id, Type = "expense", Category = "Entertainment", Amount = 300m, Description = "Streaming & games", Date = new DateOnly(2026, 5, 6), CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero) },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000306"), UserId = user.Id, Type = "expense", Category = "Shopping", Amount = 600m, Description = "New clothes", Date = new DateOnly(2026, 5, 4), CreatedAt = new DateTimeOffset(2026, 5, 4, 0, 0, 0, TimeSpan.Zero) },
+        };
+
+        db.Categories.AddRange(categories);
+        db.Users.Add(user);
+        db.Set<Todo.Api.Models.Database.Todo>().AddRange(todos);
+        db.Subtasks.AddRange(subtasks);
+        db.BudgetEntries.AddRange(budgetEntries);
+
+        await db.SaveChangesAsync();
+    }
+}

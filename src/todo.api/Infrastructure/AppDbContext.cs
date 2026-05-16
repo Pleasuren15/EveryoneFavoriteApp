@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Todo.Api.Models.Database;
 
 namespace todo.api.Infrastructure;
