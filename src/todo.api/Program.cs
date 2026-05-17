@@ -1,3 +1,4 @@
+using Serilog;
 using todo.api.Extensions;
 using todo.api.Services.Graphql;
 
@@ -14,6 +15,7 @@ public class Program
             .AddQueryType<Query>()
             .AddSorting();
 
+        builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration));
         var app = builder.Build();
         app.MapGraphQL();
 
