@@ -71,8 +71,7 @@ export function TodoList() {
 
   const { balance } = useBudget()
 
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600)
@@ -117,11 +116,11 @@ export function TodoList() {
   )
 
   const stats = useMemo(() => [
-    { label: "Total Tasks", value: totalTasks,                           border: "border-white/15",       gradient: "from-white/10 to-white/3",         shadow: "shadow-black/20",       labelColor: "text-slate-300",  valueColor: "text-white" },
-    { label: "Active",      value: activeTodos.length,                   border: "border-purple-400/30",  gradient: "from-purple-500/20 to-purple-500/5",  shadow: "shadow-purple-900/40",  labelColor: "text-purple-300", valueColor: "text-white" },
-    { label: "Completed",   value: completedTodos.length,                border: "border-emerald-400/30", gradient: "from-emerald-500/20 to-emerald-500/5", shadow: "shadow-emerald-900/40", labelColor: "text-emerald-300",valueColor: "text-white" },
-    { label: "Progress",    value: `${completionRate}%`,                 border: "border-blue-400/30",    gradient: "from-blue-500/20 to-blue-500/5",      shadow: "shadow-blue-900/40",    labelColor: "text-blue-300",   valueColor: "text-white" },
-    { label: "Balance",     value: `R${Math.abs(balance).toFixed(2)}`,   border: "border-amber-400/30",   gradient: "from-amber-500/20 to-amber-500/5",    shadow: "shadow-amber-900/40",   labelColor: "text-amber-300",  valueColor: balance >= 0 ? "text-emerald-300" : "text-red-400" },
+    { label: "Total Tasks", value: totalTasks,                           border: "border-white/25",       gradient: "from-white/25 to-white/10",         shadow: "shadow-black/20",       labelColor: "text-slate-200",  valueColor: "text-white" },
+    { label: "Active",      value: activeTodos.length,                   border: "border-purple-400/50",  gradient: "from-purple-500/40 to-purple-500/15", shadow: "shadow-purple-900/40",  labelColor: "text-purple-200", valueColor: "text-white" },
+    { label: "Completed",   value: completedTodos.length,                border: "border-emerald-400/50", gradient: "from-emerald-500/40 to-emerald-500/15", shadow: "shadow-emerald-900/40", labelColor: "text-emerald-200",valueColor: "text-white" },
+    { label: "Progress",    value: `${completionRate}%`,                 border: "border-blue-400/50",    gradient: "from-blue-500/40 to-blue-500/15",     shadow: "shadow-blue-900/40",    labelColor: "text-blue-200",   valueColor: "text-white" },
+    { label: "Balance",     value: `R${Math.abs(balance).toFixed(2)}`,   border: "border-amber-400/50",   gradient: "from-amber-500/40 to-amber-500/15",   shadow: "shadow-amber-900/40",   labelColor: "text-amber-200",  valueColor: balance >= 0 ? "text-emerald-300" : "text-red-400" },
   ], [totalTasks, activeTodos.length, completedTodos.length, completionRate, balance])
 
   function handleQuickAdd(e: React.FormEvent) {
@@ -137,7 +136,7 @@ export function TodoList() {
       {/* Header */}
       <div className="bg-black/40 backdrop-blur-xl border-b border-white/10 sticky top-0 z-40 shadow-lg shadow-black/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <div className="p-2 sm:p-2.5 bg-white/10 backdrop-blur-sm rounded-xl flex-shrink-0">
                 <ListTodo className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
@@ -155,65 +154,6 @@ export function TodoList() {
                 <LogOut className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Sign Out</span>
               </Button>
-            </div>
-          </div>
-
-          {/* Period Filter + Stats */}
-          <div className="flex items-center gap-2 overflow-hidden">
-            {/* Period picker — styled as a stat card */}
-            <Popover open={periodOpen} onOpenChange={setPeriodOpen}>
-              <PopoverTrigger asChild>
-                <button className="border border-purple-500/30 bg-gradient-to-br from-purple-500/20 to-purple-500/5 backdrop-blur-xl rounded-xl px-4 py-3 shrink-0 text-left hover:from-purple-500/30 hover:to-purple-500/10 transition-colors shadow-sm shadow-purple-900/40">
-                  <p className="text-xs text-purple-400 font-semibold uppercase tracking-wider whitespace-nowrap">Period</p>
-                  <p className="text-base font-bold mt-0.5 text-white whitespace-nowrap">
-                    {customRange.from && customRange.to
-                      ? `${format(customRange.from, "MMM d")} – ${format(customRange.to, "MMM d")}`
-                      : customRange.from
-                      ? `${format(customRange.from, "MMM d")} – ...`
-                      : "All time"}
-                  </p>
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 border-white/10 bg-black/90" align="start">
-                {/* Range calendar */}
-                <CalendarPicker
-                  mode="range"
-                  selected={{ from: customRange.from, to: customRange.to }}
-                  onSelect={(range) => {
-                    setCustomRange({ from: range?.from, to: range?.to })
-                    if (range?.from && range?.to) setPeriodOpen(false)
-                  }}
-                  numberOfMonths={1}
-                  className="text-white [&_.rdp-day_button:hover]:bg-purple-500/20 [&_.rdp-day_button.rdp-day_selected]:bg-purple-600"
-                />
-                {customRange.from && (
-                  <div className="px-3 pb-3">
-                    <button
-                      onClick={() => setCustomRange({})}
-                      className="w-full text-xs text-slate-400 hover:text-white py-1.5 rounded border border-white/10 hover:bg-white/5 transition-colors"
-                    >
-                      Clear range
-                    </button>
-                  </div>
-                )}
-              </PopoverContent>
-            </Popover>
-
-            {/* Stats Carousel */}
-            <div
-              ref={scrollRef}
-              className="flex gap-2 overflow-x-auto scrollbar-none flex-1 snap-x snap-mandatory"
-            >
-              {stats.map((stat, i) => (
-                <div
-                  key={stat.label}
-                  ref={(el) => { cardRefs.current[i] = el }}
-                  className={`border ${stat.border} bg-gradient-to-br ${stat.gradient} backdrop-blur-xl rounded-xl px-4 py-3 shadow-sm ${stat.shadow} snap-start shrink-0`}
-                >
-                  <p className={`text-xs ${stat.labelColor} font-semibold uppercase tracking-wider whitespace-nowrap`}>{stat.label}</p>
-                  <p className={`text-base font-bold mt-0.5 ${stat.valueColor} whitespace-nowrap`}>{stat.value}</p>
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -237,6 +177,58 @@ export function TodoList() {
             </div>
           ) : (
             <>
+              {/* Period Filter + Stats */}
+              <div className="flex items-center gap-2 overflow-hidden">
+                <Popover open={periodOpen} onOpenChange={setPeriodOpen}>
+                  <PopoverTrigger asChild>
+                    <button className="border border-purple-500/30 bg-gradient-to-br from-purple-500/20 to-purple-500/5 backdrop-blur-xl rounded-xl px-4 py-3 shrink-0 text-left hover:from-purple-500/30 hover:to-purple-500/10 transition-colors shadow-sm shadow-purple-900/40">
+                      <p className="text-xs text-purple-400 font-semibold uppercase tracking-wider whitespace-nowrap">Period</p>
+                      <p className="text-base font-bold mt-0.5 text-white whitespace-nowrap">
+                        {customRange.from && customRange.to
+                          ? `${format(customRange.from, "MMM d")} – ${format(customRange.to, "MMM d")}`
+                          : customRange.from
+                          ? `${format(customRange.from, "MMM d")} – ...`
+                          : "All time"}
+                      </p>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 border-white/10 bg-black/90" align="start">
+                    <CalendarPicker
+                      mode="range"
+                      selected={{ from: customRange.from, to: customRange.to }}
+                      onSelect={(range) => {
+                        setCustomRange({ from: range?.from, to: range?.to })
+                        if (range?.from && range?.to) setPeriodOpen(false)
+                      }}
+                      numberOfMonths={1}
+                      className="text-white [&_.rdp-day_button:hover]:bg-purple-500/20 [&_.rdp-day_button.rdp-day_selected]:bg-purple-600"
+                    />
+                    {customRange.from && (
+                      <div className="px-3 pb-3">
+                        <button
+                          onClick={() => setCustomRange({})}
+                          className="w-full text-xs text-slate-400 hover:text-white py-1.5 rounded border border-white/10 hover:bg-white/5 transition-colors"
+                        >
+                          Clear range
+                        </button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 flex-1">
+                  {stats.map((stat, i) => (
+                    <div
+                      key={stat.label}
+                      className={`border ${stat.border} bg-gradient-to-br ${stat.gradient} backdrop-blur-xl rounded-xl px-4 py-3 shadow-sm ${stat.shadow}`}
+                    >
+                      <p className={`text-xs ${stat.labelColor} font-semibold uppercase tracking-wider whitespace-nowrap`}>{stat.label}</p>
+                      <p className={`text-base font-bold mt-0.5 ${stat.valueColor} whitespace-nowrap`}>{stat.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Search Bar */}
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60 z-10 pointer-events-none" />
