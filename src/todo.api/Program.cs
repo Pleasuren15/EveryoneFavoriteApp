@@ -1,5 +1,5 @@
 using todo.api.Extensions;
-using todo.api.Models.Graphql;
+using todo.api.Services.Graphql;
 
 namespace todo.api;
 
@@ -11,7 +11,8 @@ public class Program
 
         builder.Services.AddApplicationService(builder);
         builder.AddGraphQL()
-            .AddQueryType<Query>();
+            .AddQueryType<Query>()
+            .AddSorting();
 
         var app = builder.Build();
         app.MapGraphQL();
