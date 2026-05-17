@@ -3,7 +3,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var postgres = builder.AddPostgres("postgres")
     .WithDataVolume("postgres-data");
 
-var tododb = postgres.AddDatabase("todos");
+var tododb = postgres.AddDatabase("EveryoneFavoriteApp");
 
 var redis = builder.AddRedis("redis")
     .WithDataVolume("redis-data");

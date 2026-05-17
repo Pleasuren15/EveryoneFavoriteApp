@@ -7,11 +7,10 @@ public static class ServiceCollectionsExtensions
 {
     public static void AddApplicationService(this IServiceCollection services, WebApplicationBuilder builder)
     {
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-        services.AddAuthorization();
-        services.AddOpenApi();
+        var connectionString = builder.Configuration.GetConnectionString("EveryoneFavoriteApp");
+        services.AddDbContextPool<AppDbContext>(
+            options => options
+            .UseNpgsql(connectionString));
     }
 
     public static async Task UseSeedDataAsync(this WebApplication app)
