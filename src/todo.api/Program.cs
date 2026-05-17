@@ -18,6 +18,7 @@ public class Program
         app.MapGraphQL();
 
         await app.UseSeedDataAsync();
+        app.Map("/", () => Results.Redirect("/graphql"));
 
         await app.RunWithGraphQLCommandsAsync(args);
     }
