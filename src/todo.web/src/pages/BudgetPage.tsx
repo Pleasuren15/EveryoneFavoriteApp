@@ -17,8 +17,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { useBudget } from "@/lib/use-budget"
 import { BudgetPieChart, COLORS } from "@/components/BudgetPieChart"
+import type { ExpenseCategory } from "@/lib/types"
 
-const expenseCategories: string[] = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Health", "Education", "Other"]
+const expenseCategories: ExpenseCategory[] = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Health", "Education", "Other"]
 const months: string[] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 const currentYear: number = new Date().getFullYear()
 const years: number[] = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
@@ -68,8 +69,9 @@ export function BudgetPage() {
 
   const filteredExpenseByCategory = filteredEntries
     .filter((e) => e.type === "expense")
-    .reduce<Record<string, number>>((acc, e) => {
-      acc[e.category] = (acc[e.category] || 0) + e.amount
+    .reduce<Partial<Record<ExpenseCategory, number>>>((acc, e) => {
+      const cat = e.category as ExpenseCategory
+      acc[cat] = (acc[cat] || 0) + e.amount
       return acc
     }, {})
 

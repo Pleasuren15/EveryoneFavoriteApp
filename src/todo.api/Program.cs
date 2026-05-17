@@ -13,6 +13,7 @@ public class Program
         builder.Services.AddApplicationService(builder);
         builder.AddGraphQL()
             .AddQueryType<Query>()
+            .AddMutationType<Mutation>()
             .AddSorting();
 
         builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration));

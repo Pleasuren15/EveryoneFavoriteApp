@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import type { BudgetCategory } from "@/lib/types"
 
 interface Slice {
   label: string
@@ -11,7 +12,7 @@ interface BudgetPieChartProps {
   size?: number
 }
 
-const COLORS: Record<string, string> = {
+const COLORS: Record<BudgetCategory, string> = {
   Income: "#22c55e",
   Food: "#f97316",
   Transport: "#3b82f6",

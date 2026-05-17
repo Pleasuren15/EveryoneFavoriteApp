@@ -1,6 +1,17 @@
 export type Category = "Todo" | "Shopping" | "Personal" | "Work" | "Others"
 export type PeriodFilter = "Day" | "Week" | "Month" | "Year"
 export type Priority = "low" | "medium" | "high"
+export type EntryType = "income" | "expense"
+export type ExpenseCategory =
+  | "Food"
+  | "Transport"
+  | "Entertainment"
+  | "Bills"
+  | "Shopping"
+  | "Health"
+  | "Education"
+  | "Other"
+export type BudgetCategory = "Income" | ExpenseCategory
 
 export interface Subtask {
   id: string
@@ -13,12 +24,28 @@ export interface Subtask {
 export interface BudgetEntry {
   id: string
   userId: string
-  type: "income" | "expense"
-  category: string
+  type: EntryType
+  category: BudgetCategory
   amount: number
   description: string
   date: string
   createdAt: Date
+}
+
+// GraphQL API response types — mirror the HotChocolate DTOs
+export interface CategoryStats {
+  categoryId: string
+  categoryName: string
+  totalTodos: number
+  completedTodos: number
+}
+
+export interface CategoryProgress {
+  categoryId: string
+  categoryName: string
+  sortOrder: number
+  totalTodos: number
+  completedTodos: number
 }
 
 export interface Todo {

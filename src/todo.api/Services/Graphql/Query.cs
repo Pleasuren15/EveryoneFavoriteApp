@@ -84,5 +84,18 @@ namespace todo.api.Services.Graphql
 
             return progress;
         }
+        /// <summary>Retrieves all budget entries for a specific user, ordered by date descending.</summary>
+        public async Task<List<BudgetEntry>> GetBudgetEntries(
+            AppDbContext dbContext,
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            return await dbContext.BudgetEntries
+                .AsNoTracking()
+                .Where(b => b.UserId == userId)
+                .OrderByDescending(b => b.Date)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 }

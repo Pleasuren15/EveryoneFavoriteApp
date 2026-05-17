@@ -21,6 +21,8 @@ public class Todo
     public DateOnly? DueDate { get; set; }
     [Column("Price")]
     public decimal? Price { get; set; }
+    [Column("Priority")]
+    public string? Priority { get; set; }
 
     public User User { get; set; } = null!;
     public Category Category { get; set; } = null!;

@@ -34,70 +34,73 @@ public static class DbInitializer
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000101"), UserId = user.Id, CategoryId = categories[3].Id,
                 Text = "Review project proposal", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
-                DueDate = new DateOnly(2026, 5, 10),
+                DueDate = new DateOnly(2026, 5, 10), Priority = "high",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000102"), UserId = user.Id, CategoryId = categories[1].Id,
                 Text = "Buy groceries for the week", Completed = true, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
-                Price = 85m,
+                Price = 85m, Priority = "medium",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000103"), UserId = user.Id, CategoryId = categories[2].Id,
                 Text = "Morning exercise routine", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
-                DueDate = new DateOnly(2026, 5, 7),
+                DueDate = new DateOnly(2026, 5, 7), Priority = "medium",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000104"), UserId = user.Id, CategoryId = categories[3].Id,
                 Text = "Prepare team presentation", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
-                DueDate = new DateOnly(2026, 5, 12),
+                DueDate = new DateOnly(2026, 5, 12), Priority = "high",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000105"), UserId = user.Id, CategoryId = categories[2].Id,
                 Text = "Read a chapter of a book", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
-                DueDate = new DateOnly(2026, 5, 10),
+                DueDate = new DateOnly(2026, 5, 10), Priority = "low",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000106"), UserId = user.Id, CategoryId = categories[4].Id,
                 Text = "Plan weekend trip", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
-                DueDate = new DateOnly(2026, 5, 8),
+                DueDate = new DateOnly(2026, 5, 8), Priority = "medium",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000107"), UserId = user.Id, CategoryId = categories[0].Id,
                 Text = "Organize desk workspace", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
-                DueDate = new DateOnly(2026, 5, 7),
+                DueDate = new DateOnly(2026, 5, 7), Priority = "low",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000108"), UserId = user.Id, CategoryId = categories[4].Id,
                 Text = "Call plumber about leak", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                Priority = "high",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000109"), UserId = user.Id, CategoryId = categories[1].Id,
                 Text = "Pick up dry cleaning", Completed = true, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
-                Price = 15m,
+                Price = 15m, Priority = "low",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-00000000010a"), UserId = user.Id, CategoryId = categories[2].Id,
                 Text = "Write daily journal entry", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                Priority = "low",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-00000000010b"), UserId = user.Id, CategoryId = categories[3].Id,
                 Text = "Fix login page bug", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
-                DueDate = new DateOnly(2026, 5, 9),
+                DueDate = new DateOnly(2026, 5, 9), Priority = "high",
             },
             new()
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-00000000010c"), UserId = user.Id, CategoryId = categories[0].Id,
                 Text = "Clean out email inbox", Completed = false, CreatedAt = new DateTimeOffset(2026, 5, 6, 0, 0, 0, TimeSpan.Zero),
+                Priority = "medium",
             },
         };
 

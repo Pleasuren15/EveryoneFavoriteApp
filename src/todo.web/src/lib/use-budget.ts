@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"
-import type { BudgetEntry } from "./types"
+import type { BudgetEntry, ExpenseCategory } from "./types"
 
 const DEMO_USER_ID = "00000000-0000-0000-0000-00000000000a"
 
@@ -29,8 +29,9 @@ export function useBudget() {
 
   const expenseByCategory = entries
     .filter((e) => e.type === "expense")
-    .reduce<Record<string, number>>((acc, e) => {
-      acc[e.category] = (acc[e.category] || 0) + e.amount
+    .reduce<Partial<Record<ExpenseCategory, number>>>((acc, e) => {
+      const cat = e.category as ExpenseCategory
+      acc[cat] = (acc[cat] || 0) + e.amount
       return acc
     }, {})
 
