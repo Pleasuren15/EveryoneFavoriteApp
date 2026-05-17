@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag } from "lucide-react"
+import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -41,15 +41,17 @@ function CategoryCard({ category, count, meta, onClick }: {
       onClick={onClick}
       className="cursor-pointer border-white/10 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-black/40 backdrop-blur-xl"
     >
-      <CardContent className="pt-6 pb-4">
+      <CardContent className="py-5">
         <div className="flex items-center justify-between">
-          <div className={`p-3 rounded-lg shadow-md bg-gradient-to-br ${meta.accentColor} flex-shrink-0`}>
-            <Icon className="w-6 h-6 text-white" />
+          <div>
+            <p className={`text-xl font-bold ${meta.color}`}>{category}</p>
+            <div className="flex items-baseline gap-1.5 mt-1">
+              <p className="text-2xl font-bold text-white tabular-nums leading-none">{animatedCount}</p>
+              <p className="text-sm text-slate-400">task{count !== 1 ? 's' : ''}</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className={`text-xs font-semibold uppercase tracking-widest ${meta.color}`}>{category}</p>
-            <p className="text-3xl font-bold text-white mt-2">{animatedCount}</p>
-            <p className="text-xs text-slate-400 mt-1">{count === 1 ? 'task' : 'tasks'}</p>
+          <div className={`p-3 rounded-xl shadow-md bg-gradient-to-br ${meta.accentColor}`}>
+            <Icon className="w-5 h-5 text-white" />
           </div>
         </div>
       </CardContent>
@@ -68,6 +70,7 @@ export function TodoList() {
   const [loading, setLoading] = useState(true)
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [quickAdd, setQuickAdd] = useState(emptyQuickAdd)
+  const [statsVisible, setStatsVisible] = useState(true)
 
   const { balance } = useBudget()
 
@@ -115,13 +118,11 @@ export function TodoList() {
     [activeTodos]
   )
 
-  const stats = useMemo(() => [
-    { label: "Total Tasks", value: totalTasks,                           border: "border-white/25",       gradient: "from-white/25 to-white/10",         shadow: "shadow-black/20",       labelColor: "text-slate-200",  valueColor: "text-white" },
-    { label: "Active",      value: activeTodos.length,                   border: "border-purple-400/50",  gradient: "from-purple-500/40 to-purple-500/15", shadow: "shadow-purple-900/40",  labelColor: "text-purple-200", valueColor: "text-white" },
-    { label: "Completed",   value: completedTodos.length,                border: "border-emerald-400/50", gradient: "from-emerald-500/40 to-emerald-500/15", shadow: "shadow-emerald-900/40", labelColor: "text-emerald-200",valueColor: "text-white" },
-    { label: "Progress",    value: `${completionRate}%`,                 border: "border-blue-400/50",    gradient: "from-blue-500/40 to-blue-500/15",     shadow: "shadow-blue-900/40",    labelColor: "text-blue-200",   valueColor: "text-white" },
-    { label: "Balance",     value: `R${Math.abs(balance).toFixed(2)}`,   border: "border-amber-400/50",   gradient: "from-amber-500/40 to-amber-500/15",   shadow: "shadow-amber-900/40",   labelColor: "text-amber-200",  valueColor: balance >= 0 ? "text-emerald-300" : "text-red-400" },
-  ], [totalTasks, activeTodos.length, completedTodos.length, completionRate, balance])
+  const categoryCounts = useMemo(() =>
+    Object.fromEntries(categories.map(c => [c, periodTodos.filter(t => t.category === c).length])),
+    [periodTodos]
+  )
+  const maxCategoryCount = Math.max(...Object.values(categoryCounts), 1)
 
   function handleQuickAdd(e: React.FormEvent) {
     e.preventDefault()
@@ -178,55 +179,127 @@ export function TodoList() {
           ) : (
             <>
               {/* Period Filter + Stats */}
-              <div className="flex items-center gap-2 overflow-hidden">
-                <Popover open={periodOpen} onOpenChange={setPeriodOpen}>
-                  <PopoverTrigger asChild>
-                    <button className="border border-purple-500/30 bg-gradient-to-br from-purple-500/20 to-purple-500/5 backdrop-blur-xl rounded-xl px-4 py-3 shrink-0 text-left hover:from-purple-500/30 hover:to-purple-500/10 transition-colors shadow-sm shadow-purple-900/40">
-                      <p className="text-xs text-purple-400 font-semibold uppercase tracking-wider whitespace-nowrap">Period</p>
-                      <p className="text-base font-bold mt-0.5 text-white whitespace-nowrap">
-                        {customRange.from && customRange.to
-                          ? `${format(customRange.from, "MMM d")} – ${format(customRange.to, "MMM d")}`
-                          : customRange.from
-                          ? `${format(customRange.from, "MMM d")} – ...`
-                          : "All time"}
-                      </p>
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 border-white/10 bg-black/90" align="start">
-                    <CalendarPicker
-                      mode="range"
-                      selected={{ from: customRange.from, to: customRange.to }}
-                      onSelect={(range) => {
-                        setCustomRange({ from: range?.from, to: range?.to })
-                        if (range?.from && range?.to) setPeriodOpen(false)
-                      }}
-                      numberOfMonths={1}
-                      className="text-white [&_.rdp-day_button:hover]:bg-purple-500/20 [&_.rdp-day_button.rdp-day_selected]:bg-purple-600"
+              <div className="space-y-3">
+                {/* Header row */}
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setStatsVisible((v) => !v)}
+                    className="flex items-center gap-2 group"
+                  >
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest group-hover:text-slate-200 transition-colors">Overview</p>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 transition-all duration-300 ${statsVisible ? "rotate-0" : "-rotate-90"}`}
                     />
-                    {customRange.from && (
-                      <div className="px-3 pb-3">
-                        <button
-                          onClick={() => setCustomRange({})}
-                          className="w-full text-xs text-slate-400 hover:text-white py-1.5 rounded border border-white/10 hover:bg-white/5 transition-colors"
-                        >
-                          Clear range
-                        </button>
-                      </div>
-                    )}
-                  </PopoverContent>
-                </Popover>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 flex-1">
-                  {stats.map((stat) => (
-                    <div
-                      key={stat.label}
-                      className={`border ${stat.border} bg-gradient-to-br ${stat.gradient} backdrop-blur-xl rounded-xl px-4 py-3 shadow-sm ${stat.shadow}`}
-                    >
-                      <p className={`text-xs ${stat.labelColor} font-semibold uppercase tracking-wider whitespace-nowrap`}>{stat.label}</p>
-                      <p className={`text-base font-bold mt-0.5 ${stat.valueColor} whitespace-nowrap`}>{stat.value}</p>
-                    </div>
-                  ))}
+                  </button>
+                  <Popover open={periodOpen} onOpenChange={setPeriodOpen}>
+                    <PopoverTrigger asChild>
+                      <button className="flex items-center gap-2 border border-white/10 bg-black/30 backdrop-blur-xl rounded-lg px-3 py-1.5 hover:bg-white/10 transition-colors">
+                        <CalendarDays className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+                        <span className="text-sm font-medium text-white whitespace-nowrap">
+                          {customRange.from && customRange.to
+                            ? `${format(customRange.from, "MMM d")} – ${format(customRange.to, "MMM d")}`
+                            : customRange.from
+                            ? `${format(customRange.from, "MMM d")} – ...`
+                            : "All time"}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 border-white/10 bg-black/90" align="end">
+                      <CalendarPicker
+                        mode="range"
+                        selected={{ from: customRange.from, to: customRange.to }}
+                        onSelect={(range) => {
+                          setCustomRange({ from: range?.from, to: range?.to })
+                          if (range?.from && range?.to) setPeriodOpen(false)
+                        }}
+                        numberOfMonths={1}
+                        className="text-white [&_.rdp-day_button:hover]:bg-purple-500/20 [&_.rdp-day_button.rdp-day_selected]:bg-purple-600"
+                      />
+                      {customRange.from && (
+                        <div className="px-3 pb-3">
+                          <button
+                            onClick={() => setCustomRange({})}
+                            className="w-full text-xs text-slate-400 hover:text-white py-1.5 rounded border border-white/10 hover:bg-white/5 transition-colors"
+                          >
+                            Clear range
+                          </button>
+                        </div>
+                      )}
+                    </PopoverContent>
+                  </Popover>
                 </div>
+
+                {/* Charts grid */}
+                {statsVisible && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Donut + summary */}
+                  <Card className="border-white/10 bg-black/40 backdrop-blur-xl">
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-6">
+                        <div className="relative shrink-0">
+                          <svg width="100" height="100" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="44" fill="none" stroke="rgb(255 255 255 / 0.1)" strokeWidth="10" />
+                            <circle cx="60" cy="60" r="44" fill="none" stroke="#22c55e" strokeWidth="10"
+                              strokeDasharray={`${2 * Math.PI * 44}`}
+                              strokeDashoffset={`${2 * Math.PI * 44 * (1 - completionRate / 100)}`}
+                              strokeLinecap="round" transform="rotate(-90 60 60)" />
+                            <text x="60" y="60" textAnchor="middle" dominantBaseline="central"
+                              fill="white" fontSize="28" fontWeight="bold" fontFamily="inherit">
+                              {completionRate}%
+                            </text>
+                          </svg>
+                        </div>
+                        <div className="space-y-2 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                            <span className="text-sm text-slate-300">{completedTodos.length} completed</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
+                            <span className="text-sm text-slate-300">{activeTodos.length} active</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-slate-500 shrink-0" />
+                            <span className="text-sm text-slate-300">{totalTasks} total</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                            <span className={`text-sm ${balance >= 0 ? "text-emerald-300" : "text-red-400"}`}>
+                              R{Math.abs(balance).toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Category bars */}
+                  <Card className="border-white/10 bg-black/40 backdrop-blur-xl">
+                    <CardContent className="p-5">
+                      <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">By Category</p>
+                      <div className="space-y-3">
+                        {categories.map((cat) => {
+                          const count = categoryCounts[cat]
+                          const meta = categoryMeta[cat]
+                          const pct = maxCategoryCount > 0 ? (count / maxCategoryCount) * 100 : 0
+                          return (
+                            <div key={cat} className="flex items-center gap-3">
+                              <span className="text-xs font-medium text-slate-400 w-14 shrink-0 text-right">{count}</span>
+                              <div className="flex-1 h-6 bg-white/5 rounded-md overflow-hidden relative">
+                                <div
+                                  className={`h-full rounded-md transition-all duration-500 bg-gradient-to-r ${meta.accentColor}`}
+                                  style={{ width: `${Math.max(pct, 2)}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-slate-400 w-16 truncate">{cat}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                )}
               </div>
 
               {/* Search Bar */}
