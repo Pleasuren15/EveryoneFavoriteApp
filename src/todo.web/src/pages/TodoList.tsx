@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -217,7 +217,7 @@ export function TodoList() {
                 </Popover>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 flex-1">
-                  {stats.map((stat, i) => (
+                  {stats.map((stat) => (
                     <div
                       key={stat.label}
                       className={`border ${stat.border} bg-gradient-to-br ${stat.gradient} backdrop-blur-xl rounded-xl px-4 py-3 shadow-sm ${stat.shadow}`}
