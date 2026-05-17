@@ -48,19 +48,39 @@ interface TodoContextType {
 
 const TodoContext = createContext<TodoContextType | null>(null)
 
+const DEMO_USER_ID = "00000000-0000-0000-0000-00000000000a"
+
+const CATEGORY_IDS: Record<Category, string> = {
+  Todo: "00000000-0000-0000-0000-000000000001",
+  Shopping: "00000000-0000-0000-0000-000000000002",
+  Personal: "00000000-0000-0000-0000-000000000003",
+  Work: "00000000-0000-0000-0000-000000000004",
+  Others: "00000000-0000-0000-0000-000000000005",
+}
+
+function createMockTodo(overrides: Partial<Todo> & { id: string; text: string; category: Category }): Todo {
+  return {
+    userId: DEMO_USER_ID,
+    categoryId: CATEGORY_IDS[overrides.category],
+    completed: false,
+    createdAt: new Date(),
+    ...overrides,
+  }
+}
+
 const defaultTodos: Todo[] = [
-  { id: "1", text: "Review project proposal", completed: false, category: "Work", createdAt: new Date(), dueDate: "2026-05-10", priority: "high", subtasks: [{ id: "s1", todoId: "1", text: "Read through draft", completed: true, sortOrder: 0 }, { id: "s2", todoId: "1", text: "Add feedback notes", completed: false, sortOrder: 1 }, { id: "s3", todoId: "1", text: "Send to manager", completed: false, sortOrder: 2 }] },
-  { id: "2", text: "Buy groceries for the week", completed: true, category: "Shopping", createdAt: new Date(), price: 85, priority: "medium" },
-  { id: "3", text: "Morning exercise routine", completed: false, category: "Personal", createdAt: new Date(), dueDate: "2026-05-07", priority: "medium" },
-  { id: "4", text: "Prepare team presentation", completed: false, category: "Work", createdAt: new Date(), dueDate: "2026-05-12", priority: "high", subtasks: [{ id: "s4", todoId: "4", text: "Create slides", completed: false, sortOrder: 0 }, { id: "s5", todoId: "4", text: "Gather metrics", completed: false, sortOrder: 1 }] },
-  { id: "5", text: "Read a chapter of a book", completed: false, category: "Personal", createdAt: new Date(), dueDate: "2026-05-10", priority: "low" },
-  { id: "6", text: "Plan weekend trip", completed: false, category: "Others", createdAt: new Date(), dueDate: "2026-05-08", priority: "medium" },
-  { id: "7", text: "Organize desk workspace", completed: false, category: "Todo", createdAt: new Date(), dueDate: "2026-05-07", priority: "low" },
-  { id: "8", text: "Call plumber about leak", completed: false, category: "Others", createdAt: new Date(), priority: "high" },
-  { id: "9", text: "Pick up dry cleaning", completed: true, category: "Shopping", createdAt: new Date(), price: 15, priority: "low" },
-  { id: "10", text: "Write daily journal entry", completed: false, category: "Personal", createdAt: new Date(), priority: "low" },
-  { id: "11", text: "Fix login page bug", completed: false, category: "Work", createdAt: new Date(), dueDate: "2026-05-09", priority: "high", subtasks: [{ id: "s6", todoId: "11", text: "Reproduce the bug", completed: true, sortOrder: 0 }, { id: "s7", todoId: "11", text: "Fix the issue", completed: false, sortOrder: 1 }, { id: "s8", todoId: "11", text: "Write tests", completed: false, sortOrder: 2 }] },
-  { id: "12", text: "Clean out email inbox", completed: false, category: "Todo", createdAt: new Date(), priority: "medium" },
+  createMockTodo({ id: "1", text: "Review project proposal", category: "Work", dueDate: "2026-05-10", priority: "high", subtasks: [{ id: "s1", todoId: "1", text: "Read through draft", completed: true, sortOrder: 0 }, { id: "s2", todoId: "1", text: "Add feedback notes", completed: false, sortOrder: 1 }, { id: "s3", todoId: "1", text: "Send to manager", completed: false, sortOrder: 2 }] }),
+  createMockTodo({ id: "2", text: "Buy groceries for the week", category: "Shopping", completed: true, price: 85, priority: "medium" }),
+  createMockTodo({ id: "3", text: "Morning exercise routine", category: "Personal", dueDate: "2026-05-07", priority: "medium" }),
+  createMockTodo({ id: "4", text: "Prepare team presentation", category: "Work", dueDate: "2026-05-12", priority: "high", subtasks: [{ id: "s4", todoId: "4", text: "Create slides", completed: false, sortOrder: 0 }, { id: "s5", todoId: "4", text: "Gather metrics", completed: false, sortOrder: 1 }] }),
+  createMockTodo({ id: "5", text: "Read a chapter of a book", category: "Personal", dueDate: "2026-05-10", priority: "low" }),
+  createMockTodo({ id: "6", text: "Plan weekend trip", category: "Others", dueDate: "2026-05-08", priority: "medium" }),
+  createMockTodo({ id: "7", text: "Organize desk workspace", category: "Todo", dueDate: "2026-05-07", priority: "low" }),
+  createMockTodo({ id: "8", text: "Call plumber about leak", category: "Others", priority: "high" }),
+  createMockTodo({ id: "9", text: "Pick up dry cleaning", category: "Shopping", completed: true, price: 15, priority: "low" }),
+  createMockTodo({ id: "10", text: "Write daily journal entry", category: "Personal", priority: "low" }),
+  createMockTodo({ id: "11", text: "Fix login page bug", category: "Work", dueDate: "2026-05-09", priority: "high", subtasks: [{ id: "s6", todoId: "11", text: "Reproduce the bug", completed: true, sortOrder: 0 }, { id: "s7", todoId: "11", text: "Fix the issue", completed: false, sortOrder: 1 }, { id: "s8", todoId: "11", text: "Write tests", completed: false, sortOrder: 2 }] }),
+  createMockTodo({ id: "12", text: "Clean out email inbox", category: "Todo", priority: "medium" }),
 ]
 
 export function TodoProvider({ children }: { children: ReactNode }) {
@@ -71,6 +91,8 @@ export function TodoProvider({ children }: { children: ReactNode }) {
       ...prev,
       {
         id: crypto.randomUUID(),
+        userId: DEMO_USER_ID,
+        categoryId: CATEGORY_IDS[category],
         text,
         completed: false,
         category,

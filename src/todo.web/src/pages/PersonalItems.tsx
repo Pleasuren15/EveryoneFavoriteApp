@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
-import type { PeriodFilter, Priority } from "@/lib/types"
+import type { PeriodFilter, Category, Priority, CategoryConfig } from "@/lib/types"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -22,14 +22,12 @@ const taskSchema = z.object({
   price: z.string().optional(),
 })
 
-const categoryConfig = {
-  Personal: { color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "pink", bgColor: "bg-pink-500/20", textColor: "text-pink-400", btnColor: "from-rose-700 to-rose-600" },
+const categoryConfig: Record<"Personal", CategoryConfig> = {
+  Personal: { color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "pink", textColor: "text-pink-400", btnColor: "from-rose-700 to-rose-600" },
 }
 
-type CategoryType = "Personal"
-
 interface PersonalItemsProps {
-  category?: CategoryType
+  category?: Category
 }
 
 export function PersonalItems({ category = "Personal" }: PersonalItemsProps) {

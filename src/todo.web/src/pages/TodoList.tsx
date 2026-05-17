@@ -15,7 +15,7 @@ import { useTodos } from "@/lib/todo-context"
 import { useCountUp } from "@/lib/hooks"
 import { useBudget } from "@/lib/use-budget"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
-import type { Category, Priority } from "@/lib/types"
+import type { Category, Priority, QuickAddState } from "@/lib/types"
 
 const categoryMeta: Record<Category, { color: string; bgColor: string; icon: typeof ListTodo; accentColor: string }> = {
   Todo: { color: "text-purple-600", bgColor: "bg-purple-50 dark:bg-purple-950/30", icon: ListTodo, accentColor: "from-purple-600 to-indigo-700" },
@@ -59,7 +59,7 @@ function CategoryCard({ category, count, meta, onClick }: {
   )
 }
 
-const emptyQuickAdd = { text: "", category: "Todo" as Category, priority: "medium" as Priority, dueDate: "" }
+const emptyQuickAdd: QuickAddState = { text: "", category: "Todo", priority: "medium", dueDate: "" }
 
 export function TodoList() {
   const navigate = useNavigate()

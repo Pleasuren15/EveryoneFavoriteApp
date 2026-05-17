@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
-import type { PeriodFilter, Category, Priority } from "@/lib/types"
+import type { PeriodFilter, Category, Priority, CategoryConfig } from "@/lib/types"
 import { SubtaskSection } from "@/components/SubtaskSection"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -23,7 +23,7 @@ const taskSchema = z.object({
   price: z.string().optional(),
 })
 
-const categoryConfig: Record<string, any> = {
+const categoryConfig: Record<Category, CategoryConfig & { icon: typeof ListTodo }> = {
   Todo: { icon: ListTodo, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "purple", textColor: "text-purple-400", btnColor: "from-purple-700 to-purple-600" },
   Shopping: { icon: ShoppingCart, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "cyan", textColor: "text-cyan-400", btnColor: "from-teal-700 to-teal-600" },
   Personal: { icon: User, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "pink", textColor: "text-pink-400", btnColor: "from-rose-700 to-rose-600" },
@@ -31,14 +31,12 @@ const categoryConfig: Record<string, any> = {
   Others: { icon: MoreHorizontal, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "indigo", textColor: "text-indigo-400", btnColor: "from-indigo-700 to-indigo-600" },
 }
 
-type CategoryType = keyof typeof categoryConfig
-
 interface TodoItemsProps {
-  category: CategoryType
+  category: Category
 }
 
 export function TodoItems() {
-  const category: CategoryType = "Todo"
+  const category: Category = "Todo"
   return <TodoItemsComponent category={category} />
 }
 

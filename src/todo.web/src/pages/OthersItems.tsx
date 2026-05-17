@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
-import type { PeriodFilter, Priority } from "@/lib/types"
+import type { PeriodFilter, Category, Priority, CategoryConfig } from "@/lib/types"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -22,14 +22,12 @@ const taskSchema = z.object({
   price: z.string().optional(),
 })
 
-const categoryConfig = {
-  Others: { color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "indigo", bgColor: "bg-indigo-500/20", textColor: "text-indigo-400", btnColor: "from-indigo-700 to-indigo-600" },
+const categoryConfig: Record<"Others", CategoryConfig> = {
+  Others: { color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "indigo", textColor: "text-indigo-400", btnColor: "from-indigo-700 to-indigo-600" },
 }
 
-type CategoryType = "Others"
-
 interface OthersItemsProps {
-  category?: CategoryType
+  category?: Category
 }
 
 export function OthersItems({ category = "Others" }: OthersItemsProps) {

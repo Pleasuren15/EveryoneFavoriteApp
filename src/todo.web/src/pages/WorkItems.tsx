@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos, matchesPeriod } from "@/lib/todo-context"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
-import type { PeriodFilter, Priority } from "@/lib/types"
+import type { PeriodFilter, Category, Priority, CategoryConfig } from "@/lib/types"
 import { SubtaskSection } from "@/components/SubtaskSection"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -23,14 +23,12 @@ const taskSchema = z.object({
   price: z.string().optional(),
 })
 
-const categoryConfig = {
-  Work: { color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "amber", bgColor: "bg-amber-500/20", textColor: "text-amber-400", btnColor: "from-amber-700 to-amber-600" },
+const categoryConfig: Record<"Work", CategoryConfig> = {
+  Work: { color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "amber", textColor: "text-amber-400", btnColor: "from-amber-700 to-amber-600" },
 }
 
-type CategoryType = "Work"
-
 interface WorkItemsProps {
-  category?: CategoryType
+  category?: Category
 }
 
 export function WorkItems({ category = "Work" }: WorkItemsProps) {

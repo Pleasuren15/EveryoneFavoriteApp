@@ -12,6 +12,7 @@ export interface Subtask {
 
 export interface BudgetEntry {
   id: string
+  userId: string
   type: "income" | "expense"
   category: string
   amount: number
@@ -22,6 +23,8 @@ export interface BudgetEntry {
 
 export interface Todo {
   id: string
+  userId: string
+  categoryId: string
   text: string
   completed: boolean
   category: Category
@@ -30,4 +33,37 @@ export interface Todo {
   priority?: Priority
   price?: number
   subtasks?: Subtask[]
+}
+
+export interface User {
+  id: string
+  email: string
+  displayName: string
+  createdAt: Date
+}
+
+export interface CategoryConfig {
+  color: string
+  accentColor: string
+  textColor: string
+  btnColor: string
+}
+
+export interface CategoryMeta {
+  color: string
+  bgColor: string
+  accentColor: string
+}
+
+export interface PriorityConfig {
+  label: string
+  color: string
+  bg: string
+}
+
+export interface QuickAddState {
+  text: string
+  category: Category
+  priority: Priority
+  dueDate: string
 }

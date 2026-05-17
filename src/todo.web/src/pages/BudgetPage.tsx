@@ -18,10 +18,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useBudget } from "@/lib/use-budget"
 import { BudgetPieChart, COLORS } from "@/components/BudgetPieChart"
 
-const expenseCategories = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Health", "Education", "Other"]
-const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-const currentYear = new Date().getFullYear()
-const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
+const expenseCategories: string[] = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Health", "Education", "Other"]
+const months: string[] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+const currentYear: number = new Date().getFullYear()
+const years: number[] = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
 
 const budgetSchema = z.object({
   entryType: z.enum(["income", "expense"]),
