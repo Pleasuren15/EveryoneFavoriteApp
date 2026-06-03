@@ -1,22 +1,24 @@
 using GreenDonut.Data;
 using Microsoft.EntityFrameworkCore;
-using todo.api.Infrastructure;
+using Todo.Library.Data;
 using todo.api.Models.Dtos;
-using Todo.Api.Models.Database;
+using Todo.Library.Models.Database;
 
 namespace todo.api.Services.Graphql
 {
     public class Query
     {
         /// <summary>Retrieves all todos for a specific user.</summary>
-        public async Task<List<Todo.Api.Models.Database.Todo>> GetTodos(
+        public async Task<List<Todo.Library.Models.Database.Todo>> GetTodos(
             AppDbContext dbContext,
             Guid userId,
-            QueryContext<Todo.Api.Models.Database.Todo> queryContext,
+            QueryContext<Todo.Library.Models.Database.Todo> queryContext,
             CancellationToken cancellationToken)
         {
             var todos = await dbContext.Todos
                 .AsNoTracking()
+                .Include(t => t.Category)
+                .Include(t => t.Subtasks)
                 .Where(t => t.UserId == userId)
                 .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);

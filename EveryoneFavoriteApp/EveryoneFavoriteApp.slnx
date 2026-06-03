@@ -1,4 +1,8 @@
 <Solution>
-  <Project Path="../src/aspire/aspire.csproj" />
-  <Project Path="../src/todo.api/todo.api.csproj" Id="f9e16bcb-b86c-437d-8bd2-c2d4256aa8e0" />
+  <Folder Name="/src/">
+    <Project Path="../src/aspire/aspire.csproj" />
+    <Project Path="../src/todo.api/todo.api.csproj" Id="f9e16bcb-b86c-437d-8bd2-c2d4256aa8e0" />
+    <Project Path="../src/todo.library/todo.library.csproj" Id="089bb633-351c-4ab8-93e6-68009db637fa" />
+    <Project Path="../src/todo.messaging.api/todo.messaging.api.csproj" Id="197feed3-64cb-4e9b-b138-1bb3a71bdbdd" />
+  </Folder>
 </Solution>

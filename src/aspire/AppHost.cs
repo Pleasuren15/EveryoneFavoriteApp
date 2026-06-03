@@ -29,10 +29,15 @@ var todoApi = builder.AddProject<Projects.todo_api>("todo-api")
     .WithReference(serviceBus)
     .WithReference(blobs);
 
+var todoMessagingApi = builder.AddProject<Projects.todo_messaging_api>("todo-messaging-api")
+    .WithReference(postgres)
+    .WithReference(tododb);
+
 var todoWeb = builder.AddJavaScriptApp("todo-web", "../todo.web")
     .WithRunScript("dev")
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints()
-    .WithReference(todoApi);
+    .WithReference(todoApi)
+    .WithEnvironment("BROWSER", "none");  // Prevent auto-opening browser, let Aspire dashboard handle it
 
 builder.Build().Run();

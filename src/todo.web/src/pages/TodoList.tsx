@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -63,23 +63,15 @@ const emptyQuickAdd: QuickAddState = { text: "", category: "Todo", priority: "me
 
 export function TodoList() {
   const navigate = useNavigate()
-  const { todos, toggleTodo, addTodo } = useTodos()
+  const { todos, toggleTodo, addTodo, loading } = useTodos()
   const [customRange, setCustomRange] = useState<{ from?: Date; to?: Date }>({})
   const [periodOpen, setPeriodOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [loading, setLoading] = useState(true)
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [quickAdd, setQuickAdd] = useState(emptyQuickAdd)
   const [statsVisible, setStatsVisible] = useState(true)
 
   const { balance } = useBudget()
-
-
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 600)
-    return () => clearTimeout(t)
-  }, [])
 
   const today = new Date()
   const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })

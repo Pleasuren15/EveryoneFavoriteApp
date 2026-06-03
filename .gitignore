@@ -149,3 +149,8 @@ vite.config.ts.timestamp-*
 src/aspire/aspire.csproj.lscache
 src/todo.api/todo.api.csproj.lscache
 src/todo.web/pnpm-lock.yaml
+/EveryoneFavoriteApp/.vs/ProjectEvaluation
+/src/todo.library/obj
+/src/todo.messaging.api/obj
+/src/todo.messaging.api/bin/Debug/net10.0
+/src/todo.library/bin/Debug/net10.0

@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useState, useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 import { ArrowLeft, Plus, Search, Trash2, CheckCircle2, Circle, Calendar, User, X, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
@@ -9,9 +9,9 @@ import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useTodos, matchesPeriod } from "@/lib/todo-context"
+import { useTodos } from "@/lib/todo-context"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
-import type { PeriodFilter, Category, Priority, CategoryConfig } from "@/lib/types"
+import type { Category, Priority, CategoryConfig } from "@/lib/types"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -32,9 +32,7 @@ interface PersonalItemsProps {
 
 export function PersonalItems({ category = "Personal" }: PersonalItemsProps) {
   const navigate = useNavigate()
-  const location = useLocation()
-  const { todos, toggleTodo, deleteTodo, addTodo } = useTodos()
-  const [loading, setLoading] = useState(true)
+  const { todos, toggleTodo, deleteTodo, addTodo, loading } = useTodos()
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
   const [taskPriority, setTaskPriority] = useState<Priority>("medium")
@@ -43,13 +41,7 @@ export function PersonalItems({ category = "Personal" }: PersonalItemsProps) {
     defaultValues: { text: "", date: "" },
   })
 
-  const period: PeriodFilter = (location.state as { period?: PeriodFilter })?.period ?? "Day"
-  const config = categoryConfig[category]
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 300)
-    return () => clearTimeout(t)
-  }, [])
+  const config = categoryConfig[category as keyof typeof categoryConfig]
 
   const periodTodos = useMemo(
     () => todos.filter((t) => {
@@ -60,9 +52,9 @@ export function PersonalItems({ category = "Personal" }: PersonalItemsProps) {
                d.getMonth() === filterDate.getMonth() &&
                d.getDate() === filterDate.getDate()
       }
-      return matchesPeriod(t.createdAt, period)
+      return true
     }),
-    [todos, period, filterDate, category]
+    [todos, filterDate, category]
   )
 
   const filteredTodos = useMemo(

@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useState, useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 import { ArrowLeft, Plus, Search, Trash2, CheckCircle2, Circle, Calendar, ShoppingCart, X, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
@@ -9,9 +9,9 @@ import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useTodos, matchesPeriod } from "@/lib/todo-context"
+import { useTodos } from "@/lib/todo-context"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
-import type { PeriodFilter, Category, Priority, CategoryConfig } from "@/lib/types"
+import type { Category, Priority, CategoryConfig } from "@/lib/types"
 import { SubtaskSection } from "@/components/SubtaskSection"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -33,9 +33,7 @@ interface ShoppingItemsProps {
 
 export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
   const navigate = useNavigate()
-  const location = useLocation()
-  const { todos, toggleTodo, deleteTodo, addTodo, toggleSubtask, addSubtask } = useTodos()
-  const [loading, setLoading] = useState(true)
+  const { todos, toggleTodo, deleteTodo, addTodo, toggleSubtask, addSubtask, loading } = useTodos()
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
   const [taskPriority, setTaskPriority] = useState<Priority>("medium")
@@ -44,13 +42,7 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
     defaultValues: { text: "", date: "" },
   })
 
-  const period: PeriodFilter = (location.state as { period?: PeriodFilter })?.period ?? "Day"
-  const config = categoryConfig[category]
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 300)
-    return () => clearTimeout(t)
-  }, [])
+  const config = categoryConfig[category as keyof typeof categoryConfig]
 
   const periodTodos = useMemo(
     () => todos.filter((t) => {
@@ -61,9 +53,9 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
                d.getMonth() === filterDate.getMonth() &&
                d.getDate() === filterDate.getDate()
       }
-      return matchesPeriod(t.createdAt, period)
+      return true
     }),
-    [todos, period, filterDate, category]
+    [todos, filterDate, category]
   )
 
   const filteredTodos = useMemo(
@@ -91,6 +83,11 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
 
   const progress = filteredTodos.length > 0 ? Math.round((completedTodos.length / filteredTodos.length) * 100) : 0
 
+  const totalPrice = useMemo(
+    () => activeTodos.reduce((sum, todo) => sum + (todo.price ?? 0), 0),
+    [activeTodos]
+  )
+
   return (
     <div className="h-svh flex flex-col">
       {/* Header */}
@@ -110,7 +107,7 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
                 <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8 text-white flex-shrink-0" />
                 <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">Shopping</h1>
               </div>
-              <p className="text-white/80 text-xs sm:text-sm truncate">{activeTodos.length} active • {completedTodos.length} completed</p>
+              <p className="text-white/80 text-xs sm:text-sm truncate">{activeTodos.length} active • {completedTodos.length} completed {totalPrice > 0 && `• Total: $${totalPrice.toFixed(2)}`}</p>
             </div>
           </div>
 
@@ -189,26 +186,33 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
                               >
                                 {todo.completed && <Circle className={`w-4 h-4 text-${config.accentColor}-600`} />}
                               </button>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-white truncate">{todo.text}</p>
-                                <div className="flex items-center gap-1.5 flex-wrap mt-1">
-                                  {pCfg && (
-                                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${pCfg.bg} ${pCfg.color}`}>
-                                      {pCfg.label}
-                                    </span>
-                                  )}
-                                  {overdue && (
-                                    <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-red-500/20 text-red-400 flex items-center gap-1">
-                                      <AlertCircle className="w-3 h-3" />Overdue
-                                    </span>
-                                  )}
-                                  {todo.dueDate && (
-                                    <span className={`text-xs ${overdue ? "text-red-400" : "text-slate-400"}`}>
-                                      Due {format(new Date(todo.dueDate + "T00:00:00"), "MMM d, yyyy")}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
+                               <div className="flex-1 min-w-0">
+                                 <div className="flex items-center gap-2 justify-between">
+                                   <p className="text-sm font-medium text-white truncate">{todo.text}</p>
+                                   {todo.price && (
+                                     <span className="text-sm font-semibold text-cyan-400 flex-shrink-0">
+                                       ${todo.price.toFixed(2)}
+                                     </span>
+                                   )}
+                                 </div>
+                                 <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                                   {pCfg && (
+                                     <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${pCfg.bg} ${pCfg.color}`}>
+                                       {pCfg.label}
+                                     </span>
+                                   )}
+                                   {overdue && (
+                                     <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-red-500/20 text-red-400 flex items-center gap-1">
+                                       <AlertCircle className="w-3 h-3" />Overdue
+                                     </span>
+                                   )}
+                                   {todo.dueDate && (
+                                     <span className={`text-xs ${overdue ? "text-red-400" : "text-slate-400"}`}>
+                                       Due {format(new Date(todo.dueDate + "T00:00:00"), "MMM d, yyyy")}
+                                     </span>
+                                   )}
+                                 </div>
+                               </div>
                               <button
                                 onClick={() => deleteTodo(todo.id)}
                                 className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all"

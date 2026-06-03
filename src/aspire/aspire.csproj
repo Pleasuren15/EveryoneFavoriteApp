@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\todo.api\todo.api.csproj" />
+    <ProjectReference Include="..\todo.messaging.api\todo.messaging.api.csproj" />
   </ItemGroup>
 
 </Project>

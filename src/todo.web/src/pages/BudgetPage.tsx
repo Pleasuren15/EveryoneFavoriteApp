@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -17,7 +17,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { useBudget } from "@/lib/use-budget"
 import { BudgetPieChart, COLORS } from "@/components/BudgetPieChart"
-import type { ExpenseCategory } from "@/lib/types"
+import type { BudgetCategory, ExpenseCategory } from "@/lib/types"
 
 const expenseCategories: ExpenseCategory[] = ["Food", "Transport", "Entertainment", "Bills", "Shopping", "Health", "Education", "Other"]
 const months: string[] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
@@ -33,8 +33,7 @@ const budgetSchema = z.object({
 
 export function BudgetPage() {
   const navigate = useNavigate()
-  const { entries, addEntry, deleteEntry } = useBudget()
-  const [loading, setLoading] = useState(true)
+  const { entries, addEntry, deleteEntry, loading } = useBudget()
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
@@ -49,11 +48,6 @@ export function BudgetPage() {
     },
   })
   const entryType = watch("entryType")
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 300)
-    return () => clearTimeout(t)
-  }, [])
 
   const filteredEntries = useMemo(
     () => entries.filter((e) => {
@@ -78,14 +72,14 @@ export function BudgetPage() {
   const chartData = [
     ...(filteredIncome > 0 ? [{ label: "Income", value: filteredIncome, color: COLORS.Income }] : []),
     ...Object.entries(filteredExpenseByCategory).map(([cat, val]) => ({
-      label: cat, value: val, color: COLORS[cat] || COLORS.Other,
+      label: cat, value: val, color: COLORS[cat as BudgetCategory] || COLORS.Other,
     })),
   ]
 
   const onSubmit = (data: z.infer<typeof budgetSchema>) => {
     addEntry({
       type: data.entryType,
-      category: data.entryType === "income" ? "Income" : data.entryCategory,
+      category: (data.entryType === "income" ? "Income" : data.entryCategory) as BudgetCategory,
       amount: parseFloat(data.amount),
       description: data.description.trim(),
       date: new Date().toISOString().slice(0, 10),
@@ -331,7 +325,7 @@ export function BudgetPage() {
                       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                       .map((entry) => (
                         <Card
-                          key={`${entry.date}-${entry.description}`}
+                          key={entry.id}
                           className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg hover:shadow-md transition-all group"
                         >
                           <CardContent className="p-4 flex items-center justify-between gap-4">
@@ -361,7 +355,7 @@ export function BudgetPage() {
                                 {entry.type === "income" ? "+" : "-"}R{entry.amount.toFixed(2)}
                               </p>
                               <button
-                                onClick={() => deleteEntry(`${entry.date}-${entry.description}`)}
+                                onClick={() => deleteEntry(entry.id)}
                                 className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all flex-shrink-0 cursor-pointer"
                               >
                                 <Trash2 className="w-4 h-4" />

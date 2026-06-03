@@ -1,7 +1,7 @@
 using HotChocolate;
 using Microsoft.EntityFrameworkCore;
-using todo.api.Infrastructure;
-using Todo.Api.Models.Database;
+using Todo.Library.Data;
+using Todo.Library.Models.Database;
 
 namespace todo.api.Services.Graphql;
 
@@ -10,12 +10,12 @@ public class Mutation
     // ─── Todos ────────────────────────────────────────────────────────────────
 
     /// <summary>Creates a new todo item for the given user and category.</summary>
-    public async Task<Todo.Api.Models.Database.Todo> CreateTodo(
+    public async Task<Todo.Library.Models.Database.Todo> CreateTodo(
         AppDbContext dbContext,
         CreateTodoInput input,
         CancellationToken cancellationToken)
     {
-        var todo = new Todo.Api.Models.Database.Todo
+        var todo = new Todo.Library.Models.Database.Todo
         {
             Id = Guid.NewGuid(),
             UserId = input.UserId,
@@ -38,7 +38,7 @@ public class Mutation
     /// absent fields leave the stored value untouched. Nullable fields can be
     /// explicitly set to null to clear them.
     /// </summary>
-    public async Task<Todo.Api.Models.Database.Todo?> UpdateTodo(
+    public async Task<Todo.Library.Models.Database.Todo?> UpdateTodo(
         AppDbContext dbContext,
         UpdateTodoInput input,
         CancellationToken cancellationToken)

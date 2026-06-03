@@ -1,6 +1,16 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
-import type { Todo, Category, PeriodFilter, Priority } from "./types"
+import { createContext, useContext, useCallback, type ReactNode } from "react"
+import { useQuery, useMutation } from "@apollo/client/react"
+import type { ErrorLike } from "@apollo/client"
+import type { Todo, Category, PeriodFilter, Priority, Subtask } from "./types"
+import {
+  GET_TODOS,
+  CREATE_TODO,
+  UPDATE_TODO,
+  DELETE_TODO,
+  ADD_SUBTASK,
+  TOGGLE_SUBTASK,
+} from "./operations"
 
 export function matchesPeriod(date: Date, period: PeriodFilter): boolean {
   const now = new Date()
@@ -37,6 +47,8 @@ export function matchesPeriod(date: Date, period: PeriodFilter): boolean {
 
 interface TodoContextType {
   todos: Todo[]
+  loading: boolean
+  error?: ErrorLike
   addTodo: (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority) => void
   toggleTodo: (id: string) => void
   deleteTodo: (id: string) => void
@@ -58,93 +70,92 @@ const CATEGORY_IDS: Record<Category, string> = {
   Others: "00000000-0000-0000-0000-000000000005",
 }
 
-function createMockTodo(overrides: Partial<Todo> & { id: string; text: string; category: Category }): Todo {
+const TODO_QUERY_VARS = { variables: { userId: DEMO_USER_ID } }
+const REFETCH_TODOS = [{ query: GET_TODOS, variables: { userId: DEMO_USER_ID } }]
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapTodo(raw: any): Todo {
   return {
-    userId: DEMO_USER_ID,
-    categoryId: CATEGORY_IDS[overrides.category],
-    completed: false,
-    createdAt: new Date(),
-    ...overrides,
+    id: raw.id as string,
+    userId: raw.userId as string,
+    categoryId: raw.categoryId as string,
+    text: raw.text as string,
+    completed: raw.completed as boolean,
+    createdAt: new Date(raw.createdAt as string),
+    dueDate: raw.dueDate ?? undefined,
+    price: raw.price != null ? Number(raw.price) : undefined,
+    priority: raw.priority as Priority | undefined,
+    category: (raw.category?.name ?? "Todo") as Category,
+    subtasks: (raw.subtasks as any[] | undefined)?.map(
+      (s): Subtask => ({
+        id: s.id as string,
+        todoId: s.todoId as string,
+        text: s.text as string,
+        completed: s.completed as boolean,
+        sortOrder: s.sortOrder as number,
+      })
+    ),
   }
 }
 
-const defaultTodos: Todo[] = [
-  createMockTodo({ id: "1", text: "Review project proposal", category: "Work", dueDate: "2026-05-10", priority: "high", subtasks: [{ id: "s1", todoId: "1", text: "Read through draft", completed: true, sortOrder: 0 }, { id: "s2", todoId: "1", text: "Add feedback notes", completed: false, sortOrder: 1 }, { id: "s3", todoId: "1", text: "Send to manager", completed: false, sortOrder: 2 }] }),
-  createMockTodo({ id: "2", text: "Buy groceries for the week", category: "Shopping", completed: true, price: 85, priority: "medium" }),
-  createMockTodo({ id: "3", text: "Morning exercise routine", category: "Personal", dueDate: "2026-05-07", priority: "medium" }),
-  createMockTodo({ id: "4", text: "Prepare team presentation", category: "Work", dueDate: "2026-05-12", priority: "high", subtasks: [{ id: "s4", todoId: "4", text: "Create slides", completed: false, sortOrder: 0 }, { id: "s5", todoId: "4", text: "Gather metrics", completed: false, sortOrder: 1 }] }),
-  createMockTodo({ id: "5", text: "Read a chapter of a book", category: "Personal", dueDate: "2026-05-10", priority: "low" }),
-  createMockTodo({ id: "6", text: "Plan weekend trip", category: "Others", dueDate: "2026-05-08", priority: "medium" }),
-  createMockTodo({ id: "7", text: "Organize desk workspace", category: "Todo", dueDate: "2026-05-07", priority: "low" }),
-  createMockTodo({ id: "8", text: "Call plumber about leak", category: "Others", priority: "high" }),
-  createMockTodo({ id: "9", text: "Pick up dry cleaning", category: "Shopping", completed: true, price: 15, priority: "low" }),
-  createMockTodo({ id: "10", text: "Write daily journal entry", category: "Personal", priority: "low" }),
-  createMockTodo({ id: "11", text: "Fix login page bug", category: "Work", dueDate: "2026-05-09", priority: "high", subtasks: [{ id: "s6", todoId: "11", text: "Reproduce the bug", completed: true, sortOrder: 0 }, { id: "s7", todoId: "11", text: "Fix the issue", completed: false, sortOrder: 1 }, { id: "s8", todoId: "11", text: "Write tests", completed: false, sortOrder: 2 }] }),
-  createMockTodo({ id: "12", text: "Clean out email inbox", category: "Todo", priority: "medium" }),
-]
-
 export function TodoProvider({ children }: { children: ReactNode }) {
-  const [todos, setTodos] = useState<Todo[]>(defaultTodos)
+  const { data, loading, error } = useQuery(GET_TODOS, TODO_QUERY_VARS)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const todos: Todo[] = ((data as any)?.todos ?? []).map(mapTodo)
 
-  const addTodo = useCallback((text: string, category: Category, dueDate?: string, price?: number, priority?: Priority) => {
-    setTodos((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        userId: DEMO_USER_ID,
-        categoryId: CATEGORY_IDS[category],
-        text,
-        completed: false,
-        category,
-        createdAt: new Date(),
-        dueDate,
-        price,
-        priority,
-      },
-    ])
-  }, [])
+  const [createTodoMut] = useMutation(CREATE_TODO, { refetchQueries: REFETCH_TODOS })
+  const [updateTodoMut] = useMutation(UPDATE_TODO, { refetchQueries: REFETCH_TODOS })
+  const [deleteTodoMut] = useMutation(DELETE_TODO, { refetchQueries: REFETCH_TODOS })
+  const [addSubtaskMut] = useMutation(ADD_SUBTASK, { refetchQueries: REFETCH_TODOS })
+  const [toggleSubtaskMut] = useMutation(TOGGLE_SUBTASK, { refetchQueries: REFETCH_TODOS })
 
-  const toggleTodo = useCallback((id: string) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    )
-  }, [])
-
-  const deleteTodo = useCallback((id: string) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id))
-  }, [])
-
-  const toggleSubtask = useCallback((todoId: string, subtaskId: string) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id !== todoId ? todo : {
-          ...todo,
-          subtasks: todo.subtasks?.map((st) =>
-            st.id === subtaskId ? { ...st, completed: !st.completed } : st
-          ),
-        }
-      )
-    )
-  }, [])
-
-  const addSubtask = useCallback((todoId: string, text: string) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id !== todoId ? todo : {
-          ...todo,
-          subtasks: [...(todo.subtasks ?? []), {
-            id: crypto.randomUUID(),
-            todoId,
+  const addTodo = useCallback(
+    (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority) => {
+      createTodoMut({
+        variables: {
+          input: {
+            userId: DEMO_USER_ID,
+            categoryId: CATEGORY_IDS[category],
             text,
-            completed: false,
-            sortOrder: (todo.subtasks ?? []).length,
-          }],
-        }
-      )
-    )
-  }, [])
+            dueDate: dueDate ?? null,
+            price: price ?? null,
+            priority: priority ?? null,
+          },
+        },
+      })
+    },
+    [createTodoMut]
+  )
+
+  const toggleTodo = useCallback(
+    (id: string) => {
+      const todo = todos.find((t) => t.id === id)
+      if (!todo) return
+      updateTodoMut({ variables: { input: { id, completed: !todo.completed } } })
+    },
+    [todos, updateTodoMut]
+  )
+
+  const deleteTodo = useCallback(
+    (id: string) => {
+      deleteTodoMut({ variables: { id } })
+    },
+    [deleteTodoMut]
+  )
+
+  const toggleSubtask = useCallback(
+    (_todoId: string, subtaskId: string) => {
+      toggleSubtaskMut({ variables: { id: subtaskId } })
+    },
+    [toggleSubtaskMut]
+  )
+
+  const addSubtask = useCallback(
+    (todoId: string, text: string) => {
+      addSubtaskMut({ variables: { input: { todoId, text } } })
+    },
+    [addSubtaskMut]
+  )
 
   const getCategoryCount = useCallback(
     (category: Category, period?: PeriodFilter) => {
@@ -163,7 +174,18 @@ export function TodoProvider({ children }: { children: ReactNode }) {
 
   return (
     <TodoContext.Provider
-      value={{ todos, addTodo, toggleTodo, deleteTodo, toggleSubtask, addSubtask, getCategoryCount, getFilteredTodos }}
+      value={{
+        todos,
+        loading,
+        error,
+        addTodo,
+        toggleTodo,
+        deleteTodo,
+        toggleSubtask,
+        addSubtask,
+        getCategoryCount,
+        getFilteredTodos,
+      }}
     >
       {children}
     </TodoContext.Provider>

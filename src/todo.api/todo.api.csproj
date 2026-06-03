@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../todo.library/todo.library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="HotChocolate.AspNetCore" Version="16.0.3" />
     <PackageReference Include="HotChocolate.AspNetCore.CommandLine" Version="16.0.3" />
     <PackageReference Include="HotChocolate.Data" Version="16.0.3" />

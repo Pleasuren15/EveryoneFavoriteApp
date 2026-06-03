@@ -1,7 +1,8 @@
+using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using Todo.Library.Models.Database;
 
-namespace todo.api.Infrastructure;
+namespace Todo.Library.Data;
 
 public static class DbInitializer
 {
@@ -28,7 +29,7 @@ public static class DbInitializer
             CreatedAt = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero),
         };
 
-        var todos = new List<Todo.Api.Models.Database.Todo>
+        var todos = new List<Models.Database.Todo>
         {
             new()
             {
@@ -128,7 +129,7 @@ public static class DbInitializer
 
         db.Categories.AddRange(categories);
         db.Users.Add(user);
-        db.Set<Todo.Api.Models.Database.Todo>().AddRange(todos);
+        db.Set<Todo.Library.Models.Database.Todo>().AddRange(todos);
         db.Subtasks.AddRange(subtasks);
         db.BudgetEntries.AddRange(budgetEntries);
 

@@ -1,27 +1,69 @@
-import { useState, useCallback } from "react"
-import type { BudgetEntry, ExpenseCategory } from "./types"
+import { useCallback } from "react"
+import { useQuery, useMutation } from "@apollo/client/react"
+import type { ErrorLike } from "@apollo/client"
+import type { BudgetEntry, EntryType, BudgetCategory, ExpenseCategory } from "./types"
+import { GET_BUDGET_ENTRIES, CREATE_BUDGET_ENTRY, DELETE_BUDGET_ENTRY } from "./operations"
 
 const DEMO_USER_ID = "00000000-0000-0000-0000-00000000000a"
+const BUDGET_QUERY_VARS = { variables: { userId: DEMO_USER_ID } }
+const REFETCH_BUDGET = [{ query: GET_BUDGET_ENTRIES, variables: { userId: DEMO_USER_ID } }]
 
-const defaultEntries: BudgetEntry[] = [
-  { id: "b1", userId: DEMO_USER_ID, type: "income", category: "Income", amount: 5000, description: "Monthly salary", date: "2026-05-01", createdAt: new Date("2026-05-01") },
-  { id: "b2", userId: DEMO_USER_ID, type: "expense", category: "Food", amount: 800, description: "Groceries", date: "2026-05-03", createdAt: new Date("2026-05-03") },
-  { id: "b3", userId: DEMO_USER_ID, type: "expense", category: "Bills", amount: 1200, description: "Rent", date: "2026-05-01", createdAt: new Date("2026-05-01") },
-  { id: "b4", userId: DEMO_USER_ID, type: "expense", category: "Transport", amount: 400, description: "Fuel", date: "2026-05-05", createdAt: new Date("2026-05-05") },
-  { id: "b5", userId: DEMO_USER_ID, type: "expense", category: "Entertainment", amount: 300, description: "Streaming & games", date: "2026-05-06", createdAt: new Date("2026-05-06") },
-  { id: "b6", userId: DEMO_USER_ID, type: "expense", category: "Shopping", amount: 600, description: "New clothes", date: "2026-05-04", createdAt: new Date("2026-05-04") },
-]
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapBudgetEntry(raw: any): BudgetEntry {
+  return {
+    id: raw.id as string,
+    userId: raw.userId as string,
+    type: raw.type as EntryType,
+    category: raw.category as BudgetCategory,
+    amount: Number(raw.amount),
+    description: raw.description as string,
+    date: raw.date as string,
+    createdAt: new Date(raw.createdAt as string),
+  }
+}
 
-export function useBudget() {
-  const [entries, setEntries] = useState<BudgetEntry[]>(defaultEntries)
+export function useBudget(): {
+  entries: BudgetEntry[]
+  loading: boolean
+  error?: ErrorLike
+  addEntry: (entry: Omit<BudgetEntry, "id" | "createdAt" | "userId">) => void
+  deleteEntry: (id: string) => void
+  totalIncome: number
+  totalExpenses: number
+  balance: number
+  expenseByCategory: Partial<Record<ExpenseCategory, number>>
+} {
+  const { data, loading, error } = useQuery(GET_BUDGET_ENTRIES, BUDGET_QUERY_VARS)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const entries: BudgetEntry[] = ((data as any)?.budgetEntries ?? []).map(mapBudgetEntry)
 
-  const addEntry = useCallback((entry: Omit<BudgetEntry, "id" | "createdAt" | "userId">) => {
-    setEntries((prev) => [...prev, { ...entry, userId: DEMO_USER_ID, createdAt: new Date(), id: crypto.randomUUID() }])
-  }, [])
+  const [createBudgetEntryMut] = useMutation(CREATE_BUDGET_ENTRY, { refetchQueries: REFETCH_BUDGET })
+  const [deleteBudgetEntryMut] = useMutation(DELETE_BUDGET_ENTRY, { refetchQueries: REFETCH_BUDGET })
 
-  const deleteEntry = useCallback((id: string) => {
-    setEntries((prev) => prev.filter((e) => e.id !== id))
-  }, [])
+  const addEntry = useCallback(
+    (entry: Omit<BudgetEntry, "id" | "createdAt" | "userId">) => {
+      createBudgetEntryMut({
+        variables: {
+          input: {
+            userId: DEMO_USER_ID,
+            type: entry.type,
+            category: entry.category,
+            amount: entry.amount,
+            description: entry.description,
+            date: entry.date,
+          },
+        },
+      })
+    },
+    [createBudgetEntryMut]
+  )
+
+  const deleteEntry = useCallback(
+    (id: string) => {
+      deleteBudgetEntryMut({ variables: { id } })
+    },
+    [deleteBudgetEntryMut]
+  )
 
   const totalIncome = entries.filter((e) => e.type === "income").reduce((s, e) => s + e.amount, 0)
   const totalExpenses = entries.filter((e) => e.type === "expense").reduce((s, e) => s + e.amount, 0)
@@ -37,6 +79,8 @@ export function useBudget() {
 
   return {
     entries,
+    loading,
+    error,
     addEntry,
     deleteEntry,
     totalIncome,

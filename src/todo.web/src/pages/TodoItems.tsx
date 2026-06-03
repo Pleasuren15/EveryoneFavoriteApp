@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useState, useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 import { ArrowLeft, Plus, Search, Trash2, CheckCircle2, Circle, Calendar, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, X, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
@@ -9,9 +9,9 @@ import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useTodos, matchesPeriod } from "@/lib/todo-context"
+import { useTodos } from "@/lib/todo-context"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
-import type { PeriodFilter, Category, Priority, CategoryConfig } from "@/lib/types"
+import type { Category, Priority, CategoryConfig } from "@/lib/types"
 import { SubtaskSection } from "@/components/SubtaskSection"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -42,9 +42,7 @@ export function TodoItems() {
 
 function TodoItemsComponent({ category }: TodoItemsProps) {
   const navigate = useNavigate()
-  const location = useLocation()
-  const { todos, toggleTodo, deleteTodo, addTodo, toggleSubtask, addSubtask } = useTodos()
-  const [loading, setLoading] = useState(true)
+  const { todos, toggleTodo, deleteTodo, addTodo, toggleSubtask, addSubtask, loading } = useTodos()
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
   const [taskPriority, setTaskPriority] = useState<Priority>("medium")
@@ -53,14 +51,8 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
     defaultValues: { text: "", date: "" },
   })
 
-  const period: PeriodFilter = (location.state as { period?: PeriodFilter })?.period ?? "Day"
   const config = categoryConfig[category]
   const IconComponent = config.icon
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 300)
-    return () => clearTimeout(t)
-  }, [])
 
   const periodTodos = useMemo(
     () => todos.filter((t) => {
@@ -71,9 +63,9 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
                d.getMonth() === filterDate.getMonth() &&
                d.getDate() === filterDate.getDate()
       }
-      return matchesPeriod(t.createdAt, period)
+      return true
     }),
-    [todos, period, filterDate, category]
+    [todos, filterDate, category]
   )
 
   const filteredTodos = useMemo(
