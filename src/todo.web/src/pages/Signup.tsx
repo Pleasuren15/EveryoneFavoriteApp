@@ -1,13 +1,14 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { User, Mail, Lock, Eye, EyeOff, UserPlus } from "lucide-react"
+import { User, Mail, Lock, Eye, EyeOff, UserPlus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { supabase } from "@/lib/supabase"
 
 const signupSchema = z
   .object({
@@ -24,8 +25,11 @@ const signupSchema = z
 type SignupFormData = z.infer<typeof signupSchema>
 
 export function Signup() {
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
 
   const {
     register,
@@ -35,8 +39,25 @@ export function Signup() {
     resolver: zodResolver(signupSchema),
   })
 
-  const onSubmit = (data: SignupFormData) => {
-    console.log(data)
+  const onSubmit = async (data: SignupFormData) => {
+    setLoading(true)
+    setAuthError(null)
+
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: { full_name: data.name },
+        emailRedirectTo: window.location.origin,
+      },
+    })
+
+    if (error) {
+      setAuthError(error.message)
+      setLoading(false)
+    } else {
+      navigate("/todos")
+    }
   }
 
   return (
@@ -50,6 +71,12 @@ export function Signup() {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-8 md:px-10 pb-12 pt-8">
+            {authError && (
+              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                {authError}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="name" className="text-sm font-semibold text-slate-200">
@@ -95,7 +122,7 @@ export function Signup() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     {...register("password")}
-                    className="pl-10 pr-12 bg-white/15 border-white/20 text-white placeholder:text-white/40 focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10"
+                    className="pl-10 pr-12 bg-white/15 border-white/20 text-white placeholder:text-white/40 focus:border-primary focus:ring-4 focus:ring-primary/10"
                   />
                   <Button
                     type="button"
@@ -120,7 +147,7 @@ export function Signup() {
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     {...register("confirmPassword")}
-                    className="pl-10 pr-12 bg-white/15 border-white/20 text-white placeholder:text-white/40 focus:border-cornflower-blue-500 focus:ring-4 focus:ring-cornflower-blue-500/10"
+                    className="pl-10 pr-12 bg-white/15 border-white/20 text-white placeholder:text-white/40 focus:border-primary focus:ring-4 focus:ring-primary/10"
                   />
                   <Button
                     type="button"
@@ -137,9 +164,14 @@ export function Signup() {
 
               <Button
                 type="submit"
+                disabled={loading}
                 className="w-full h-11 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-lg shadow-primary/30 active:scale-[0.98]"
               >
-                <UserPlus className="w-4 h-4" />
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <UserPlus className="w-4 h-4" />
+                )}
                 Create Account
               </Button>
             </form>
