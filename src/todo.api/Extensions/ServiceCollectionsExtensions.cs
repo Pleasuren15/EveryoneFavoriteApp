@@ -10,7 +10,7 @@ public static class ServiceCollectionsExtensions
         var connectionString = builder.Configuration.GetConnectionString("EveryoneFavoriteApp");
         services.AddDbContextPool<AppDbContext>(
             options => options
-            .UseNpgsql(connectionString));
+            .UseNpgsql(connectionString, b => b.MigrationsAssembly("todo.library")));
     }
 
     public static async Task UseSeedDataAsync(this WebApplication app)
