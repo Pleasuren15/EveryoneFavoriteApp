@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos } from "@/lib/todo-context"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
-import type { Category, Priority, CategoryConfig } from "@/lib/types"
+import type { Category, Priority } from "@/lib/types"
 import { SubtaskSection } from "@/components/SubtaskSection"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -21,10 +21,6 @@ const taskSchema = z.object({
   text: z.string().min(1, "Task text is required"),
   date: z.string().optional(),
 })
-
-const categoryConfig: Record<"Todo", CategoryConfig> = {
-  Todo: { color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "purple", textColor: "text-purple-400", btnColor: "from-purple-700 to-purple-600" },
-}
 
 interface TodoItemsProps {
   category?: Category
