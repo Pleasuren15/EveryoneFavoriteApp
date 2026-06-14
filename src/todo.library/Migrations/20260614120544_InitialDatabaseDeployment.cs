@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace todo.api.Migrations
+namespace todo.library.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialDatabaseSetup : Migration
+    public partial class InitialDatabaseDeployment : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -75,7 +75,15 @@ namespace todo.api.Migrations
                     Completed = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     DueDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    Price = table.Column<decimal>(type: "numeric", nullable: true)
+                    Price = table.Column<decimal>(type: "numeric", nullable: true),
+                    Priority = table.Column<string>(type: "text", nullable: true),
+                    Quantity = table.Column<int>(type: "integer", nullable: true),
+                    Store = table.Column<string>(type: "text", nullable: true),
+                    Assignee = table.Column<string>(type: "text", nullable: true),
+                    Team = table.Column<string>(type: "text", nullable: true),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    MoodRating = table.Column<int>(type: "integer", nullable: true),
+                    Tags = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

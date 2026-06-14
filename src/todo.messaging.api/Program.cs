@@ -13,9 +13,7 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        var envPath = DotNetEnv.Env.TraversePath();
-        if (envPath is not null)
-            DotNetEnv.Env.Load(envPath);
+        DotNetEnv.Env.TraversePath().Load();
 
         var builder = WebApplication.CreateBuilder(args);
 

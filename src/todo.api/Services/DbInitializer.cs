@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using todo.api.Services;
+using Todo.Library.Data;
 using Todo.Library.Models.Database;
 
 namespace todo.api.Infrastructure;
@@ -16,7 +18,7 @@ public static class DbInitializer
             new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000002"), Name = "Shopping", Label = "Shopping", SortOrder = 2 },
             new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000003"), Name = "Personal", Label = "Personal", SortOrder = 3 },
             new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000004"), Name = "Work", Label = "Work", SortOrder = 4 },
-            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000005"), Name = "Others", Label = "Others", SortOrder = 5 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000005"), Name = "Others", Label = "Others", SortOrder = 5 }
         };
 
         var user = new User

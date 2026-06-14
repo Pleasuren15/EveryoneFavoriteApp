@@ -9,11 +9,11 @@ using Todo.Library.Data;
 
 #nullable disable
 
-namespace todo.api.Migrations
+namespace todo.library.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260516125046_InitialDatabaseSetup")]
-    partial class InitialDatabaseSetup
+    [Migration("20260614120544_InitialDatabaseDeployment")]
+    partial class InitialDatabaseDeployment
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace todo.api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Todo.Api.Models.Database.BudgetEntry", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.BudgetEntry", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -70,7 +70,7 @@ namespace todo.api.Migrations
                     b.ToTable("BudgetEntry");
                 });
 
-            modelBuilder.Entity("Todo.Api.Models.Database.Category", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.Category", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -96,7 +96,7 @@ namespace todo.api.Migrations
                     b.ToTable("Category");
                 });
 
-            modelBuilder.Entity("Todo.Api.Models.Database.Subtask", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.Subtask", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -127,12 +127,16 @@ namespace todo.api.Migrations
                     b.ToTable("Subtask");
                 });
 
-            modelBuilder.Entity("Todo.Api.Models.Database.Todo", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.Todo", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("Id");
+
+                    b.Property<string>("Assignee")
+                        .HasColumnType("text")
+                        .HasColumnName("Assignee");
 
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uuid")
@@ -150,9 +154,37 @@ namespace todo.api.Migrations
                         .HasColumnType("date")
                         .HasColumnName("DueDate");
 
+                    b.Property<int?>("MoodRating")
+                        .HasColumnType("integer")
+                        .HasColumnName("MoodRating");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("Notes");
+
                     b.Property<decimal?>("Price")
                         .HasColumnType("numeric")
                         .HasColumnName("Price");
+
+                    b.Property<string>("Priority")
+                        .HasColumnType("text")
+                        .HasColumnName("Priority");
+
+                    b.Property<int?>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("Quantity");
+
+                    b.Property<string>("Store")
+                        .HasColumnType("text")
+                        .HasColumnName("Store");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("text")
+                        .HasColumnName("Tags");
+
+                    b.Property<string>("Team")
+                        .HasColumnType("text")
+                        .HasColumnName("Team");
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -172,7 +204,7 @@ namespace todo.api.Migrations
                     b.ToTable("Todo");
                 });
 
-            modelBuilder.Entity("Todo.Api.Models.Database.User", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -203,9 +235,9 @@ namespace todo.api.Migrations
                     b.ToTable("User");
                 });
 
-            modelBuilder.Entity("Todo.Api.Models.Database.BudgetEntry", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.BudgetEntry", b =>
                 {
-                    b.HasOne("Todo.Api.Models.Database.User", "User")
+                    b.HasOne("Todo.Library.Models.Database.User", "User")
                         .WithMany("BudgetEntries")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -214,9 +246,9 @@ namespace todo.api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Todo.Api.Models.Database.Subtask", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.Subtask", b =>
                 {
-                    b.HasOne("Todo.Api.Models.Database.Todo", "Todo")
+                    b.HasOne("Todo.Library.Models.Database.Todo", "Todo")
                         .WithMany("Subtasks")
                         .HasForeignKey("TodoId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -225,15 +257,15 @@ namespace todo.api.Migrations
                     b.Navigation("Todo");
                 });
 
-            modelBuilder.Entity("Todo.Api.Models.Database.Todo", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.Todo", b =>
                 {
-                    b.HasOne("Todo.Api.Models.Database.Category", "Category")
+                    b.HasOne("Todo.Library.Models.Database.Category", "Category")
                         .WithMany("Todos")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Todo.Api.Models.Database.User", "User")
+                    b.HasOne("Todo.Library.Models.Database.User", "User")
                         .WithMany("Todos")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -244,17 +276,17 @@ namespace todo.api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Todo.Api.Models.Database.Category", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.Category", b =>
                 {
                     b.Navigation("Todos");
                 });
 
-            modelBuilder.Entity("Todo.Api.Models.Database.Todo", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.Todo", b =>
                 {
                     b.Navigation("Subtasks");
                 });
 
-            modelBuilder.Entity("Todo.Api.Models.Database.User", b =>
+            modelBuilder.Entity("Todo.Library.Models.Database.User", b =>
                 {
                     b.Navigation("BudgetEntries");
 
