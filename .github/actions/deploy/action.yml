@@ -1,0 +1,22 @@
+name: "Deploy .NET app to Azure"
+description: "Deploys the built artifact to Azure Web App"
+inputs:
+  publish-profile:
+    description: "Azure Web App publish profile"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v4
+      with:
+        name: .net-app
+
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: "everyone-favorite-pp"
+        slot-name: "Production"
+        package: .
+        publish-profile: ${{ inputs.publish-profile }}

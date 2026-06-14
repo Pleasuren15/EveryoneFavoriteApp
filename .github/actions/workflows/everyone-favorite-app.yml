@@ -1,0 +1,23 @@
+name: Build and deploy ASP.Net Core app to Azure Web App - everyone-favorite-pp
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: ./.github/actions/build
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: ./.github/actions/deploy
+        with:
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_717A7CB82CE64B7A9E0F9614BFBC5354 }}
