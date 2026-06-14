@@ -3,8 +3,6 @@ description: "Builds and publishes the ASP.NET Core app"
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
-
     - name: Set up .NET Core
       uses: actions/setup-dotnet@v4
       with:
@@ -12,11 +10,11 @@ runs:
 
     - name: Build with dotnet
       shell: bash
-      run: dotnet build ${{ github.action_path }}/../../../src/todo.api/todo.api.csproj --configuration Release
+      run: dotnet build ${{ github.workspace }}/src/todo.api/todo.api.csproj --configuration Release
 
     - name: dotnet publish
       shell: bash
-      run: dotnet publish ${{ github.action_path }}/../../../src/todo.api/todo.api.csproj -c Release -o "${{ runner.temp }}/myapp"
+      run: dotnet publish ${{ github.workspace }}/src/todo.api/todo.api.csproj -c Release -o "${{ runner.temp }}/myapp"
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
