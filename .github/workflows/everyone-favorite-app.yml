@@ -12,12 +12,14 @@ jobs:
     permissions:
       contents: read
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/build
 
   deploy:
     runs-on: windows-latest
     needs: build
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/deploy
         with:
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_717A7CB82CE64B7A9E0F9614BFBC5354 }}
