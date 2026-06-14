@@ -8,7 +8,7 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        DotNetEnv.Env.TraversePath().Load();
+        try { DotNetEnv.Env.TraversePath().Load(); } catch { }
 
         var builder = WebApplication.CreateBuilder(args);
 
