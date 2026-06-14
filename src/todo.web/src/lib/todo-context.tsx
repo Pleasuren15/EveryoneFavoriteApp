@@ -49,7 +49,7 @@ interface TodoContextType {
   todos: Todo[]
   loading: boolean
   error?: ErrorLike
-  addTodo: (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority) => void
+  addTodo: (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority, quantity?: number, store?: string, assignee?: string, team?: string, notes?: string, moodRating?: number, tags?: string) => void
   toggleTodo: (id: string) => void
   deleteTodo: (id: string) => void
   toggleSubtask: (todoId: string, subtaskId: string) => void
@@ -85,6 +85,13 @@ function mapTodo(raw: any): Todo {
     dueDate: raw.dueDate ?? undefined,
     price: raw.price != null ? Number(raw.price) : undefined,
     priority: raw.priority as Priority | undefined,
+    quantity: raw.quantity ?? undefined,
+    store: raw.store ?? undefined,
+    assignee: raw.assignee ?? undefined,
+    team: raw.team ?? undefined,
+    notes: raw.notes ?? undefined,
+    moodRating: raw.moodRating ?? undefined,
+    tags: raw.tags ?? undefined,
     category: (raw.category?.name ?? "Todo") as Category,
     subtasks: (raw.subtasks as any[] | undefined)?.map(
       (s): Subtask => ({
@@ -110,7 +117,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
   const [toggleSubtaskMut] = useMutation(TOGGLE_SUBTASK, { refetchQueries: REFETCH_TODOS })
 
   const addTodo = useCallback(
-    (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority) => {
+    (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority, quantity?: number, store?: string, assignee?: string, team?: string, notes?: string, moodRating?: number, tags?: string) => {
       createTodoMut({
         variables: {
           input: {
@@ -120,6 +127,13 @@ export function TodoProvider({ children }: { children: ReactNode }) {
             dueDate: dueDate ?? null,
             price: price ?? null,
             priority: priority ?? null,
+            quantity: quantity ?? null,
+            store: store ?? null,
+            assignee: assignee ?? null,
+            team: team ?? null,
+            notes: notes ?? null,
+            moodRating: moodRating ?? null,
+            tags: tags ?? null,
           },
         },
       })

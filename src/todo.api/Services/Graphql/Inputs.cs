@@ -10,7 +10,14 @@ public record CreateTodoInput(
     string Text,
     DateOnly? DueDate,
     decimal? Price,
-    string? Priority);
+    string? Priority,
+    int? Quantity,
+    string? Store,
+    string? Assignee,
+    string? Team,
+    string? Notes,
+    int? MoodRating,
+    string? Tags);
 
 /// <summary>
 /// All fields except Id are optional. Pass only the fields you want to change.
@@ -23,7 +30,14 @@ public record UpdateTodoInput(
     Optional<string> Text,
     Optional<DateOnly?> DueDate,
     Optional<decimal?> Price,
-    Optional<string?> Priority);
+    Optional<string?> Priority,
+    Optional<int?> Quantity,
+    Optional<string?> Store,
+    Optional<string?> Assignee,
+    Optional<string?> Team,
+    Optional<string?> Notes,
+    Optional<int?> MoodRating,
+    Optional<string?> Tags);
 
 // ─── Subtask inputs ───────────────────────────────────────────────────────────
 

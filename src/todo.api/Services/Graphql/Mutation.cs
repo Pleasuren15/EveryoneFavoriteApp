@@ -26,6 +26,13 @@ public class Mutation
             DueDate = input.DueDate,
             Price = input.Price,
             Priority = input.Priority,
+            Quantity = input.Quantity,
+            Store = input.Store,
+            Assignee = input.Assignee,
+            Team = input.Team,
+            Notes = input.Notes,
+            MoodRating = input.MoodRating,
+            Tags = input.Tags,
         };
 
         dbContext.Todos.Add(todo);
@@ -55,6 +62,13 @@ public class Mutation
         if (input.DueDate.HasValue) todo.DueDate = input.DueDate.Value;
         if (input.Price.HasValue) todo.Price = input.Price.Value;
         if (input.Priority.HasValue) todo.Priority = input.Priority.Value;
+        if (input.Quantity.HasValue) todo.Quantity = input.Quantity.Value;
+        if (input.Store.HasValue) todo.Store = input.Store.Value;
+        if (input.Assignee.HasValue) todo.Assignee = input.Assignee.Value;
+        if (input.Team.HasValue) todo.Team = input.Team.Value;
+        if (input.Notes.HasValue) todo.Notes = input.Notes.Value;
+        if (input.MoodRating.HasValue) todo.MoodRating = input.MoodRating.Value;
+        if (input.Tags.HasValue) todo.Tags = input.Tags.Value;
 
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return todo;

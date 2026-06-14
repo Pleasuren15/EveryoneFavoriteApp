@@ -243,7 +243,7 @@ export function BudgetPage() {
                         control={control}
                         render={({ field }) => (
                           <Select onValueChange={field.onChange} value={field.value}>
-                            <SelectTrigger className="border-white/10 cursor-pointer">
+                            <SelectTrigger className="w-full !h-11 border-white/10 cursor-pointer">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -260,7 +260,7 @@ export function BudgetPage() {
                           control={control}
                           render={({ field }) => (
                             <Select onValueChange={field.onChange} value={field.value}>
-                              <SelectTrigger className="border-white/10 cursor-pointer">
+                              <SelectTrigger className="w-full !h-11 border-white/10 cursor-pointer">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>

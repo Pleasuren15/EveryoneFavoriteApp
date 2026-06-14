@@ -13,6 +13,13 @@ const TODO_FIELDS = gql`
     dueDate
     price
     priority
+    quantity
+    store
+    assignee
+    team
+    notes
+    moodRating
+    tags
     category {
       name
     }
@@ -72,6 +79,13 @@ export const UPDATE_TODO = gql`
       dueDate
       price
       priority
+      quantity
+      store
+      assignee
+      team
+      notes
+      moodRating
+      tags
     }
   }
 `

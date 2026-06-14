@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeft, Plus, Search, Trash2, CheckCircle2, Circle, Calendar, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, X, AlertCircle } from "lucide-react"
+import { ArrowLeft, Plus, Search, Trash2, CheckCircle2, Circle, Calendar, ListTodo, X, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,27 +20,17 @@ import { z } from "zod"
 const taskSchema = z.object({
   text: z.string().min(1, "Task text is required"),
   date: z.string().optional(),
-  price: z.string().optional(),
 })
 
-const categoryConfig: Record<Category, CategoryConfig & { icon: typeof ListTodo }> = {
-  Todo: { icon: ListTodo, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "purple", textColor: "text-purple-400", btnColor: "from-purple-700 to-purple-600" },
-  Shopping: { icon: ShoppingCart, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "cyan", textColor: "text-cyan-400", btnColor: "from-teal-700 to-teal-600" },
-  Personal: { icon: User, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "pink", textColor: "text-pink-400", btnColor: "from-rose-700 to-rose-600" },
-  Work: { icon: Briefcase, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "amber", textColor: "text-amber-400", btnColor: "from-amber-700 to-amber-600" },
-  Others: { icon: MoreHorizontal, color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "indigo", textColor: "text-indigo-400", btnColor: "from-indigo-700 to-indigo-600" },
+const categoryConfig: Record<"Todo", CategoryConfig> = {
+  Todo: { color: "bg-black/40 backdrop-blur-xl border-b border-white/10", accentColor: "purple", textColor: "text-purple-400", btnColor: "from-purple-700 to-purple-600" },
 }
 
 interface TodoItemsProps {
-  category: Category
+  category?: Category
 }
 
-export function TodoItems() {
-  const category: Category = "Todo"
-  return <TodoItemsComponent category={category} />
-}
-
-function TodoItemsComponent({ category }: TodoItemsProps) {
+export function TodoItems({ category = "Todo" }: TodoItemsProps) {
   const navigate = useNavigate()
   const { todos, toggleTodo, deleteTodo, addTodo, toggleSubtask, addSubtask, loading } = useTodos()
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
@@ -50,9 +40,6 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
     resolver: zodResolver(taskSchema),
     defaultValues: { text: "", date: "" },
   })
-
-  const config = categoryConfig[category]
-  const IconComponent = config.icon
 
   const periodTodos = useMemo(
     () => todos.filter((t) => {
@@ -96,7 +83,7 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
   return (
     <div className="h-svh flex flex-col font-sans">
       {/* Header */}
-      <div className={`${config.color}`}>
+      <div className="bg-black/40 backdrop-blur-xl border-b border-white/10 sticky top-0 z-40">
         <div className="px-4 sm:px-6 py-6 sm:py-8 max-w-4xl mx-auto">
           <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
             <Button
@@ -109,8 +96,8 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
             </Button>
             <div className="min-w-0">
               <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                <IconComponent className="w-6 h-6 sm:w-8 sm:h-8 text-white flex-shrink-0" />
-                <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">{category}</h1>
+                <ListTodo className="w-6 h-6 sm:w-8 sm:h-8 text-white flex-shrink-0" />
+                <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">Tasks</h1>
               </div>
               <p className="text-white/80 text-xs sm:text-sm truncate">{activeTodos.length} active • {completedTodos.length} completed</p>
             </div>
@@ -175,7 +162,7 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
               {sortedActiveTodos.length > 0 && (
                 <div>
                   <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <Circle className={config.textColor} />
+                    <Circle className="w-5 h-5 text-purple-400" />
                     Active Tasks
                   </h2>
                   <div className="space-y-2">
@@ -188,9 +175,9 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
                             <div className="flex items-start gap-4">
                               <button
                                 onClick={() => toggleTodo(todo.id)}
-                                className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-slate-300`}
+                                className="flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-slate-300"
                               >
-                                {todo.completed && <Circle className={`w-4 h-4 ${config.textColor}`} />}
+                                {todo.completed && <Circle className="w-4 h-4 text-purple-400" />}
                               </button>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-white truncate">{todo.text}</p>
@@ -214,7 +201,7 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
                               </div>
                               <button
                                 onClick={() => deleteTodo(todo.id)}
-                                className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all"
+                                className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all cursor-pointer"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -267,7 +254,7 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
               {activeTodos.length === 0 && completedTodos.length === 0 && (
                 <div className="text-center py-16">
                   <div className="inline-flex p-4 bg-black/30 backdrop-blur-xl rounded-full mb-4">
-                    <IconComponent className="w-8 h-8 text-slate-500" />
+                    <ListTodo className="w-8 h-8 text-slate-500" />
                   </div>
                   <p className="text-slate-300 font-medium">No tasks yet</p>
                   <p className="text-sm text-slate-500 mt-1">Add your first task below to get started</p>
@@ -282,10 +269,10 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
 
       {/* Add Task Footer */}
       <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/40 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 w-full">
           <form
             onSubmit={handleSubmit((data) => {
-              addTodo(data.text.trim(), category as Category, data.date || undefined, data.price ? parseFloat(data.price) : undefined, taskPriority)
+              addTodo(data.text.trim(), category as Category, data.date || undefined, undefined, taskPriority)
               reset()
               setTaskPriority("medium")
             })}
@@ -294,7 +281,7 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
             <div className="flex-1">
               <Input
                 type="text"
-                placeholder={`Add a new ${category.toLowerCase()} task...`}
+                placeholder="Add a new task..."
                 {...register("text")}
                 className="w-full h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg"
               />
@@ -302,7 +289,7 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
             </div>
             <div className="flex gap-2">
               <Select value={taskPriority} onValueChange={(v) => setTaskPriority(v as Priority)}>
-                <SelectTrigger className="h-11 w-28 border-white/10 bg-black/30 backdrop-blur-xl text-white text-sm flex-shrink-0">
+                <SelectTrigger className="!h-11 w-24 border-white/10 bg-black/30 backdrop-blur-xl text-white text-sm flex-shrink-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="border-white/10 bg-black/90 text-white">
@@ -311,9 +298,12 @@ function TodoItemsComponent({ category }: TodoItemsProps) {
                   <SelectItem value="low" className="text-slate-400 focus:bg-white/10 focus:text-slate-400">Low</SelectItem>
                 </SelectContent>
               </Select>
-              <Input type="date" {...register("date")} className="h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white shadow-lg flex-1 sm:flex-none" />
-              <Input type="number" step="0.01" min="0" placeholder="Price" {...register("price")} className="h-11 w-28 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg" />
-              <Button type="submit" size="icon" className={`bg-gradient-to-r ${config.btnColor} text-white hover:shadow-lg transition-all flex-shrink-0 cursor-pointer`}>
+              <Input
+                type="date"
+                {...register("date")}
+                className="h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white shadow-lg flex-1 sm:flex-none"
+              />
+              <Button type="submit" size="icon" className="bg-gradient-to-r from-purple-700 to-purple-600 text-white hover:shadow-lg transition-all flex-shrink-0 cursor-pointer h-11 w-11">
                 <Plus className="w-5 h-5" />
               </Button>
             </div>

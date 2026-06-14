@@ -59,6 +59,13 @@ export interface Todo {
   dueDate?: string
   priority?: Priority
   price?: number
+  quantity?: number
+  store?: string
+  assignee?: string
+  team?: string
+  notes?: string
+  moodRating?: number
+  tags?: string
   subtasks?: Subtask[]
 }
 

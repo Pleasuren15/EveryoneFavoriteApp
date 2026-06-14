@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays } from "lucide-react"
+import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -71,7 +71,20 @@ export function TodoList() {
   const [quickAdd, setQuickAdd] = useState(emptyQuickAdd)
   const [statsVisible, setStatsVisible] = useState(true)
 
-  const { balance } = useBudget()
+  const { entries: budgetEntries, loading: budgetLoading, balance } = useBudget()
+
+  const monthlyBudget = useMemo(() => {
+    const now = new Date()
+    const m = now.getMonth()
+    const y = now.getFullYear()
+    const monthEntries = budgetEntries.filter((e) => {
+      const d = new Date(e.date)
+      return d.getMonth() === m && d.getFullYear() === y
+    })
+    const income = monthEntries.filter((e) => e.type === "income").reduce((s, e) => s + e.amount, 0)
+    const expenses = monthEntries.filter((e) => e.type === "expense").reduce((s, e) => s + e.amount, 0)
+    return { income, expenses, balance: income - expenses, count: monthEntries.length }
+  }, [budgetEntries])
 
   const today = new Date()
   const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
@@ -123,6 +136,19 @@ export function TodoList() {
     setQuickAdd(emptyQuickAdd)
     setQuickAddOpen(false)
   }
+
+  const budgetLoadingEl = budgetLoading ? (
+    <div className="text-xs text-slate-500 mt-1">Loading...</div>
+  ) : monthlyBudget.count === 0 ? (
+    <div className="flex items-center gap-3 mt-3 text-xs">
+      <span className="text-slate-500">No entries this month</span>
+    </div>
+  ) : (
+    <div className="flex items-center gap-3 mt-3 text-xs">
+      <span className="text-emerald-300">+R{monthlyBudget.income.toFixed(2)}</span>
+      <span className="text-red-400">-R{monthlyBudget.expenses.toFixed(2)}</span>
+    </div>
+  )
 
   return (
     <div className="h-svh flex flex-col font-sans">
@@ -176,7 +202,7 @@ export function TodoList() {
                 <div className="flex items-center justify-between">
                   <button
                     onClick={() => setStatsVisible((v) => !v)}
-                    className="flex items-center gap-2 group"
+                    className="flex items-center gap-2 group cursor-pointer"
                   >
                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest group-hover:text-slate-200 transition-colors">Overview</p>
                     <ChevronDown
@@ -185,7 +211,7 @@ export function TodoList() {
                   </button>
                   <Popover open={periodOpen} onOpenChange={setPeriodOpen}>
                     <PopoverTrigger asChild>
-                      <button className="flex items-center gap-2 border border-white/10 bg-black/30 backdrop-blur-xl rounded-lg px-3 py-1.5 hover:bg-white/10 transition-colors">
+                      <button className="flex items-center gap-2 border border-white/10 bg-black/30 backdrop-blur-xl rounded-lg px-3 py-1.5 hover:bg-white/10 transition-colors cursor-pointer">
                         <CalendarDays className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
                         <span className="text-sm font-medium text-white whitespace-nowrap">
                           {customRange.from && customRange.to
@@ -211,7 +237,7 @@ export function TodoList() {
                         <div className="px-3 pb-3">
                           <button
                             onClick={() => setCustomRange({})}
-                            className="w-full text-xs text-slate-400 hover:text-white py-1.5 rounded border border-white/10 hover:bg-white/5 transition-colors"
+                            className="w-full text-xs text-slate-400 hover:text-white py-1.5 rounded border border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
                           >
                             Clear range
                           </button>
@@ -309,7 +335,7 @@ export function TodoList() {
               {/* Category Grid */}
               <div>
                 <h2 className="text-lg font-semibold text-white mb-4">Categories</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {categories.map((category) => {
                     const count = periodTodos.filter((t) => t.category === category).length
                     const meta = categoryMeta[category]
@@ -323,6 +349,32 @@ export function TodoList() {
                       />
                     )
                   })}
+                  <Card
+                    onClick={() => navigate("/todos/budget")}
+                    className="cursor-pointer border-white/10 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-black/40 backdrop-blur-xl"
+                  >
+                    <CardContent className="py-5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xl font-bold text-emerald-400">Budget</p>
+                          <div className="flex items-baseline gap-1.5 mt-1">
+                            <p className="text-2xl font-bold text-white tabular-nums leading-none">
+                              {budgetLoading ? (
+                                <span className="text-slate-500">...</span>
+                              ) : (
+                                `R${monthlyBudget.balance.toFixed(2)}`
+                              )}
+                            </p>
+                            <p className="text-sm text-slate-400">balance</p>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl shadow-md bg-gradient-to-br from-emerald-500 to-teal-600">
+                          <DollarSign className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                      {budgetLoadingEl}
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
 
@@ -344,7 +396,7 @@ export function TodoList() {
                           onClick={() => navigate(`/todos/${todo.category.toLowerCase()}`, { state: { period: "Day" } })}
                         >
                           <CardContent className="p-4 flex items-start gap-4">
-                            <div onClick={(e) => { e.stopPropagation(); toggleTodo(todo.id) }} className="flex-shrink-0">
+                            <div onClick={(e) => { e.stopPropagation(); toggleTodo(todo.id) }} className="flex-shrink-0 cursor-pointer">
                               <div className="w-6 h-6 rounded-full border-2 border-purple-500 flex items-center justify-center transition-all cursor-pointer">
                                 {todo.completed && <div className="w-3 h-3 bg-purple-500 rounded-full" />}
                               </div>
@@ -440,7 +492,7 @@ export function TodoList() {
       {/* Quick Add FAB */}
       <button
         onClick={() => setQuickAddOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-full shadow-lg shadow-purple-500/30 flex items-center justify-center text-white hover:shadow-xl hover:scale-105 transition-all z-50"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-full shadow-lg shadow-purple-500/30 flex items-center justify-center text-white hover:shadow-xl hover:scale-105 transition-all z-50 cursor-pointer"
       >
         <Plus className="w-6 h-6" />
       </button>
