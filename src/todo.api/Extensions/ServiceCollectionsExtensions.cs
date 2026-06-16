@@ -10,6 +10,16 @@ public static class ServiceCollectionsExtensions
 {
     public static void AddApplicationService(this IServiceCollection services, WebApplicationBuilder builder)
     {
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            });
+        });
+
         var connectionString = builder.Configuration.GetConnectionString("EveryoneFavoriteApp");
         services.AddDbContextPool<AppDbContext>(
             options => options
