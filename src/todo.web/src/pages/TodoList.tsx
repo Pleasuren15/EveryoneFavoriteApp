@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { format } from "date-fns"
+import { useAuth } from "@/lib/auth-context"
 import { useTodos } from "@/lib/todo-context"
 import { useCountUp } from "@/lib/hooks"
 import { useBudget } from "@/lib/use-budget"
@@ -63,6 +64,7 @@ const emptyQuickAdd: QuickAddState = { text: "", category: "Todo", priority: "me
 
 export function TodoList() {
   const navigate = useNavigate()
+  const { signOut } = useAuth()
   const { todos, toggleTodo, addTodo, loading } = useTodos()
   const [customRange, setCustomRange] = useState<{ from?: Date; to?: Date }>({})
   const [periodOpen, setPeriodOpen] = useState(false)
@@ -169,7 +171,7 @@ export function TodoList() {
               <Button onClick={() => window.location.reload()} variant="ghost" size="sm" className="text-purple-200 hover:text-white hover:bg-white/10 flex-shrink-0">
                 <RefreshCw className="w-4 h-4" />
               </Button>
-              <Button onClick={() => navigate('/')} variant="ghost" size="sm" className="text-purple-200 hover:text-white hover:bg-white/10 flex-shrink-0">
+              <Button onClick={async () => { await signOut(); navigate('/login') }} variant="ghost" size="sm" className="text-purple-200 hover:text-white hover:bg-white/10 flex-shrink-0">
                 <LogOut className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Sign Out</span>
               </Button>

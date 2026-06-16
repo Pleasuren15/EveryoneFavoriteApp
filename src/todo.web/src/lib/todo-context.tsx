@@ -3,6 +3,7 @@ import { createContext, useContext, useCallback, type ReactNode } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
 import type { ErrorLike } from "@apollo/client"
 import type { Todo, Category, PeriodFilter, Priority, Subtask } from "./types"
+import { useAuth } from "./auth-context"
 import {
   GET_TODOS,
   CREATE_TODO,
@@ -60,8 +61,6 @@ interface TodoContextType {
 
 const TodoContext = createContext<TodoContextType | null>(null)
 
-const DEMO_USER_ID = "00000000-0000-0000-0000-00000000000a"
-
 const CATEGORY_IDS: Record<Category, string> = {
   Todo: "00000000-0000-0000-0000-000000000001",
   Shopping: "00000000-0000-0000-0000-000000000002",
@@ -69,9 +68,6 @@ const CATEGORY_IDS: Record<Category, string> = {
   Work: "00000000-0000-0000-0000-000000000004",
   Others: "00000000-0000-0000-0000-000000000005",
 }
-
-const TODO_QUERY_VARS = { variables: { userId: DEMO_USER_ID } }
-const REFETCH_TODOS = [{ query: GET_TODOS, variables: { userId: DEMO_USER_ID } }]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapTodo(raw: any): Todo {
@@ -106,22 +102,31 @@ function mapTodo(raw: any): Todo {
 }
 
 export function TodoProvider({ children }: { children: ReactNode }) {
-  const { data, loading, error } = useQuery(GET_TODOS, TODO_QUERY_VARS)
+  const { user } = useAuth()
+  const userId = user?.id
+
+  const { data, loading, error } = useQuery(GET_TODOS, {
+    variables: { userId },
+    skip: !userId,
+  })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const todos: Todo[] = ((data as any)?.todos ?? []).map(mapTodo)
 
-  const [createTodoMut] = useMutation(CREATE_TODO, { refetchQueries: REFETCH_TODOS })
-  const [updateTodoMut] = useMutation(UPDATE_TODO, { refetchQueries: REFETCH_TODOS })
-  const [deleteTodoMut] = useMutation(DELETE_TODO, { refetchQueries: REFETCH_TODOS })
-  const [addSubtaskMut] = useMutation(ADD_SUBTASK, { refetchQueries: REFETCH_TODOS })
-  const [toggleSubtaskMut] = useMutation(TOGGLE_SUBTASK, { refetchQueries: REFETCH_TODOS })
+  const refetchQueries = userId ? [{ query: GET_TODOS, variables: { userId } }] : []
+
+  const [createTodoMut] = useMutation(CREATE_TODO, { refetchQueries })
+  const [updateTodoMut] = useMutation(UPDATE_TODO, { refetchQueries })
+  const [deleteTodoMut] = useMutation(DELETE_TODO, { refetchQueries })
+  const [addSubtaskMut] = useMutation(ADD_SUBTASK, { refetchQueries })
+  const [toggleSubtaskMut] = useMutation(TOGGLE_SUBTASK, { refetchQueries })
 
   const addTodo = useCallback(
     (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority, quantity?: number, store?: string, assignee?: string, team?: string, notes?: string, moodRating?: number, tags?: string) => {
+      if (!userId) return
       createTodoMut({
         variables: {
           input: {
-            userId: DEMO_USER_ID,
+            userId,
             categoryId: CATEGORY_IDS[category],
             text,
             dueDate: dueDate ?? null,
@@ -138,7 +143,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
         },
       })
     },
-    [createTodoMut]
+    [createTodoMut, userId]
   )
 
   const toggleTodo = useCallback(

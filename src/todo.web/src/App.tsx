@@ -9,6 +9,7 @@ import { PersonalItems } from "@/pages/PersonalItems"
 import { WorkItems } from "@/pages/WorkItems"
 import { OthersItems } from "@/pages/OthersItems"
 import { BudgetPage } from "@/pages/BudgetPage"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
 import Beams from "@/components/Beams"
 
 export function App() {
@@ -33,13 +34,15 @@ export function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/todos" element={<TodoList />} />
-            <Route path="/todos/shopping" element={<ShoppingItems />} />
-            <Route path="/todos/personal" element={<PersonalItems />} />
-            <Route path="/todos/work" element={<WorkItems />} />
-            <Route path="/todos/others" element={<OthersItems />} />
-            <Route path="/todos/budget" element={<BudgetPage />} />
-            <Route path="/todos/:category" element={<TodoItems />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/todos" element={<TodoList />} />
+              <Route path="/todos/shopping" element={<ShoppingItems />} />
+              <Route path="/todos/personal" element={<PersonalItems />} />
+              <Route path="/todos/work" element={<WorkItems />} />
+              <Route path="/todos/others" element={<OthersItems />} />
+              <Route path="/todos/budget" element={<BudgetPage />} />
+              <Route path="/todos/:category" element={<TodoItems />} />
+            </Route>
           </Routes>
         </div>
       </div>

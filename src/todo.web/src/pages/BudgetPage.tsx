@@ -216,28 +216,27 @@ export function BudgetPage() {
               {/* Charts and Entries */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Pie Chart */}
-                <div className="lg:col-span-2">
-                  <Card className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg">
-                    <CardContent className="pt-8 pb-6">
+                <div className="lg:col-span-2 flex">
+                  <Card className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg flex-1">
+                    <CardContent className="pt-8 pb-6 flex flex-col h-full">
                       <h2 className="text-lg font-semibold text-white mb-6">Expense Breakdown</h2>
-                      {chartData.length > 0 ? (
-                        <div className="h-72 flex items-center justify-center">
+                      <div className="flex-1 flex items-center justify-center">
+                        {chartData.length > 0 ? (
                           <BudgetPieChart data={chartData} />
-                        </div>
-                      ) : (
-                        <div className="h-72 flex items-center justify-center">
+                        ) : (
                           <p className="text-slate-300 text-sm">No expense data for this period</p>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* Add Entry Form */}
-                <Card className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg h-fit">
-                  <CardContent className="pt-6">
-                    <h2 className="text-lg font-semibold text-white mb-4">Add Entry</h2>
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="flex">
+                  <Card className="border-white/10 bg-black/30 backdrop-blur-xl shadow-lg flex-1">
+                    <CardContent className="pt-6">
+                      <h2 className="text-lg font-semibold text-white mb-4">Add Entry</h2>
+                      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                       <Controller
                         name="entryType"
                         control={control}
@@ -308,6 +307,7 @@ export function BudgetPage() {
                     </form>
                   </CardContent>
                 </Card>
+                </div>
               </div>
 
               {/* Entries List */}

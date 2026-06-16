@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { useAuth } from "@/lib/auth-context"
 import { supabase } from "@/lib/supabase"
 
 const loginSchema = z.object({
@@ -20,12 +21,19 @@ type LoginSchema = z.infer<typeof loginSchema>
 
 export function Login() {
   const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [magicLinkSent, setMagicLinkSent] = useState(false)
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate("/todos")
+    }
+  }, [user, authLoading, navigate])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)

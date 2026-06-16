@@ -214,6 +214,31 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
             </div>
           </div>
 
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Card className="border-cyan-500/20 bg-black/30 backdrop-blur-xl shadow-lg">
+              <CardContent className="pt-4 pb-4">
+                <p className="text-xs text-cyan-400 font-medium uppercase tracking-wider">Total</p>
+                <p className="text-xl font-bold text-white mt-1">R{totalPrice.toFixed(2)}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{activeTodos.length} pending items</p>
+              </CardContent>
+            </Card>
+            <Card className="border-emerald-500/20 bg-black/30 backdrop-blur-xl shadow-lg">
+              <CardContent className="pt-4 pb-4">
+                <p className="text-xs text-emerald-400 font-medium uppercase tracking-wider">Spent</p>
+                <p className="text-xl font-bold text-white mt-1">R{budgetSpent.toFixed(2)}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{completedTodos.length} bought items</p>
+              </CardContent>
+            </Card>
+            <Card className="border-amber-500/20 bg-black/30 backdrop-blur-xl shadow-lg">
+              <CardContent className="pt-4 pb-4">
+                <p className="text-xs text-amber-400 font-medium uppercase tracking-wider">Remaining</p>
+                <p className="text-xl font-bold text-white mt-1">R{Math.max(0, totalPrice - budgetSpent).toFixed(2)}</p>
+                <p className="text-xs text-slate-400 mt-0.5">yet to spend</p>
+              </CardContent>
+            </Card>
+          </div>
+
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (

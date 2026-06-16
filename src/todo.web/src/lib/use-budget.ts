@@ -3,10 +3,7 @@ import { useQuery, useMutation } from "@apollo/client/react"
 import type { ErrorLike } from "@apollo/client"
 import type { BudgetEntry, EntryType, BudgetCategory, ExpenseCategory } from "./types"
 import { GET_BUDGET_ENTRIES, CREATE_BUDGET_ENTRY, DELETE_BUDGET_ENTRY } from "./operations"
-
-const DEMO_USER_ID = "00000000-0000-0000-0000-00000000000a"
-const BUDGET_QUERY_VARS = { variables: { userId: DEMO_USER_ID } }
-const REFETCH_BUDGET = [{ query: GET_BUDGET_ENTRIES, variables: { userId: DEMO_USER_ID } }]
+import { useAuth } from "./auth-context"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapBudgetEntry(raw: any): BudgetEntry {
@@ -33,19 +30,28 @@ export function useBudget(): {
   balance: number
   expenseByCategory: Partial<Record<ExpenseCategory, number>>
 } {
-  const { data, loading, error } = useQuery(GET_BUDGET_ENTRIES, BUDGET_QUERY_VARS)
+  const { user } = useAuth()
+  const userId = user?.id
+
+  const { data, loading, error } = useQuery(GET_BUDGET_ENTRIES, {
+    variables: { userId },
+    skip: !userId,
+  })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const entries: BudgetEntry[] = ((data as any)?.budgetEntries ?? []).map(mapBudgetEntry)
 
-  const [createBudgetEntryMut] = useMutation(CREATE_BUDGET_ENTRY, { refetchQueries: REFETCH_BUDGET })
-  const [deleteBudgetEntryMut] = useMutation(DELETE_BUDGET_ENTRY, { refetchQueries: REFETCH_BUDGET })
+  const refetchQueries = userId ? [{ query: GET_BUDGET_ENTRIES, variables: { userId } }] : []
+
+  const [createBudgetEntryMut] = useMutation(CREATE_BUDGET_ENTRY, { refetchQueries })
+  const [deleteBudgetEntryMut] = useMutation(DELETE_BUDGET_ENTRY, { refetchQueries })
 
   const addEntry = useCallback(
     (entry: Omit<BudgetEntry, "id" | "createdAt" | "userId">) => {
+      if (!userId) return
       createBudgetEntryMut({
         variables: {
           input: {
-            userId: DEMO_USER_ID,
+            userId,
             type: entry.type,
             category: entry.category,
             amount: entry.amount,
@@ -55,7 +61,7 @@ export function useBudget(): {
         },
       })
     },
-    [createBudgetEntryMut]
+    [createBudgetEntryMut, userId]
   )
 
   const deleteEntry = useCallback(
