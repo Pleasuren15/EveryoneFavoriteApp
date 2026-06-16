@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTodos } from "@/lib/todo-context"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
@@ -40,6 +41,7 @@ export function WorkItems({ category = "Work" }: WorkItemsProps) {
   const [filterTeam, setFilterTeam] = useState<string | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
   const [taskPriority, setTaskPriority] = useState<Priority>("medium")
+  const [addOpen, setAddOpen] = useState(false)
   const [sortBy, setSortBy] = useState<"priority" | "deadline" | "name">("priority")
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(taskSchema),
@@ -356,68 +358,85 @@ export function WorkItems({ category = "Work" }: WorkItemsProps) {
               )}
             </>
           )}
-
-          <div className="h-20" />
         </div>
       </div>
 
-      {/* Add Task Footer */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/40 backdrop-blur-xl">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 w-full">
-          <form
-            onSubmit={handleSubmit((data) => {
-              addTodo(data.text.trim(), category, data.date || undefined, undefined, taskPriority, undefined, undefined, data.assignee || undefined, data.team || undefined)
-              reset()
-              setTaskPriority("medium")
-            })}
-            className="space-y-3"
-          >
-            <div className="flex gap-2 flex-col sm:flex-row">
-              <div className="flex-1">
-                <Input
-                  type="text"
-                  placeholder="Task description..."
-                  {...register("text")}
-                  className="w-full h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg"
-                />
-                {errors.text && <p className="text-red-400 text-xs mt-1">{errors.text.message as string}</p>}
-              </div>
+      {/* FAB */}
+      <button
+        onClick={() => setAddOpen(true)}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-amber-700 to-amber-600 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center cursor-pointer"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
+
+      {/* Add Task Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md mx-4 max-sm:p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
+          <DialogHeader className="text-center">
+            <DialogTitle>Add Work Task</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit((data) => {
+            addTodo(data.text.trim(), category, data.date || undefined, undefined, taskPriority, undefined, undefined, data.assignee || undefined, data.team || undefined)
+            reset()
+            setTaskPriority("medium")
+            setAddOpen(false)
+          })} className="flex flex-col items-center gap-4 mt-2">
+            <div className="w-full max-w-sm">
+              <label className="text-xs text-slate-400 mb-1 block">Task</label>
+              <Input
+                type="text"
+                placeholder="Task description..."
+                {...register("text")}
+                className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400 shadow-lg"
+              />
+              {errors.text && <p className="text-red-400 text-xs mt-1">{errors.text.message as string}</p>}
+            </div>
+            <div className="w-full max-w-sm">
+              <label className="text-xs text-slate-400 mb-1 block">Assignee (optional)</label>
               <Input
                 type="text"
                 placeholder="Assignee..."
                 {...register("assignee")}
-                className="h-11 sm:w-32 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg flex-shrink-0"
+                className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400 shadow-lg"
               />
             </div>
-            <div className="flex gap-2 flex-col sm:flex-row">
+            <div className="w-full max-w-sm">
+              <label className="text-xs text-slate-400 mb-1 block">Team (optional)</label>
               <Input
                 type="text"
                 placeholder="Team..."
                 {...register("team")}
-                className="flex-1 h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg"
+                className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400 shadow-lg"
               />
+            </div>
+            <div className="w-full max-w-sm">
+              <label className="text-xs text-slate-400 mb-1 block">Priority</label>
               <Select value={taskPriority} onValueChange={(v) => setTaskPriority(v as Priority)}>
-                <SelectTrigger className="!h-11 sm:w-24 border-white/10 bg-black/30 backdrop-blur-xl text-white text-sm flex-shrink-0">
+                <SelectTrigger className="!h-11 w-full bg-zinc-800/80 border-zinc-700 text-white text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-black/90 text-white">
+                <SelectContent>
                   <SelectItem value="high" className="text-red-400 focus:bg-white/10 focus:text-red-400">High</SelectItem>
                   <SelectItem value="medium" className="text-amber-400 focus:bg-white/10 focus:text-amber-400">Medium</SelectItem>
                   <SelectItem value="low" className="text-slate-400 focus:bg-white/10 focus:text-slate-400">Low</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="w-full max-w-sm">
+              <label className="text-xs text-slate-400 mb-1 block">Due Date (optional)</label>
               <Input
                 type="date"
                 {...register("date")}
-                className="h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 flex-1 sm:flex-none shadow-lg"
+                className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400 shadow-lg"
               />
-              <Button type="submit" size="icon" className="bg-gradient-to-r from-amber-700 to-amber-600 text-white hover:shadow-lg transition-all flex-shrink-0 cursor-pointer h-11 w-11">
-                <Plus className="w-5 h-5" />
-              </Button>
             </div>
+            <Button type="submit" className="w-full max-w-sm bg-gradient-to-r from-amber-700 to-amber-600 text-white hover:shadow-lg transition-all h-11 cursor-pointer">
+              <Plus className="w-5 h-5 mr-2" />
+              Add Task
+            </Button>
           </form>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

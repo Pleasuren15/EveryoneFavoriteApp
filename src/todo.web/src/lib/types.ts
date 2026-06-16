@@ -101,3 +101,14 @@ export interface QuickAddState {
   priority: Priority
   dueDate: string
 }
+
+export type ContactGroup = "Family" | "Friend" | "Work" | "Other"
+
+export interface Contact {
+  id: string
+  name: string
+  phone: string
+  email: string
+  group: ContactGroup
+  isFavorite: boolean
+}

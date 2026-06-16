@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft, Plus, Search, Trash2, CheckCircle2, Circle, Calendar, MoreHorizontal, X, AlertCircle, Tag } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,6 +37,7 @@ export function OthersItems({ category = "Others" }: OthersItemsProps) {
   const [filterDate, setFilterDate] = useState<Date | undefined>(undefined)
   const [filterTag, setFilterTag] = useState<string | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
+  const [addOpen, setAddOpen] = useState(false)
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(taskSchema),
     defaultValues: { text: "", date: "", tags: "" },
@@ -316,41 +318,54 @@ export function OthersItems({ category = "Others" }: OthersItemsProps) {
             </>
           )}
 
-          <div className="h-20" />
         </div>
       </div>
 
-      {/* Add Task Footer */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/40 backdrop-blur-xl">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 w-full">
-          <form
-            onSubmit={handleSubmit((data) => {
-              addTodo(data.text.trim(), category, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, data.tags || undefined)
-              reset()
-            })}
-            className="flex gap-2 flex-col sm:flex-row"
-          >
-            <div className="flex-1">
+      {/* FAB */}
+      <button
+        onClick={() => setAddOpen(true)}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-indigo-700 to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center cursor-pointer"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
+
+      {/* Add Task Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md mx-4 max-sm:p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
+          <DialogHeader className="text-center">
+            <DialogTitle>Add Task</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit((data) => {
+            addTodo(data.text.trim(), category, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, data.tags || undefined)
+            reset()
+            setAddOpen(false)
+          })} className="flex flex-col items-center gap-4 mt-2">
+            <div className="w-full max-w-sm">
+              <label className="text-xs text-slate-400 mb-1 block">Task</label>
               <Input
                 type="text"
-                placeholder="Task description..."
+                placeholder="What needs to be done?"
                 {...register("text")}
-                className="w-full h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg"
+                className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400 shadow-lg"
               />
               {errors.text && <p className="text-red-400 text-xs mt-1">{errors.text.message as string}</p>}
             </div>
-            <Input
-              type="text"
-              placeholder="Tags (comma-separated: work, urgent, etc)..."
-              {...register("tags")}
-              className="h-11 sm:w-52 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg flex-shrink-0"
-            />
-            <Button type="submit" size="icon" className="bg-gradient-to-r from-indigo-700 to-indigo-600 text-white hover:shadow-lg transition-all flex-shrink-0 cursor-pointer h-11 w-11">
-              <Plus className="w-5 h-5" />
+            <div className="w-full max-w-sm">
+              <label className="text-xs text-slate-400 mb-1 block">Tags</label>
+              <Input
+                type="text"
+                placeholder="comma-separated: work, urgent, etc"
+                {...register("tags")}
+                className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400 shadow-lg"
+              />
+            </div>
+            <Button type="submit" className="w-full max-w-sm bg-gradient-to-r from-indigo-700 to-indigo-600 text-white hover:shadow-lg transition-all cursor-pointer h-11">
+              <Plus className="w-5 h-5 mr-2" />
+              Add Task
             </Button>
           </form>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays, DollarSign } from "lucide-react"
+import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays, DollarSign, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -377,6 +377,25 @@ export function TodoList() {
                       {budgetLoadingEl}
                     </CardContent>
                   </Card>
+                  <Card
+                    onClick={() => navigate("/todos/contacts")}
+                    className="cursor-pointer border-white/10 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-black/40 backdrop-blur-xl"
+                  >
+                    <CardContent className="py-5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xl font-bold text-violet-400">Contacts</p>
+                          <div className="flex items-baseline gap-1.5 mt-1">
+                            <p className="text-2xl font-bold text-white tabular-nums leading-none">8</p>
+                            <p className="text-sm text-slate-400">contacts</p>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl shadow-md bg-gradient-to-br from-violet-500 to-purple-600">
+                          <Users className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
 
@@ -501,29 +520,31 @@ export function TodoList() {
 
       {/* Quick Add Dialog */}
       <Dialog open={quickAddOpen} onOpenChange={(open) => { setQuickAddOpen(open); if (!open) setQuickAdd(emptyQuickAdd) }}>
-        <DialogContent className="bg-black/90 border-white/10 text-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
+        <DialogContent className="sm:max-w-md mx-4 max-sm:p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
+          <DialogHeader className="text-center">
+            <DialogTitle className="flex items-center justify-center gap-2">
               <Flag className="w-4 h-4 text-purple-400" />
               Quick Add Task
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleQuickAdd} className="space-y-4 mt-2">
-            <Input
-              autoFocus
-              placeholder="What needs to be done?"
-              value={quickAdd.text}
-              onChange={(e) => setQuickAdd((p) => ({ ...p, text: e.target.value }))}
-              className="h-11 border-white/10 bg-white/5 text-white placeholder:text-slate-500"
-            />
-            <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleQuickAdd} className="flex flex-col items-center gap-4 mt-2">
+            <div className="w-full max-w-sm">
+              <Input
+                autoFocus
+                placeholder="What needs to be done?"
+                value={quickAdd.text}
+                onChange={(e) => setQuickAdd((p) => ({ ...p, text: e.target.value }))}
+                className="h-11 w-full bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400"
+              />
+            </div>
+            <div className="w-full max-w-sm grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <p className="text-xs text-slate-400 font-medium">Category</p>
                 <Select value={quickAdd.category} onValueChange={(v) => setQuickAdd((p) => ({ ...p, category: v as Category }))}>
-                  <SelectTrigger className="h-10 border-white/10 bg-white/5 text-white text-sm">
+                  <SelectTrigger className="h-10 w-full bg-zinc-800/80 border-zinc-700 text-white text-sm">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-white/10 bg-black/90 text-white">
+                  <SelectContent>
                     {categories.map((c) => (
                       <SelectItem key={c} value={c} className="text-white focus:bg-white/10 focus:text-white">{c}</SelectItem>
                     ))}
@@ -533,10 +554,10 @@ export function TodoList() {
               <div className="space-y-1">
                 <p className="text-xs text-slate-400 font-medium">Priority</p>
                 <Select value={quickAdd.priority} onValueChange={(v) => setQuickAdd((p) => ({ ...p, priority: v as Priority }))}>
-                  <SelectTrigger className="h-10 border-white/10 bg-white/5 text-white text-sm">
+                  <SelectTrigger className="h-10 w-full bg-zinc-800/80 border-zinc-700 text-white text-sm">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-white/10 bg-black/90 text-white">
+                  <SelectContent>
                     <SelectItem value="high" className="text-red-400 focus:bg-white/10 focus:text-red-400">High</SelectItem>
                     <SelectItem value="medium" className="text-amber-400 focus:bg-white/10 focus:text-amber-400">Medium</SelectItem>
                     <SelectItem value="low" className="text-slate-400 focus:bg-white/10 focus:text-slate-400">Low</SelectItem>
@@ -544,18 +565,18 @@ export function TodoList() {
                 </Select>
               </div>
             </div>
-            <div className="space-y-1">
+            <div className="w-full max-w-sm space-y-1">
               <p className="text-xs text-slate-400 font-medium">Due Date (optional)</p>
               <Input
                 type="date"
                 value={quickAdd.dueDate}
                 onChange={(e) => setQuickAdd((p) => ({ ...p, dueDate: e.target.value }))}
-                className="h-10 border-white/10 bg-white/5 text-white"
+                className="h-10 w-full bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400"
               />
             </div>
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-700 text-white hover:shadow-lg"
+              className="w-full max-w-sm bg-gradient-to-r from-purple-600 to-indigo-700 text-white hover:shadow-lg"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Task

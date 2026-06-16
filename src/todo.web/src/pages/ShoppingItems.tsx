@@ -9,6 +9,7 @@ import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTodos } from "@/lib/todo-context"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
 import type { Category, CategoryConfig } from "@/lib/types"
@@ -40,6 +41,7 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
   const [filterStore, setFilterStore] = useState<string | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<"price" | "date" | "name">("price")
+  const [addOpen, setAddOpen] = useState(false)
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(taskSchema),
     defaultValues: { text: "", date: "", price: "", quantity: "1", store: "" },
@@ -387,60 +389,85 @@ export function ShoppingItems({ category = "Shopping" }: ShoppingItemsProps) {
         </div>
       </div>
 
-      {/* Add Item Footer */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/40 backdrop-blur-xl">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 w-full">
+      {/* FAB */}
+      <button
+        onClick={() => setAddOpen(true)}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-teal-700 to-teal-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
+
+      {/* Add Item Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md mx-4 max-sm:p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
+          <DialogHeader className="text-center">
+            <DialogTitle>Add Shopping Item</DialogTitle>
+          </DialogHeader>
           <form
             onSubmit={handleSubmit((data) => {
               addTodo(data.text.trim(), category, data.date || undefined, data.price ? parseFloat(data.price) : undefined, undefined, data.quantity ? parseInt(data.quantity) : undefined, data.store || undefined)
               reset()
+              setAddOpen(false)
             })}
-            className="space-y-3"
+            className="flex flex-col items-center gap-4 mt-2"
           >
-            <div className="flex gap-2 flex-col sm:flex-row">
+            <div className="w-full max-w-sm">
+              <Input
+                type="text"
+                placeholder="Item name..."
+                {...register("text")}
+                className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400"
+              />
+              {errors.text && <p className="text-red-400 text-xs mt-1">{errors.text.message as string}</p>}
+            </div>
+            <div className="w-full max-w-sm flex gap-3">
               <div className="flex-1">
+                <label className="text-xs text-slate-400 mb-1 block">Price</label>
                 <Input
-                  type="text"
-                  placeholder="Item name..."
-                  {...register("text")}
-                  className="w-full h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  {...register("price")}
+                  className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400"
                 />
-                {errors.text && <p className="text-red-400 text-xs mt-1">{errors.text.message as string}</p>}
               </div>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="Price per item"
-                {...register("price")}
-                className="h-11 sm:w-28 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg flex-shrink-0"
-              />
-              <Input
-                type="number"
-                min="1"
-                step="1"
-                placeholder="Qty"
-                {...register("quantity")}
-                className="h-11 sm:w-20 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg flex-shrink-0"
-              />
+              <div className="w-20">
+                <label className="text-xs text-slate-400 mb-1 block">Qty</label>
+                <Input
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="1"
+                  {...register("quantity")}
+                  className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400"
+                />
+              </div>
+            </div>
+            <div className="w-full max-w-sm">
+              <label className="text-xs text-slate-400 mb-1 block">Store</label>
               <Input
                 type="text"
                 placeholder="Store name..."
                 {...register("store")}
-                className="h-11 sm:w-32 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg flex-shrink-0"
+                className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400"
               />
+            </div>
+            <div className="w-full max-w-sm">
+              <label className="text-xs text-slate-400 mb-1 block">Due date</label>
               <Input
                 type="date"
                 {...register("date")}
-                className="h-11 border-white/10 bg-black/30 backdrop-blur-xl text-white placeholder:text-slate-500 shadow-lg flex-shrink-0"
+                className="w-full h-11 bg-zinc-800/80 border-zinc-700 text-white placeholder:text-zinc-400"
               />
-              <Button type="submit" size="icon" className="bg-gradient-to-r from-teal-700 to-teal-600 text-white hover:shadow-lg transition-all flex-shrink-0 cursor-pointer h-11 w-11">
-                <Plus className="w-5 h-5" />
-              </Button>
             </div>
+            <Button type="submit" className="w-full max-w-sm bg-gradient-to-r from-teal-700 to-teal-600 text-white hover:shadow-lg transition-all h-11">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Item
+            </Button>
           </form>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
