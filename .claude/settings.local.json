@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Dev\\\\Learning\\\\EveryoneFavoriteApp\" -Recurse -Directory | Select-Object -First 25 | ForEach-Object { $_.FullName })",
-      "Bash(Get-ChildItem -Path \"C:\\\\Dev\\\\Learning\\\\EveryoneFavoriteApp\" -Recurse -Directory)",
-      "Bash(Select-Object -ExpandProperty FullName)"
-    ]
-  }
-}

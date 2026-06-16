@@ -33,6 +33,7 @@ public class Program
 
         app.UseCors();
         app.MapGraphQL();
+        app.MapHealthEndpoints();
 
         await app.UseSeedDataAsync();
         app.Map("/", () => Results.Redirect("/graphql"));

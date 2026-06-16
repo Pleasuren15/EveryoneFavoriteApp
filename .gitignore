@@ -154,3 +154,7 @@ src/todo.web/pnpm-lock.yaml
 /src/todo.messaging.api/obj
 /src/todo.messaging.api/bin/Debug/net10.0
 /src/todo.library/bin/Debug/net10.0
+/.claude/settings.local.json
+/src/todo.api/bin/Release/net10.0
+/src/todo.library/bin/Release/net10.0
+/src/todo.messaging.api/bin/Release/net10.0
