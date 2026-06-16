@@ -152,6 +152,43 @@ public class Mutation
         return true;
     }
 
+    // ─── User sync ───────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Upserts a user record into the local database to mirror the Supabase Auth user.
+    /// Called from the frontend after sign-up or sign-in so our User table stays in sync.
+    /// The Id must match the Supabase user's id (the "sub" claim in the JWT).
+    /// </summary>
+    public async Task<Guid> SyncUser(
+        AppDbContext dbContext,
+        SyncUserInput input,
+        CancellationToken cancellationToken)
+    {
+        var existing = await dbContext.Users
+            .FirstOrDefaultAsync(u => u.Id == input.Id, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (existing is not null)
+        {
+            existing.Email = input.Email;
+            if (input.DisplayName is not null)
+                existing.DisplayName = input.DisplayName;
+        }
+        else
+        {
+            dbContext.Users.Add(new User
+            {
+                Id = input.Id,
+                Email = input.Email,
+                DisplayName = input.DisplayName ?? "",
+                CreatedAt = DateTimeOffset.UtcNow,
+            });
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return input.Id;
+    }
+
     // ─── Budget entries ───────────────────────────────────────────────────────
 
     /// <summary>Records a new income or expense entry for the given user.</summary>

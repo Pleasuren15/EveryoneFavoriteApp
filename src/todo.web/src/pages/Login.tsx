@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Mail, Lock, Eye, EyeOff, LogIn, Loader2 } from "lucide-react"
+import { useMutation } from "@apollo/client/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useAuth } from "@/lib/auth-context"
 import { supabase } from "@/lib/supabase"
+import { SYNC_USER } from "@/lib/operations"
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
@@ -23,6 +25,7 @@ export function Login() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  const [syncUser] = useMutation(SYNC_USER)
   const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -69,7 +72,7 @@ export function Login() {
     setLoading(true)
     setAuthError(null)
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     })
@@ -77,7 +80,15 @@ export function Login() {
     if (error) {
       setAuthError(error.message)
       setLoading(false)
-    } else {
+    } else if (signInData?.user) {
+      await syncUser({
+        variables: {
+          input: {
+            id: signInData.user.id,
+            email: signInData.user.email ?? data.email,
+          },
+        },
+      }).catch(() => {})
       navigate("/todos")
     }
   }

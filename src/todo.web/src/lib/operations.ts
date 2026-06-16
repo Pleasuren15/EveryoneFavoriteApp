@@ -120,6 +120,14 @@ export const TOGGLE_SUBTASK = gql`
   }
 `
 
+// ─── User mutations ──────────────────────────────────────────────────────────
+
+export const SYNC_USER = gql`
+  mutation SyncUser($input: SyncUserInput!) {
+    syncUser(input: $input)
+  }
+`
+
 // ─── Budget mutations ─────────────────────────────────────────────────────────
 
 export const CREATE_BUDGET_ENTRY = gql`

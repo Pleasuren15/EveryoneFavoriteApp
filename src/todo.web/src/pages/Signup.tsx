@@ -4,11 +4,13 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { User, Mail, Lock, Eye, EyeOff, UserPlus, Loader2 } from "lucide-react"
+import { useMutation } from "@apollo/client/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { supabase } from "@/lib/supabase"
+import { SYNC_USER } from "@/lib/operations"
 
 const signupSchema = z
   .object({
@@ -30,6 +32,7 @@ export function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [syncUser] = useMutation(SYNC_USER)
 
   const {
     register,
@@ -43,7 +46,7 @@ export function Signup() {
     setLoading(true)
     setAuthError(null)
 
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -55,7 +58,16 @@ export function Signup() {
     if (error) {
       setAuthError(error.message)
       setLoading(false)
-    } else {
+    } else if (signUpData?.user) {
+      await syncUser({
+        variables: {
+          input: {
+            id: signUpData.user.id,
+            email: signUpData.user.email ?? data.email,
+            displayName: data.name,
+          },
+        },
+      }).catch(() => {})
       navigate("/todos")
     }
   }

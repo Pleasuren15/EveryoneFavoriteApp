@@ -45,6 +45,14 @@ public record AddSubtaskInput(
     Guid TodoId,
     string Text);
 
+// ─── User sync ────────────────────────────────────────────────────────────────
+
+/// <summary>Creates or updates a user record to match the authenticated Supabase user.</summary>
+public record SyncUserInput(
+    Guid Id,
+    string Email,
+    string? DisplayName);
+
 // ─── Budget entry inputs ──────────────────────────────────────────────────────
 
 public record CreateBudgetEntryInput(
