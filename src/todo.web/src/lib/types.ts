@@ -1,4 +1,4 @@
-export type Category = "Todo" | "Shopping" | "Personal" | "Work" | "Others"
+export type Category = "Todo" | "Shopping" | "Personal" | "Work" | "Others" | "Birthday"
 export type PeriodFilter = "Day" | "Week" | "Month" | "Year"
 export type Priority = "low" | "medium" | "high"
 export type EntryType = "income" | "expense"
@@ -66,6 +66,8 @@ export interface Todo {
   notes?: string
   moodRating?: number
   tags?: string
+  contactId?: string
+  contactName?: string
   subtasks?: Subtask[]
 }
 

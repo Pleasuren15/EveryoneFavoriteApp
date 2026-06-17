@@ -20,6 +20,8 @@ const TODO_FIELDS = gql`
     notes
     moodRating
     tags
+    contactId
+    contactName
     category {
       name
     }
@@ -86,6 +88,8 @@ export const UPDATE_TODO = gql`
       notes
       moodRating
       tags
+      contactId
+      contactName
     }
   }
 `

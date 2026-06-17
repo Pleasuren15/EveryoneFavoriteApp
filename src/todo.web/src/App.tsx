@@ -8,6 +8,7 @@ import { ShoppingItems } from "@/pages/ShoppingItems"
 import { PersonalItems } from "@/pages/PersonalItems"
 import { WorkItems } from "@/pages/WorkItems"
 import { OthersItems } from "@/pages/OthersItems"
+import { BirthdayItems } from "@/pages/BirthdayItems"
 import { ContactsItems } from "@/pages/ContactsItems"
 import { BudgetPage } from "@/pages/BudgetPage"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
@@ -43,6 +44,7 @@ export function App() {
               <Route path="/todos/others" element={<OthersItems />} />
               <Route path="/todos/contacts" element={<ContactsItems />} />
               <Route path="/todos/budget" element={<BudgetPage />} />
+              <Route path="/todos/birthday" element={<BirthdayItems />} />
               <Route path="/todos/:category" element={<TodoItems />} />
             </Route>
           </Routes>

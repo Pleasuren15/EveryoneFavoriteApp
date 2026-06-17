@@ -17,7 +17,9 @@ public record CreateTodoInput(
     string? Team,
     string? Notes,
     int? MoodRating,
-    string? Tags);
+    string? Tags,
+    string? ContactId,
+    string? ContactName);
 
 /// <summary>
 /// All fields except Id are optional. Pass only the fields you want to change.
@@ -37,7 +39,9 @@ public record UpdateTodoInput(
     Optional<string?> Team,
     Optional<string?> Notes,
     Optional<int?> MoodRating,
-    Optional<string?> Tags);
+    Optional<string?> Tags,
+    Optional<string?> ContactId,
+    Optional<string?> ContactName);
 
 // ─── Subtask inputs ───────────────────────────────────────────────────────────
 

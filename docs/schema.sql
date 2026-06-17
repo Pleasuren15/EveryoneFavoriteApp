@@ -22,7 +22,9 @@ create table "Todo" (
   "Completed"  boolean not null default false,
   "CreatedAt"  timestamptz not null default now(),
   "DueDate"    date,
-  "Price"      decimal(10,2)
+  "Price"      decimal(10,2),
+  "ContactId"  text,
+  "ContactName" text
 );
 create index "Idx_Todo_UserId" on "Todo"("UserId");
 create index "Idx_Todo_CategoryId" on "Todo"("CategoryId");
@@ -55,4 +57,5 @@ insert into "Category" ("Name", "Label", "SortOrder") values
   ('Shopping', 'Shopping', 2),
   ('Personal', 'Personal', 3),
   ('Work',     'Work',     4),
-  ('Others',   'Others',   5);
+  ('Others',   'Others',   5),
+  ('Birthday',  'Birthday', 6);

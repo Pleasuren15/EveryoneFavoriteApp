@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays, DollarSign, Users } from "lucide-react"
+import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays, DollarSign, Users, Cake } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -24,9 +24,10 @@ const categoryMeta: Record<Category, { color: string; bgColor: string; icon: typ
   Personal: { color: "text-pink-600", bgColor: "bg-pink-50 dark:bg-pink-950/30", icon: User, accentColor: "from-pink-500 to-rose-600" },
   Work: { color: "text-amber-600", bgColor: "bg-amber-50 dark:bg-amber-950/30", icon: Briefcase, accentColor: "from-amber-500 to-orange-600" },
   Others: { color: "text-indigo-600", bgColor: "bg-indigo-50 dark:bg-indigo-950/30", icon: MoreHorizontal, accentColor: "from-indigo-600 to-blue-700" },
+  Birthday: { color: "text-pink-600", bgColor: "bg-pink-50 dark:bg-pink-950/30", icon: Cake, accentColor: "from-pink-500 to-rose-600" },
 }
 
-const categories: Array<Category> = ["Todo", "Shopping", "Personal", "Work", "Others"]
+const categories: Array<Category> = ["Todo", "Shopping", "Personal", "Work", "Others", "Birthday"]
 
 function CategoryCard({ category, count, meta, onClick }: {
   category: string

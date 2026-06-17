@@ -33,6 +33,8 @@ public class Mutation
             Notes = input.Notes,
             MoodRating = input.MoodRating,
             Tags = input.Tags,
+            ContactId = input.ContactId,
+            ContactName = input.ContactName,
         };
 
         dbContext.Todos.Add(todo);
@@ -69,6 +71,8 @@ public class Mutation
         if (input.Notes.HasValue) todo.Notes = input.Notes.Value;
         if (input.MoodRating.HasValue) todo.MoodRating = input.MoodRating.Value;
         if (input.Tags.HasValue) todo.Tags = input.Tags.Value;
+        if (input.ContactId.HasValue) todo.ContactId = input.ContactId.Value;
+        if (input.ContactName.HasValue) todo.ContactName = input.ContactName.Value;
 
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return todo;

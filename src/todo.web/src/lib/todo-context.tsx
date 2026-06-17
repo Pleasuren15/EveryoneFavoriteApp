@@ -50,7 +50,7 @@ interface TodoContextType {
   todos: Todo[]
   loading: boolean
   error?: ErrorLike
-  addTodo: (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority, quantity?: number, store?: string, assignee?: string, team?: string, notes?: string, moodRating?: number, tags?: string) => void
+  addTodo: (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority, quantity?: number, store?: string, assignee?: string, team?: string, notes?: string, moodRating?: number, tags?: string, contactId?: string, contactName?: string) => void
   toggleTodo: (id: string) => void
   deleteTodo: (id: string) => void
   toggleSubtask: (todoId: string, subtaskId: string) => void
@@ -67,6 +67,7 @@ const CATEGORY_IDS: Record<Category, string> = {
   Personal: "00000000-0000-0000-0000-000000000003",
   Work: "00000000-0000-0000-0000-000000000004",
   Others: "00000000-0000-0000-0000-000000000005",
+  Birthday: "00000000-0000-0000-0000-000000000006",
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,6 +89,8 @@ function mapTodo(raw: any): Todo {
     notes: raw.notes ?? undefined,
     moodRating: raw.moodRating ?? undefined,
     tags: raw.tags ?? undefined,
+    contactId: raw.contactId ?? undefined,
+    contactName: raw.contactName ?? undefined,
     category: (raw.category?.name ?? "Todo") as Category,
     subtasks: (raw.subtasks as any[] | undefined)?.map(
       (s): Subtask => ({
@@ -121,7 +124,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
   const [toggleSubtaskMut] = useMutation(TOGGLE_SUBTASK, { refetchQueries })
 
   const addTodo = useCallback(
-    (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority, quantity?: number, store?: string, assignee?: string, team?: string, notes?: string, moodRating?: number, tags?: string) => {
+    (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority, quantity?: number, store?: string, assignee?: string, team?: string, notes?: string, moodRating?: number, tags?: string, contactId?: string, contactName?: string) => {
       if (!userId) return
       createTodoMut({
         variables: {
@@ -139,6 +142,8 @@ export function TodoProvider({ children }: { children: ReactNode }) {
             notes: notes ?? null,
             moodRating: moodRating ?? null,
             tags: tags ?? null,
+            contactId: contactId ?? null,
+            contactName: contactName ?? null,
           },
         },
       })

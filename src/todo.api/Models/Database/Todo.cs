@@ -46,6 +46,12 @@ public class Todo
     [Column("Tags")]
     public string? Tags { get; set; }
 
+    // Birthday-specific fields
+    [Column("ContactId")]
+    public string? ContactId { get; set; }
+    [Column("ContactName")]
+    public string? ContactName { get; set; }
+
     public User User { get; set; } = null!;
     public Category Category { get; set; } = null!;
     public ICollection<Subtask> Subtasks { get; set; } = [];
