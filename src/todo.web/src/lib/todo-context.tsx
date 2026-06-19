@@ -115,13 +115,11 @@ export function TodoProvider({ children }: { children: ReactNode }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const todos: Todo[] = ((data as any)?.todos ?? []).map(mapTodo)
 
-  const refetchQueries = userId ? [{ query: GET_TODOS, variables: { userId } }] : []
-
-  const [createTodoMut] = useMutation(CREATE_TODO, { refetchQueries })
-  const [updateTodoMut] = useMutation(UPDATE_TODO, { refetchQueries })
-  const [deleteTodoMut] = useMutation(DELETE_TODO, { refetchQueries })
-  const [addSubtaskMut] = useMutation(ADD_SUBTASK, { refetchQueries })
-  const [toggleSubtaskMut] = useMutation(TOGGLE_SUBTASK, { refetchQueries })
+  const [createTodoMut] = useMutation(CREATE_TODO)
+  const [updateTodoMut] = useMutation(UPDATE_TODO)
+  const [deleteTodoMut] = useMutation(DELETE_TODO)
+  const [addSubtaskMut] = useMutation(ADD_SUBTASK)
+  const [toggleSubtaskMut] = useMutation(TOGGLE_SUBTASK)
 
   const addTodo = useCallback(
     (text: string, category: Category, dueDate?: string, price?: number, priority?: Priority, quantity?: number, store?: string, assignee?: string, team?: string, notes?: string, moodRating?: number, tags?: string, contactId?: string, contactName?: string) => {
@@ -146,6 +144,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
             contactName: contactName ?? null,
           },
         },
+        refetchQueries: [{ query: GET_TODOS, variables: { userId } }],
       })
     },
     [createTodoMut, userId]
@@ -155,30 +154,30 @@ export function TodoProvider({ children }: { children: ReactNode }) {
     (id: string) => {
       const todo = todos.find((t) => t.id === id)
       if (!todo) return
-      updateTodoMut({ variables: { input: { id, completed: !todo.completed } } })
+      updateTodoMut({ variables: { input: { id, completed: !todo.completed } }, refetchQueries: [{ query: GET_TODOS, variables: { userId } }] })
     },
-    [todos, updateTodoMut]
+    [todos, updateTodoMut, userId]
   )
 
   const deleteTodo = useCallback(
     (id: string) => {
-      deleteTodoMut({ variables: { id } })
+      deleteTodoMut({ variables: { id }, refetchQueries: [{ query: GET_TODOS, variables: { userId } }] })
     },
-    [deleteTodoMut]
+    [deleteTodoMut, userId]
   )
 
   const toggleSubtask = useCallback(
     (_todoId: string, subtaskId: string) => {
-      toggleSubtaskMut({ variables: { id: subtaskId } })
+      toggleSubtaskMut({ variables: { id: subtaskId }, refetchQueries: [{ query: GET_TODOS, variables: { userId } }] })
     },
-    [toggleSubtaskMut]
+    [toggleSubtaskMut, userId]
   )
 
   const addSubtask = useCallback(
     (todoId: string, text: string) => {
-      addSubtaskMut({ variables: { input: { todoId, text } } })
+      addSubtaskMut({ variables: { input: { todoId, text } }, refetchQueries: [{ query: GET_TODOS, variables: { userId } }] })
     },
-    [addSubtaskMut]
+    [addSubtaskMut, userId]
   )
 
   const getCategoryCount = useCallback(
