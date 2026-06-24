@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Check, X } from "lucide-react"
+import { Check, X, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, Cake, Flame } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useUserCategories } from "@/lib/use-user-categories"
 import type { Category } from "@/lib/types"
@@ -21,6 +21,16 @@ const CATEGORY_NAME_TO_ID: Record<string, string> = {
   Others: "00000000-0000-0000-0000-000000000005",
   Birthday: "00000000-0000-0000-0000-000000000006",
   Streak: "00000000-0000-0000-0000-000000000007",
+}
+
+const CATEGORY_ICON: Record<Category, typeof ListTodo> = {
+  Todo: ListTodo,
+  Shopping: ShoppingCart,
+  Personal: User,
+  Work: Briefcase,
+  Others: MoreHorizontal,
+  Birthday: Cake,
+  Streak: Flame,
 }
 
 const COLOR_MAP: Record<Category, string> = {
@@ -82,6 +92,7 @@ export function CategorySelectDialog({
             <p className="text-sm text-slate-400 mt-1">{description}</p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
           >
@@ -90,31 +101,34 @@ export function CategorySelectDialog({
         </div>
 
         <div className="p-6 pt-4">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {ALL_CATEGORIES.map((cat) => {
               const catId = CATEGORY_NAME_TO_ID[cat]
               const isSelected = selected.has(catId)
+              const Icon = CATEGORY_ICON[cat]
               return (
                 <button
+                  type="button"
                   key={cat}
                   onClick={() => toggle(catId)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer ${
                     isSelected
                       ? "border-white/20 bg-white/10"
                       : "border-white/5 bg-black/30 hover:bg-white/5"
                   }`}
                 >
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br ${COLOR_MAP[cat]}`}
+                    className={`relative w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${COLOR_MAP[cat]} shrink-0`}
                   >
-                    {isSelected ? (
-                      <Check className="w-5 h-5 text-white" />
-                    ) : (
-                      <div className="w-5 h-5 rounded border-2 border-white/40" />
+                    <Icon className="w-4 h-4 text-white" />
+                    {isSelected && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                        <Check className="w-2.5 h-2.5 text-white" />
+                      </div>
                     )}
                   </div>
                   <div className="flex-1 text-left">
-                    <p className={`text-sm font-semibold ${isSelected ? "text-white" : "text-slate-400"}`}>
+                    <p className={`text-sm font-medium ${isSelected ? "text-white" : "text-slate-400"}`}>
                       {cat}
                     </p>
                   </div>
@@ -126,6 +140,7 @@ export function CategorySelectDialog({
 
         <div className="p-6 pt-2">
           <Button
+            type="button"
             onClick={handleSave}
             disabled={saving || selected.size === 0}
             className="w-full h-11 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-lg shadow-primary/30 active:scale-[0.98]"
