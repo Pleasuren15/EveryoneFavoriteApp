@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Check, X, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, Cake, Flame } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useUserCategories } from "@/lib/use-user-categories"
@@ -52,13 +52,16 @@ export function CategorySelectDialog({
   const { selectedCategoryIds, setSelectedCategories } = useUserCategories()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
+  const initialized = useRef(false)
 
   useEffect(() => {
-    if (open && selectedCategoryIds.length > 0) {
-      setSelected(new Set(selectedCategoryIds))
-    } else if (open) {
-      setSelected(new Set())
+    if (!open) {
+      initialized.current = false
+      return
     }
+    if (initialized.current) return
+    initialized.current = true
+    setSelected(new Set(selectedCategoryIds))
   }, [open, selectedCategoryIds])
 
   function toggle(categoryId: string) {
