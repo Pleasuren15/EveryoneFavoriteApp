@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays, DollarSign, Users, Cake } from "lucide-react"
+import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays, DollarSign, Users, Cake, Flame } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,8 @@ import { useBudget } from "@/lib/use-budget"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
 import type { Category, Priority, QuickAddState } from "@/lib/types"
 
+const categoriesWithStreak: Array<Category> = ["Todo", "Shopping", "Personal", "Work", "Others", "Birthday", "Streak"]
+
 const categoryMeta: Record<Category, { color: string; bgColor: string; icon: typeof ListTodo; accentColor: string }> = {
   Todo: { color: "text-purple-600", bgColor: "bg-purple-50 dark:bg-purple-950/30", icon: ListTodo, accentColor: "from-purple-600 to-indigo-700" },
   Shopping: { color: "text-cyan-600", bgColor: "bg-cyan-50 dark:bg-cyan-950/30", icon: ShoppingCart, accentColor: "from-cyan-500 to-teal-600" },
@@ -25,6 +27,7 @@ const categoryMeta: Record<Category, { color: string; bgColor: string; icon: typ
   Work: { color: "text-amber-600", bgColor: "bg-amber-50 dark:bg-amber-950/30", icon: Briefcase, accentColor: "from-amber-500 to-orange-600" },
   Others: { color: "text-indigo-600", bgColor: "bg-indigo-50 dark:bg-indigo-950/30", icon: MoreHorizontal, accentColor: "from-indigo-600 to-blue-700" },
   Birthday: { color: "text-pink-600", bgColor: "bg-pink-50 dark:bg-pink-950/30", icon: Cake, accentColor: "from-pink-500 to-rose-600" },
+  Streak: { color: "text-orange-600", bgColor: "bg-orange-50 dark:bg-orange-950/30", icon: Flame, accentColor: "from-orange-500 to-amber-600" },
 }
 
 const categories: Array<Category> = ["Todo", "Shopping", "Personal", "Work", "Others", "Birthday"]
@@ -299,7 +302,7 @@ export function TodoList() {
                     <CardContent className="p-5">
                       <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">By Category</p>
                       <div className="space-y-3">
-                        {categories.map((cat) => {
+                        {categoriesWithStreak.map((cat) => {
                           const count = categoryCounts[cat]
                           const meta = categoryMeta[cat]
                           const pct = maxCategoryCount > 0 ? (count / maxCategoryCount) * 100 : 0
@@ -393,6 +396,25 @@ export function TodoList() {
                         </div>
                         <div className="p-3 rounded-xl shadow-md bg-gradient-to-br from-violet-500 to-purple-600">
                           <Users className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card
+                    onClick={() => navigate("/todos/streak")}
+                    className="cursor-pointer border-white/10 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-black/40 backdrop-blur-xl"
+                  >
+                    <CardContent className="py-5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xl font-bold text-orange-400">Streaks</p>
+                          <div className="flex items-baseline gap-1.5 mt-1">
+                            <p className="text-2xl font-bold text-white tabular-nums leading-none">3</p>
+                            <p className="text-sm text-slate-400">active</p>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl shadow-md bg-gradient-to-br from-orange-500 to-amber-600">
+                          <Flame className="w-5 h-5 text-white" />
                         </div>
                       </div>
                     </CardContent>

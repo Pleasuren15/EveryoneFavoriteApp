@@ -19,6 +19,7 @@ public static class DbInitializer
             new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000004"), Name = "Work", Label = "Work", SortOrder = 4 },
             new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000005"), Name = "Others", Label = "Others", SortOrder = 5 },
             new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000006"), Name = "Birthday", Label = "Birthday", SortOrder = 6 },
+            new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000007"), Name = "Streak", Label = "Streak", SortOrder = 7 },
         };
 
         var user = new User
@@ -128,11 +129,37 @@ public static class DbInitializer
             new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000306"), UserId = user.Id, Type = "expense", Category = "Shopping", Amount = 600m, Description = "New clothes", Date = new DateOnly(2026, 5, 4), CreatedAt = new DateTimeOffset(2026, 5, 4, 0, 0, 0, TimeSpan.Zero) },
         };
 
+        var streakEntries = new List<StreakEntry>
+        {
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000401"), UserId = user.Id,
+                Title = "of running", Rules = "Run at least 2km every day", CurrentStreak = 15, LongestStreak = 42,
+                StartDate = new DateOnly(2026, 6, 1), LastCheckIn = new DateOnly(2026, 6, 21),
+                IsActive = true, CreatedAt = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000402"), UserId = user.Id,
+                Title = "of meditation", Rules = "Meditate for 10 minutes", CurrentStreak = 7, LongestStreak = 30,
+                StartDate = new DateOnly(2026, 6, 10), LastCheckIn = new DateOnly(2026, 6, 21),
+                IsActive = true, CreatedAt = new DateTimeOffset(2026, 6, 10, 0, 0, 0, TimeSpan.Zero),
+            },
+            new()
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000403"), UserId = user.Id,
+                Title = "of no sugar", Rules = "No added sugar in meals or drinks", CurrentStreak = 0, LongestStreak = 14,
+                StartDate = new DateOnly(2026, 6, 5), LastCheckIn = new DateOnly(2026, 6, 19),
+                IsActive = false, CreatedAt = new DateTimeOffset(2026, 6, 5, 0, 0, 0, TimeSpan.Zero),
+            },
+        };
+
         db.Categories.AddRange(categories);
         db.Users.Add(user);
         db.Set<Todo.Library.Models.Database.Todo>().AddRange(todos);
         db.Subtasks.AddRange(subtasks);
         db.BudgetEntries.AddRange(budgetEntries);
+        db.StreakEntries.AddRange(streakEntries);
 
         await db.SaveChangesAsync();
     }

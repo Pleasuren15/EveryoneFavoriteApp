@@ -193,6 +193,114 @@ public class Mutation
         return input.Id;
     }
 
+    // ─── Streak entries ───────────────────────────────────────────────────────
+
+    /// <summary>Creates a new streak entry starting at day 1.</summary>
+    public async Task<StreakEntry> CreateStreakEntry(
+        AppDbContext dbContext,
+        CreateStreakEntryInput input,
+        CancellationToken cancellationToken)
+    {
+        var entry = new StreakEntry
+        {
+            Id = Guid.NewGuid(),
+            UserId = input.UserId,
+            Title = input.Title,
+            Rules = input.Rules,
+            CurrentStreak = 1,
+            LongestStreak = 1,
+            StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            LastCheckIn = DateOnly.FromDateTime(DateTime.UtcNow),
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+
+        dbContext.StreakEntries.Add(entry);
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return entry;
+    }
+
+    /// <summary>Check in for a streak, incrementing the counter. If a day was missed, the streak resets to 1.</summary>
+    public async Task<StreakEntry?> CheckInStreakEntry(
+        AppDbContext dbContext,
+        CheckInStreakEntryInput input,
+        CancellationToken cancellationToken)
+    {
+        var entry = await dbContext.StreakEntries
+            .FirstOrDefaultAsync(s => s.Id == input.Id, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entry is null) return null;
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        if (entry.LastCheckIn == today)
+            return entry;
+
+        if (entry.LastCheckIn.HasValue)
+        {
+            var diff = today.DayNumber - entry.LastCheckIn.Value.DayNumber;
+            if (diff > 1)
+            {
+                entry.CurrentStreak = 1;
+                entry.IsActive = false;
+            }
+            else
+            {
+                entry.CurrentStreak++;
+                if (entry.CurrentStreak > entry.LongestStreak)
+                    entry.LongestStreak = entry.CurrentStreak;
+                entry.IsActive = true;
+            }
+        }
+        else
+        {
+            entry.CurrentStreak = 1;
+            entry.IsActive = true;
+        }
+
+        entry.LastCheckIn = today;
+
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return entry;
+    }
+
+    /// <summary>Marks a streak as broken (resets to 0).</summary>
+    public async Task<StreakEntry?> BreakStreakEntry(
+        AppDbContext dbContext,
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var entry = await dbContext.StreakEntries
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entry is null) return null;
+
+        entry.CurrentStreak = 0;
+        entry.IsActive = false;
+
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return entry;
+    }
+
+    /// <summary>Permanently deletes a streak entry. Returns false if not found.</summary>
+    public async Task<bool> DeleteStreakEntry(
+        AppDbContext dbContext,
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var entry = await dbContext.StreakEntries
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entry is null) return false;
+
+        dbContext.StreakEntries.Remove(entry);
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
     // ─── Budget entries ───────────────────────────────────────────────────────
 
     /// <summary>Records a new income or expense entry for the given user.</summary>

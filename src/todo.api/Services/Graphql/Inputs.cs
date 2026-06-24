@@ -66,3 +66,13 @@ public record CreateBudgetEntryInput(
     decimal Amount,
     string Description,
     DateOnly Date);
+
+// ─── Streak entry inputs ─────────────────────────────────────────────────────
+
+public record CreateStreakEntryInput(
+    Guid UserId,
+    string Title,
+    string? Rules);
+
+public record CheckInStreakEntryInput(
+    Guid Id);

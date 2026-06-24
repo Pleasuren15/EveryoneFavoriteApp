@@ -1,4 +1,4 @@
-export type Category = "Todo" | "Shopping" | "Personal" | "Work" | "Others" | "Birthday"
+export type Category = "Todo" | "Shopping" | "Personal" | "Work" | "Others" | "Birthday" | "Streak"
 export type PeriodFilter = "Day" | "Week" | "Month" | "Year"
 export type Priority = "low" | "medium" | "high"
 export type EntryType = "income" | "expense"
@@ -113,4 +113,16 @@ export interface Contact {
   email: string
   group: ContactGroup
   isFavorite: boolean
+}
+
+export interface StreakEntry {
+  id: string
+  title: string
+  rules: string
+  currentStreak: number
+  longestStreak: number
+  startDate: string
+  lastCheckIn: string | null
+  isActive: boolean
+  createdAt: Date
 }

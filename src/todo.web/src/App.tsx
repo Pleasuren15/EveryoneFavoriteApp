@@ -9,6 +9,7 @@ import { PersonalItems } from "@/pages/PersonalItems"
 import { WorkItems } from "@/pages/WorkItems"
 import { OthersItems } from "@/pages/OthersItems"
 import { BirthdayItems } from "@/pages/BirthdayItems"
+import { StreakItems } from "@/pages/StreakItems"
 import { ContactsItems } from "@/pages/ContactsItems"
 import { BudgetPage } from "@/pages/BudgetPage"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
@@ -45,6 +46,7 @@ export function App() {
               <Route path="/todos/contacts" element={<ContactsItems />} />
               <Route path="/todos/budget" element={<BudgetPage />} />
               <Route path="/todos/birthday" element={<BirthdayItems />} />
+              <Route path="/todos/streak" element={<StreakItems />} />
               <Route path="/todos/:category" element={<TodoItems />} />
             </Route>
           </Routes>

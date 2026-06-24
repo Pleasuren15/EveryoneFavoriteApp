@@ -68,6 +68,7 @@ const CATEGORY_IDS: Record<Category, string> = {
   Work: "00000000-0000-0000-0000-000000000004",
   Others: "00000000-0000-0000-0000-000000000005",
   Birthday: "00000000-0000-0000-0000-000000000006",
+  Streak: "00000000-0000-0000-0000-000000000007",
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

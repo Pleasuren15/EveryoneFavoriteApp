@@ -86,6 +86,20 @@ namespace todo.api.Services.Graphql
 
             return progress;
         }
+        /// <summary>Retrieves all streak entries for a specific user, ordered by creation date descending.</summary>
+        public async Task<List<StreakEntry>> GetStreakEntries(
+            AppDbContext dbContext,
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            return await dbContext.StreakEntries
+                .AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .OrderByDescending(s => s.CreatedAt)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+
         /// <summary>Retrieves all budget entries for a specific user, ordered by date descending.</summary>
         public async Task<List<BudgetEntry>> GetBudgetEntries(
             AppDbContext dbContext,

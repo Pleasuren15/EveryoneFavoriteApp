@@ -14,4 +14,5 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Todo.Library.Models.Database.Todo> Todos => Set<Todo.Library.Models.Database.Todo>();
     public DbSet<Subtask> Subtasks => Set<Subtask>();
     public DbSet<BudgetEntry> BudgetEntries => Set<BudgetEntry>();
+    public DbSet<StreakEntry> StreakEntries => Set<StreakEntry>();
 }

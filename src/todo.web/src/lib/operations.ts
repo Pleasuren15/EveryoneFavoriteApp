@@ -154,3 +154,68 @@ export const DELETE_BUDGET_ENTRY = gql`
     deleteBudgetEntry(id: $id)
   }
 `
+
+// ─── Streak entry queries ────────────────────────────────────────────────────
+
+export const GET_STREAK_ENTRIES = gql`
+  query GetStreakEntries($userId: UUID!) {
+    streakEntries(userId: $userId) {
+      id
+      userId
+      title
+      rules
+      currentStreak
+      longestStreak
+      startDate
+      lastCheckIn
+      isActive
+      createdAt
+    }
+  }
+`
+
+// ─── Streak entry mutations ──────────────────────────────────────────────────
+
+export const CREATE_STREAK_ENTRY = gql`
+  mutation CreateStreakEntry($input: CreateStreakEntryInput!) {
+    createStreakEntry(input: $input) {
+      id
+      title
+      rules
+      currentStreak
+      longestStreak
+      startDate
+      lastCheckIn
+      isActive
+      createdAt
+    }
+  }
+`
+
+export const CHECK_IN_STREAK_ENTRY = gql`
+  mutation CheckInStreakEntry($input: CheckInStreakEntryInput!) {
+    checkInStreakEntry(input: $input) {
+      id
+      currentStreak
+      longestStreak
+      lastCheckIn
+      isActive
+    }
+  }
+`
+
+export const BREAK_STREAK_ENTRY = gql`
+  mutation BreakStreakEntry($id: UUID!) {
+    breakStreakEntry(id: $id) {
+      id
+      currentStreak
+      isActive
+    }
+  }
+`
+
+export const DELETE_STREAK_ENTRY = gql`
+  mutation DeleteStreakEntry($id: UUID!) {
+    deleteStreakEntry(id: $id)
+  }
+`
