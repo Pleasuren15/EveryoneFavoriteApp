@@ -76,3 +76,9 @@ public record CreateStreakEntryInput(
 
 public record CheckInStreakEntryInput(
     Guid Id);
+
+// ─── User Category inputs ─────────────────────────────────────────────────────
+
+public record SetUserCategoriesInput(
+    Guid UserId,
+    List<Guid> CategoryIds);

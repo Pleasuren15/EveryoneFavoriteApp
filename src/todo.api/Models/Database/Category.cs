@@ -15,4 +15,5 @@ public class Category
     public int SortOrder { get; set; }
 
     public ICollection<Todo> Todos { get; set; } = new List<Todo>();
+    public ICollection<UserCategory> UserCategories { get; set; } = new List<UserCategory>();
 }

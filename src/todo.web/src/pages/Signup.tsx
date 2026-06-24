@@ -68,7 +68,7 @@ export function Signup() {
           },
         },
       }).catch(() => {})
-      navigate("/todos")
+      navigate("/todos", { state: { isNewUser: true } })
     }
   }
 

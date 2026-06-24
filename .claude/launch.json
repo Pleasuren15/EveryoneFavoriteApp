@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "db-lookups",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "4174", "C:/Dev/CoinBurn"],
+      "port": 4174
+    }
+  ]
+}

@@ -100,6 +100,32 @@ namespace todo.api.Services.Graphql
                 .ConfigureAwait(false);
         }
 
+        /// <summary>Retrieves the list of category IDs the user has selected to see.</summary>
+        public async Task<List<Guid>> GetUserCategories(
+            AppDbContext dbContext,
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            return await dbContext.UserCategories
+                .AsNoTracking()
+                .Where(uc => uc.UserId == userId)
+                .Select(uc => uc.CategoryId)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>Retrieves all categories available in the system.</summary>
+        public async Task<List<Category>> GetCategories(
+            AppDbContext dbContext,
+            CancellationToken cancellationToken)
+        {
+            return await dbContext.Categories
+                .AsNoTracking()
+                .OrderBy(c => c.SortOrder)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+
         /// <summary>Retrieves all budget entries for a specific user, ordered by date descending.</summary>
         public async Task<List<BudgetEntry>> GetBudgetEntries(
             AppDbContext dbContext,

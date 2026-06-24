@@ -19,4 +19,5 @@ public class User
     public ICollection<Todo> Todos { get; set; } = new List<Todo>();
     public ICollection<BudgetEntry> BudgetEntries { get; set; } = new List<BudgetEntry>();
     public ICollection<StreakEntry> StreakEntries { get; set; } = new List<StreakEntry>();
+    public ICollection<UserCategory> UserCategories { get; set; } = new List<UserCategory>();
 }

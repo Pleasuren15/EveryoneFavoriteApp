@@ -15,4 +15,23 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Subtask> Subtasks => Set<Subtask>();
     public DbSet<BudgetEntry> BudgetEntries => Set<BudgetEntry>();
     public DbSet<StreakEntry> StreakEntries => Set<StreakEntry>();
+    public DbSet<UserCategory> UserCategories => Set<UserCategory>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserCategory>(entity =>
+        {
+            entity.HasKey(uc => new { uc.UserId, uc.CategoryId });
+
+            entity.HasOne(uc => uc.User)
+                .WithMany(u => u.UserCategories)
+                .HasForeignKey(uc => uc.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(uc => uc.Category)
+                .WithMany(c => c.UserCategories)
+                .HasForeignKey(uc => uc.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
 }

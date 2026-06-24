@@ -301,6 +301,33 @@ public class Mutation
         return true;
     }
 
+    // ─── User Categories ───────────────────────────────────────────────────────
+
+    /// <summary>Sets which categories a user wants to see. Replaces all previous selections.</summary>
+    public async Task<List<Guid>> SetUserCategories(
+        AppDbContext dbContext,
+        SetUserCategoriesInput input,
+        CancellationToken cancellationToken)
+    {
+        var existing = await dbContext.UserCategories
+            .Where(uc => uc.UserId == input.UserId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        dbContext.UserCategories.RemoveRange(existing);
+
+        var newEntries = input.CategoryIds.Select(categoryId => new UserCategory
+        {
+            UserId = input.UserId,
+            CategoryId = categoryId,
+        });
+
+        dbContext.UserCategories.AddRange(newEntries);
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return input.CategoryIds;
+    }
+
     // ─── Budget entries ───────────────────────────────────────────────────────
 
     /// <summary>Records a new income or expense entry for the given user.</summary>

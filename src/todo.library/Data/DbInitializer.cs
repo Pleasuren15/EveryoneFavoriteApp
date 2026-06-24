@@ -154,12 +154,19 @@ public static class DbInitializer
             },
         };
 
+        var userCategories = categories.Select(c => new UserCategory
+        {
+            UserId = user.Id,
+            CategoryId = c.Id,
+        }).ToList();
+
         db.Categories.AddRange(categories);
         db.Users.Add(user);
         db.Set<Todo.Library.Models.Database.Todo>().AddRange(todos);
         db.Subtasks.AddRange(subtasks);
         db.BudgetEntries.AddRange(budgetEntries);
         db.StreakEntries.AddRange(streakEntries);
+        db.UserCategories.AddRange(userCategories);
 
         await db.SaveChangesAsync();
     }

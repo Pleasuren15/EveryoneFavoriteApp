@@ -219,3 +219,28 @@ export const DELETE_STREAK_ENTRY = gql`
     deleteStreakEntry(id: $id)
   }
 `
+
+// ─── User Categories ─────────────────────────────────────────────────────────
+
+export const GET_USER_CATEGORIES = gql`
+  query GetUserCategories($userId: UUID!) {
+    userCategories(userId: $userId)
+  }
+`
+
+export const GET_CATEGORIES = gql`
+  query GetCategories {
+    categories {
+      id
+      name
+      label
+      sortOrder
+    }
+  }
+`
+
+export const SET_USER_CATEGORIES = gql`
+  mutation SetUserCategories($input: SetUserCategoriesInput!) {
+    setUserCategories(input: $input)
+  }
+`

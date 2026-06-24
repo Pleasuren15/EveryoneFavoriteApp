@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react"
-import { useNavigate } from "react-router-dom"
-import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays, DollarSign, Users, Cake, Flame } from "lucide-react"
+import { useState, useMemo, useEffect } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
+import { Search, ListTodo, ShoppingCart, User, Briefcase, MoreHorizontal, ChevronRight, ChevronDown, CheckCircle2, Circle, LogOut, ArrowRight, RefreshCw, Plus, AlertCircle, Flag, CalendarDays, DollarSign, Users, Cake, Flame, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -16,11 +16,14 @@ import { useTodos } from "@/lib/todo-context"
 import { useCountUp } from "@/lib/hooks"
 import { useBudget } from "@/lib/use-budget"
 import { priorityConfig, priorityOrder, isOverdue } from "@/lib/task-utils"
+import { useUserCategories } from "@/lib/use-user-categories"
+import { CategorySelectDialog } from "@/components/CategorySelectDialog"
+import { CATEGORY_IDS } from "@/lib/todo-context"
 import type { Category, Priority, QuickAddState } from "@/lib/types"
 
 const categoriesWithStreak: Array<Category> = ["Todo", "Shopping", "Personal", "Work", "Others", "Birthday", "Streak"]
 
-const categoryMeta: Record<Category, { color: string; bgColor: string; icon: typeof ListTodo; accentColor: string }> = {
+export const categoryMeta: Record<Category, { color: string; bgColor: string; icon: typeof ListTodo; accentColor: string }> = {
   Todo: { color: "text-purple-600", bgColor: "bg-purple-50 dark:bg-purple-950/30", icon: ListTodo, accentColor: "from-purple-600 to-indigo-700" },
   Shopping: { color: "text-cyan-600", bgColor: "bg-cyan-50 dark:bg-cyan-950/30", icon: ShoppingCart, accentColor: "from-cyan-500 to-teal-600" },
   Personal: { color: "text-pink-600", bgColor: "bg-pink-50 dark:bg-pink-950/30", icon: User, accentColor: "from-pink-500 to-rose-600" },
@@ -76,8 +79,27 @@ export function TodoList() {
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [quickAdd, setQuickAdd] = useState(emptyQuickAdd)
   const [statsVisible, setStatsVisible] = useState(true)
+  const [catDialogOpen, setCatDialogOpen] = useState(false)
+  const location = useLocation()
 
   const { entries: budgetEntries, loading: budgetLoading, balance } = useBudget()
+  const { selectedCategoryIds, hasSelections, loading: catLoading } = useUserCategories()
+
+  const selectedCategories = useMemo(
+    () => {
+      const selected = new Set(selectedCategoryIds)
+      return categories.filter((c) => selected.has(CATEGORY_IDS[c]))
+    },
+    [selectedCategoryIds]
+  )
+
+  const selectedCategoriesWithStreak = useMemo(
+    () => {
+      const selected = new Set(selectedCategoryIds)
+      return categoriesWithStreak.filter((c) => selected.has(CATEGORY_IDS[c]))
+    },
+    [selectedCategoryIds]
+  )
 
   const monthlyBudget = useMemo(() => {
     const now = new Date()
@@ -129,9 +151,17 @@ export function TodoList() {
     [activeTodos]
   )
 
+  const isNewUser = (location.state as { isNewUser?: boolean })?.isNewUser
+
+  useEffect(() => {
+    if (isNewUser && !catLoading && !hasSelections) {
+      setCatDialogOpen(true)
+    }
+  }, [isNewUser, catLoading, hasSelections])
+
   const categoryCounts = useMemo(() =>
-    Object.fromEntries(categories.map(c => [c, periodTodos.filter(t => t.category === c).length])),
-    [periodTodos]
+    Object.fromEntries(selectedCategories.map(c => [c, periodTodos.filter(t => t.category === c).length])),
+    [periodTodos, selectedCategories]
   )
   const maxCategoryCount = Math.max(...Object.values(categoryCounts), 1)
 
@@ -172,6 +202,9 @@ export function TodoList() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button onClick={() => setCatDialogOpen(true)} variant="ghost" size="sm" className="text-purple-200 hover:text-white hover:bg-white/10 flex-shrink-0">
+                <Settings className="w-4 h-4" />
+              </Button>
               <Button onClick={() => window.location.reload()} variant="ghost" size="sm" className="text-purple-200 hover:text-white hover:bg-white/10 flex-shrink-0">
                 <RefreshCw className="w-4 h-4" />
               </Button>
@@ -302,7 +335,7 @@ export function TodoList() {
                     <CardContent className="p-5">
                       <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">By Category</p>
                       <div className="space-y-3">
-                        {categoriesWithStreak.map((cat) => {
+                        {selectedCategoriesWithStreak.map((cat) => {
                           const count = categoryCounts[cat]
                           const meta = categoryMeta[cat]
                           const pct = maxCategoryCount > 0 ? (count / maxCategoryCount) * 100 : 0
@@ -341,8 +374,16 @@ export function TodoList() {
               {/* Category Grid */}
               <div>
                 <h2 className="text-lg font-semibold text-white mb-4">Categories</h2>
+                {selectedCategories.length === 0 && !catLoading && (
+                  <div className="text-center py-6">
+                    <p className="text-slate-300 font-medium">No categories selected</p>
+                    <p className="text-sm text-slate-500 mt-1">
+                      Use the <Settings className="w-3.5 h-3.5 inline-block mx-0.5" /> button to choose which categories to display
+                    </p>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {categories.map((category) => {
+                  {selectedCategories.map((category) => {
                     const count = periodTodos.filter((t) => t.category === category).length
                     const meta = categoryMeta[category]
                     return (
@@ -532,6 +573,12 @@ export function TodoList() {
           )}
         </div>
       </div>
+
+      {/* Category Selection Dialog */}
+      <CategorySelectDialog
+        open={catDialogOpen}
+        onClose={() => setCatDialogOpen(false)}
+      />
 
       {/* Quick Add FAB */}
       <button

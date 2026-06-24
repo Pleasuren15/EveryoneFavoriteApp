@@ -61,7 +61,7 @@ interface TodoContextType {
 
 const TodoContext = createContext<TodoContextType | null>(null)
 
-const CATEGORY_IDS: Record<Category, string> = {
+export const CATEGORY_IDS: Record<Category, string> = {
   Todo: "00000000-0000-0000-0000-000000000001",
   Shopping: "00000000-0000-0000-0000-000000000002",
   Personal: "00000000-0000-0000-0000-000000000003",
